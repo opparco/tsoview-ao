@@ -11,6 +11,7 @@ namespace TSOView
 public class TSOConfig
 {
     public Size ClientSize { get; set; }
+    public bool Windowed { get; set; }
     public Size DeviceSize { get; set; }
     public float FieldOfViewY { get; set; }
     Color screen_color;
@@ -30,6 +31,7 @@ public class TSOConfig
     public TSOConfig()
     {
         this.ClientSize = new Size(800, 600);
+        this.Windowed = true;
         this.DeviceSize = new Size(0, 0);
         this.FieldOfViewY = 30.0f;
         screen_color = Color.LightGray;

@@ -205,6 +205,9 @@ public class Viewer : IDisposable
     protected Surface dev_zbuf = null;
     protected Surface tex_zbuf = null;
 
+    /// config:
+    public bool Windowed { get; set; }
+
     /// config: BackBufferWidth BackBufferHeight
     public Size DeviceSize { get; set; }
 
@@ -257,10 +260,12 @@ public class Viewer : IDisposable
     /// </summary>
     public Viewer()
     {
+        Windowed = true;
         DeviceSize = new Size(0, 0);
         SetFieldOfViewY(30.0f);
         ScreenColor = Color.LightGray;
         HohoAlpha = 1.0f;
+        XRGBDepth = true;
 
         techmap = new Dictionary<string, bool>();
         LoadTechMap();
@@ -706,16 +711,25 @@ public class Viewer : IDisposable
         PresentParameters pp = new PresentParameters();
         try
         {
-            pp.Windowed = true;
-            pp.SwapEffect = SwapEffect.Discard;
-            pp.BackBufferFormat = Format.X8R8G8B8;
-            pp.BackBufferWidth = DeviceSize.Width;
-            pp.BackBufferHeight = DeviceSize.Height;
-            pp.BackBufferCount = 1;
-            pp.EnableAutoDepthStencil = true;
-
             int adapter_ordinal = Manager.Adapters.Default.Adapter;
             DisplayMode display_mode = Manager.Adapters.Default.CurrentDisplayMode;
+
+            pp.Windowed = Windowed;
+            pp.SwapEffect = SwapEffect.Discard;
+            if (pp.Windowed)
+            {
+                pp.BackBufferFormat = Format.X8R8G8B8;
+                pp.BackBufferWidth = DeviceSize.Width;
+                pp.BackBufferHeight = DeviceSize.Height;
+            }
+            else
+            {
+                pp.BackBufferFormat = display_mode.Format;
+                pp.BackBufferWidth = display_mode.Width;
+                pp.BackBufferHeight = display_mode.Height;
+            }
+            pp.BackBufferCount = 1;
+            pp.EnableAutoDepthStencil = true;
 
             int ret;
             if (Manager.CheckDepthStencilMatch(adapter_ordinal, DeviceType.Hardware, display_mode.Format, pp.BackBufferFormat, DepthFormat.D24S8, out ret))
@@ -732,6 +746,7 @@ public class Viewer : IDisposable
                 pp.MultiSample = MultiSampleType.FourSamples;
                 pp.MultiSampleQuality = quality - 1;
             }
+            //Console.WriteLine(pp);
 
             Caps caps = Manager.GetDeviceCaps(adapter_ordinal, DeviceType.Hardware);
             CreateFlags flags = CreateFlags.SoftwareVertexProcessing;
@@ -739,7 +754,7 @@ public class Viewer : IDisposable
                 flags = CreateFlags.HardwareVertexProcessing;
             if (caps.DeviceCaps.SupportsPureDevice)
                 flags |= CreateFlags.PureDevice;
-            device = new Device(adapter_ordinal, DeviceType.Hardware, control, flags, pp);
+            device = new Device(adapter_ordinal, DeviceType.Hardware, control.Handle, flags, pp);
         }
         catch (DirectXException ex)
         {
@@ -809,6 +824,11 @@ public class Viewer : IDisposable
         {
             need_render = true;
         };
+        return true;
+    }
+
+    public void ConfigConnect()
+    {
         DepthMapConfig.ChangeZnearPlane += delegate (object sender, EventArgs e)
         {
             AssignDepthProjection();
@@ -839,7 +859,6 @@ public class Viewer : IDisposable
             //effect_gb.SetValue("_Extent", DiffusionConfig.Extent); // in
             need_render = true;
         };
-        return true;
     }
 
     bool LoadEffect(string effect_filename, out Effect effect, Macro[] macros = null, EffectPool effect_pool = null)
@@ -1277,8 +1296,8 @@ public class Viewer : IDisposable
     /// config: enhance depth precision on Format.X8A8G8B8
     public bool XRGBDepth { get; set; }
 
-    Format depthmap_format;
-    Format normalmap_format;
+    Format depthmap_format = Format.X8R8G8B8;
+    Format normalmap_format = Format.X8R8G8B8;
 
     /// config: depthmap format name
     public void SetDepthMapFormat(string name)

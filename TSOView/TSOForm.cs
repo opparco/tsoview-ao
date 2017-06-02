@@ -34,13 +34,7 @@ public partial class TSOForm : Form
     internal int keyFigureForm = (int)Keys.G;
     internal int keyConfigForm = (int)Keys.H;
 
-    bool record_enabled = false;
-    string dest_path = @"snapshots";
-    int orig_frame_idx;
-    int frame_len;
-    int frame_idx;
-
-    public int RecordStep { get; set; }
+    Record record;
 
     internal Viewer viewer = null;
     internal FigureForm figureForm = null;
@@ -52,7 +46,6 @@ public partial class TSOForm : Form
     {
         InitializeComponent();
         this.ClientSize = tso_config.ClientSize;
-        this.RecordStep = tso_config.RecordStep;
 
         for (int i = 0; i < keysEnabled.Length; i++)
         {
@@ -65,6 +58,7 @@ public partial class TSOForm : Form
         this.DragOver += new DragEventHandler(form_OnDragOver);
 
         this.viewer = new Viewer();
+        viewer.Windowed = tso_config.Windowed;
         viewer.DeviceSize = tso_config.DeviceSize;
         viewer.SetFieldOfViewY(tso_config.FieldOfViewY);
         viewer.ScreenColor = tso_config.ScreenColor;
@@ -85,12 +79,17 @@ public partial class TSOForm : Form
         viewer.OcclusionConfig = occlusion_config;
         viewer.DiffusionConfig = diffusion_config;
 
-        configForm.DepthConfig = depthmap_config;
+        configForm.DepthMapConfig = depthmap_config;
         configForm.OcclusionConfig = occlusion_config;
         configForm.DiffusionConfig = diffusion_config;
+        configForm.ConfigConnect();
+
+        this.record = new Record(viewer, tso_config.RecordStep);
 
         if (viewer.InitializeApplication(this, true))
         {
+            viewer.ConfigConnect();
+
             viewer.FigureSelectEvent += delegate(object sender, EventArgs e)
             {
                 Figure fig;
@@ -181,7 +180,7 @@ public partial class TSOForm : Form
         {
             keysEnabled[keySave] = false;
             if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
-                RecordStart();
+                record.Start();
             else
                 SaveToPng();
         }
@@ -323,43 +322,11 @@ public partial class TSOForm : Form
         }
     }
 
-    void RecordStart()
-    {
-        Directory.CreateDirectory(dest_path);
-
-        orig_frame_idx = viewer.FrameIndex;
-        viewer.MotionEnabled = true;
-        frame_len = viewer.GetMaxFrameLength();
-        frame_idx = 0;
-        record_enabled = true;
-    }
-
-    void RecordEnd()
-    {
-        record_enabled = false;
-        viewer.MotionEnabled = false;
-        viewer.FrameIndex = orig_frame_idx;
-    }
-
-    void RecordNext()
-    {
-        if (frame_idx < frame_len)
-        {
-            viewer.FrameMove(frame_idx);
-            viewer.Render();
-            viewer.SaveToPng(Path.Combine(dest_path, String.Format("{0:D3}.png", frame_idx)));
-
-            frame_idx += RecordStep;
-        }
-        else
-            RecordEnd();
-    }
-
     private void timer1_Tick(object sender, EventArgs e)
     {
-        if (record_enabled)
+        if (record.Enabled)
         {
-            RecordNext();
+            record.Next();
         }
         else
         {

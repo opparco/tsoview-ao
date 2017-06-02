@@ -34,11 +34,15 @@
             this.tbznearPlane = new System.Windows.Forms.TextBox();
             this.lbznearPlane = new System.Windows.Forms.Label();
             this.gbAmbientOcclusion = new System.Windows.Forms.GroupBox();
+            this.edAORadius = new System.Windows.Forms.TextBox();
+            this.edAOIntensity = new System.Windows.Forms.TextBox();
             this.tbAORadius = new System.Windows.Forms.TrackBar();
             this.lbAORadius = new System.Windows.Forms.Label();
             this.tbAOIntensity = new System.Windows.Forms.TrackBar();
             this.lbAOIntensity = new System.Windows.Forms.Label();
             this.gbDiffusion = new System.Windows.Forms.GroupBox();
+            this.edDFExtent = new System.Windows.Forms.TextBox();
+            this.edDFIntensity = new System.Windows.Forms.TextBox();
             this.tbDFExtent = new System.Windows.Forms.TrackBar();
             this.lbDFExtent = new System.Windows.Forms.Label();
             this.tbDFIntensity = new System.Windows.Forms.TrackBar();
@@ -109,6 +113,8 @@
             // 
             this.gbAmbientOcclusion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.gbAmbientOcclusion.Controls.Add(this.edAORadius);
+            this.gbAmbientOcclusion.Controls.Add(this.edAOIntensity);
             this.gbAmbientOcclusion.Controls.Add(this.tbAORadius);
             this.gbAmbientOcclusion.Controls.Add(this.lbAORadius);
             this.gbAmbientOcclusion.Controls.Add(this.tbAOIntensity);
@@ -120,16 +126,36 @@
             this.gbAmbientOcclusion.TabStop = false;
             this.gbAmbientOcclusion.Text = "Ambient Occlusion";
             // 
+            // edAORadius
+            // 
+            this.edAORadius.Location = new System.Drawing.Point(219, 54);
+            this.edAORadius.Name = "edAORadius";
+            this.edAORadius.ReadOnly = true;
+            this.edAORadius.Size = new System.Drawing.Size(35, 19);
+            this.edAORadius.TabIndex = 19;
+            this.edAORadius.Text = "2.50";
+            this.edAORadius.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // edAOIntensity
+            // 
+            this.edAOIntensity.Location = new System.Drawing.Point(219, 18);
+            this.edAOIntensity.Name = "edAOIntensity";
+            this.edAOIntensity.ReadOnly = true;
+            this.edAOIntensity.Size = new System.Drawing.Size(35, 19);
+            this.edAOIntensity.TabIndex = 18;
+            this.edAOIntensity.Text = "0.50";
+            this.edAOIntensity.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
             // tbAORadius
             // 
             this.tbAORadius.AutoSize = false;
             this.tbAORadius.Location = new System.Drawing.Point(61, 54);
             this.tbAORadius.Maximum = 20;
             this.tbAORadius.Name = "tbAORadius";
-            this.tbAORadius.Size = new System.Drawing.Size(168, 30);
+            this.tbAORadius.Size = new System.Drawing.Size(152, 30);
             this.tbAORadius.TabIndex = 17;
             this.tbAORadius.Value = 10;
-            this.tbAORadius.ValueChanged += new System.EventHandler(this.tbRadius_ValueChanged);
+            this.tbAORadius.ValueChanged += new System.EventHandler(this.tbAORadius_ValueChanged);
             // 
             // lbAORadius
             // 
@@ -146,10 +172,10 @@
             this.tbAOIntensity.Location = new System.Drawing.Point(61, 18);
             this.tbAOIntensity.Maximum = 20;
             this.tbAOIntensity.Name = "tbAOIntensity";
-            this.tbAOIntensity.Size = new System.Drawing.Size(168, 30);
+            this.tbAOIntensity.Size = new System.Drawing.Size(152, 30);
             this.tbAOIntensity.TabIndex = 16;
             this.tbAOIntensity.Value = 10;
-            this.tbAOIntensity.ValueChanged += new System.EventHandler(this.tbIntensity_ValueChanged);
+            this.tbAOIntensity.ValueChanged += new System.EventHandler(this.tbAOIntensity_ValueChanged);
             // 
             // lbAOIntensity
             // 
@@ -164,6 +190,8 @@
             // 
             this.gbDiffusion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.gbDiffusion.Controls.Add(this.edDFExtent);
+            this.gbDiffusion.Controls.Add(this.edDFIntensity);
             this.gbDiffusion.Controls.Add(this.tbDFExtent);
             this.gbDiffusion.Controls.Add(this.lbDFExtent);
             this.gbDiffusion.Controls.Add(this.tbDFIntensity);
@@ -175,6 +203,26 @@
             this.gbDiffusion.TabStop = false;
             this.gbDiffusion.Text = "Diffusion";
             // 
+            // edDFExtent
+            // 
+            this.edDFExtent.Location = new System.Drawing.Point(219, 54);
+            this.edDFExtent.Name = "edDFExtent";
+            this.edDFExtent.ReadOnly = true;
+            this.edDFExtent.Size = new System.Drawing.Size(35, 19);
+            this.edDFExtent.TabIndex = 21;
+            this.edDFExtent.Text = "2.00";
+            this.edDFExtent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // edDFIntensity
+            // 
+            this.edDFIntensity.Location = new System.Drawing.Point(219, 18);
+            this.edDFIntensity.Name = "edDFIntensity";
+            this.edDFIntensity.ReadOnly = true;
+            this.edDFIntensity.Size = new System.Drawing.Size(35, 19);
+            this.edDFIntensity.TabIndex = 20;
+            this.edDFIntensity.Text = "0.50";
+            this.edDFIntensity.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
             // tbDFExtent
             // 
             this.tbDFExtent.AutoSize = false;
@@ -182,7 +230,7 @@
             this.tbDFExtent.Maximum = 30;
             this.tbDFExtent.Minimum = 10;
             this.tbDFExtent.Name = "tbDFExtent";
-            this.tbDFExtent.Size = new System.Drawing.Size(168, 30);
+            this.tbDFExtent.Size = new System.Drawing.Size(152, 30);
             this.tbDFExtent.TabIndex = 19;
             this.tbDFExtent.Value = 20;
             this.tbDFExtent.ValueChanged += new System.EventHandler(this.tbDFExtent_ValueChanged);
@@ -202,7 +250,7 @@
             this.tbDFIntensity.Location = new System.Drawing.Point(61, 18);
             this.tbDFIntensity.Maximum = 20;
             this.tbDFIntensity.Name = "tbDFIntensity";
-            this.tbDFIntensity.Size = new System.Drawing.Size(168, 30);
+            this.tbDFIntensity.Size = new System.Drawing.Size(152, 30);
             this.tbDFIntensity.TabIndex = 16;
             this.tbDFIntensity.Value = 10;
             this.tbDFIntensity.ValueChanged += new System.EventHandler(this.tbDFIntensity_ValueChanged);
@@ -259,5 +307,9 @@
         private System.Windows.Forms.Label lbDFIntensity;
         private System.Windows.Forms.TrackBar tbDFExtent;
         private System.Windows.Forms.Label lbDFExtent;
+        private System.Windows.Forms.TextBox edAORadius;
+        private System.Windows.Forms.TextBox edAOIntensity;
+        private System.Windows.Forms.TextBox edDFExtent;
+        private System.Windows.Forms.TextBox edDFIntensity;
     }
 }
