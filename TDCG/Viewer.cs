@@ -19,7 +19,8 @@ namespace TDCG
         Ambient,
         DepthMap,
         NormalMap,
-        Occlusion
+        Occlusion,
+        Diffusion
     };
     public class DepthMapConfig
     {
@@ -75,6 +76,33 @@ namespace TDCG
             }
         }
     }
+    public class DiffusionConfig
+    {
+        public event EventHandler ChangeIntensity;
+        public event EventHandler ChangeExtent;
+        float intensity = 0.5f;
+        public float Intensity
+        {
+            get { return intensity; }
+            set
+            {
+                intensity = value;
+                if (ChangeIntensity != null)
+                    ChangeIntensity(this, EventArgs.Empty);
+            }
+        }
+        float extent = 2.0f;
+        public float Extent
+        {
+            get { return extent; }
+            set
+            {
+                extent = value;
+                if (ChangeExtent != null)
+                    ChangeExtent(this, EventArgs.Empty);
+            }
+        }
+    }
     /// <summary>
     /// セーブファイルの内容を保持します。
     /// </summary>
@@ -123,6 +151,7 @@ public class Viewer : IDisposable
     protected Effect effect_ao;
     protected Effect effect_gb;
     protected Effect effect_main;
+    protected Effect effect_df;
 
     /// <summary>
     /// toonshader.cgfx に渡す頂点宣言
@@ -160,7 +189,7 @@ public class Viewer : IDisposable
     /// </summary>
     public bool ShadowMapEnabled { get { return shadow_map_enabled; } }
 
-    /// sprite
+    public Screen screen = null;
     public Sprite sprite = null;
     internal Line line = null;
 
@@ -190,18 +219,19 @@ public class Viewer : IDisposable
 
     public DepthMapConfig DepthMapConfig = null;
     public OcclusionConfig OcclusionConfig = null;
+    public DiffusionConfig DiffusionConfig = null;
 
     protected Texture amb_texture;
     protected Texture depthmap_texture;
     protected Texture normalmap_texture;
     protected Texture occ_texture;
+    protected Texture tmp_texture;
 
     protected Surface amb_surface;
     protected Surface depthmap_surface;
     protected Surface normalmap_surface;
     protected Surface occ_surface;
-
-    VertexBuffer vb;
+    protected Surface tmp_surface;
 
     /// <summary>
     /// viewerが保持しているフィギュアリスト
@@ -693,8 +723,8 @@ public class Viewer : IDisposable
                 pp.MultiSampleQuality = quality - 1;
             }
 
-            CreateFlags flags = CreateFlags.SoftwareVertexProcessing;
             Caps caps = Manager.GetDeviceCaps(adapter_ordinal, DeviceType.Hardware);
+            CreateFlags flags = CreateFlags.SoftwareVertexProcessing;
             if (caps.DeviceCaps.SupportsHardwareTransformAndLight)
                 flags = CreateFlags.HardwareVertexProcessing;
             if (caps.DeviceCaps.SupportsPureDevice)
@@ -743,12 +773,16 @@ public class Viewer : IDisposable
         if (!LoadEffect(@"main.fx", out effect_main))
             return false;
 
+        if (!LoadEffect(@"df.fx", out effect_df))
+            return false;
+
         handle_LocalBoneMats = effect.GetParameter(null, "LocalBoneMats");
         handle_LightDirForced = effect.GetParameter(null, "LightDirForced");
         handle_HohoAlpha = effect.GetParameter(null, "HohoAlpha");
         handle_UVSCR = effect.GetParameter(null, "UVSCR");
         handle_ao_UVSCR = effect_ao.GetParameter(null, "UVSCR");
 
+        screen = new Screen(device);
         sprite = new Sprite(device);
         line = new Line(device);
         camera.Update();
@@ -780,6 +814,16 @@ public class Viewer : IDisposable
         OcclusionConfig.ChangeRadius += delegate (object sender, EventArgs e)
         {
             effect_ao.SetValue("_Radius", OcclusionConfig.Radius); // in
+            need_render = true;
+        };
+        DiffusionConfig.ChangeIntensity += delegate(object sender, EventArgs e)
+        {
+            effect_main.SetValue("_Intensity", DiffusionConfig.Intensity); // in
+            need_render = true;
+        };
+        DiffusionConfig.ChangeExtent += delegate (object sender, EventArgs e)
+        {
+            //effect_gb.SetValue("_Extent", DiffusionConfig.Extent); // in
             need_render = true;
         };
         return true;
@@ -819,48 +863,12 @@ public class Viewer : IDisposable
         effect_ao.SetValue("depthproj", depth_projection); // in
     }
 
-    CustomVertex.PositionTextured[] vertices;
-
-    void CreateVertices(Rectangle rect)
-    {
-        vertices = new CustomVertex.PositionTextured[6];
-
-        const float z = 0.5f;
-
-        vertices[0] = new CustomVertex.PositionTextured(rect.Left, rect.Bottom, z, 0.0f, 1.0f);
-        vertices[1] = new CustomVertex.PositionTextured(rect.Left, rect.Top, z, 0.0f, 0.0f);
-        vertices[2] = new CustomVertex.PositionTextured(rect.Right, rect.Bottom, z, 1.0f, 1.0f);
-        vertices[3] = new CustomVertex.PositionTextured(rect.Right, rect.Top, z, 1.0f, 0.0f);
-
-        for (int i = 0; i < 4; i++)
-        {
-            vertices[i].X -= 0.5f;
-            vertices[i].Y -= 0.5f;
-        }
-    }
-
-    void vb_Created(object sender, EventArgs e)
-    {
-        VertexBuffer vb = (VertexBuffer)sender;
-
-        {
-            GraphicsStream gs = vb.Lock(0, 0, LockFlags.None);
-            {
-                for (int i = 0; i < vertices.Length; i++)
-                {
-                    gs.Write(vertices[i]);
-                }
-            }
-            vb.Unlock();
-        }
-    }
-
     private void OnDeviceLost(object sender, EventArgs e)
     {
         Console.WriteLine("OnDeviceLost");
 
-        if (vb != null)
-            vb.Dispose();
+        if (screen != null)
+            screen.Dispose();
 
         if (amb_surface != null)
             amb_surface.Dispose();
@@ -870,6 +878,8 @@ public class Viewer : IDisposable
             normalmap_surface.Dispose();
         if (occ_surface != null)
             occ_surface.Dispose();
+        if (tmp_surface != null)
+            tmp_surface.Dispose();
 
         if (amb_texture != null)
             amb_texture.Dispose();
@@ -879,6 +889,8 @@ public class Viewer : IDisposable
             normalmap_texture.Dispose();
         if (occ_texture != null)
             occ_texture.Dispose();
+        if (tmp_texture != null)
+            tmp_texture.Dispose();
 
         if (tex_zbuf != null)
             tex_zbuf.Dispose();
@@ -927,6 +939,9 @@ public class Viewer : IDisposable
         occ_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
         occ_surface = occ_texture.GetSurfaceLevel(0);
 
+        tmp_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
+        tmp_surface = tmp_texture.GetSurfaceLevel(0);
+
         effect_depth.SetValue("DepthMap_texture", depthmap_texture); // in
 
         effect_ao.SetValue("DepthMap_texture", depthmap_texture); // in
@@ -935,9 +950,9 @@ public class Viewer : IDisposable
         effect_main.SetValue("Ambient_texture", amb_texture); // in
         effect_main.SetValue("Occlusion_texture", occ_texture); // in
 
-        CreateVertices(dev_rect);
-        vb = new VertexBuffer(typeof(CustomVertex.PositionTextured), vertices.Length, device, Usage.Dynamic | Usage.WriteOnly, CustomVertex.PositionTextured.Format, Pool.Default);
-        vb_Created(vb, null);
+        effect_df.SetValue("Ambient_texture", amb_texture); // in
+
+        screen.Create(dev_rect);
 
         Transform_Projection = Matrix.PerspectiveFovRH(
                 Geometry.DegreeToRadian(30.0f),
@@ -948,23 +963,14 @@ public class Viewer : IDisposable
         device.Transform.Projection = Transform_Projection;
         effect.SetValue("proj", Transform_Projection);
 
-        {
-            Matrix world = Matrix.Translation(-devw/2, -devh/2, 0);
-            Matrix view = Matrix.RotationX((float)Math.PI);
-            Matrix projection = Matrix.OrthoRH(devw, devh, 0.0f, 1.0f);
+        screen.AssignWorldViewProjection(effect_dnclear);
+        screen.AssignWorldViewProjection(effect_depth);
+        screen.AssignWorldViewProjection(effect_ao);
+        screen.AssignWorldViewProjection(effect_gb);
+        screen.AssignWorldViewProjection(effect_main);
+        screen.AssignWorldViewProjection(effect_df);
 
-            Matrix world_view = world * view;
-            Matrix world_view_projection = world_view * projection;
-
-            //todo: shared
-            effect_dnclear.SetValue("wvp", world_view_projection);
-            effect_depth.SetValue("wvp", world_view_projection);
-            effect_ao.SetValue("wvp", world_view_projection);
-            effect_gb.SetValue("wvp", world_view_projection);
-            effect_main.SetValue("wvp", world_view_projection);
-
-            AssignDepthProjection();
-        }
+        AssignDepthProjection();
 
         device.SetRenderState(RenderStates.Lighting, false);
         device.SetRenderState(RenderStates.CullMode, (int)Cull.CounterClockwise);
@@ -1186,18 +1192,32 @@ public class Viewer : IDisposable
             break;
         case RenderMode.Occlusion:
             DrawDepthNormalMap();
-            DrawAmbientOcclusion();
+            DrawOcclusion();
             //DrawGaussianBlur();
             DrawSprite(occ_texture);
             break;
-        default:
+        case RenderMode.Diffusion:
             DrawDepthNormalMap();
-            DrawAmbientOcclusion();
-            DrawGaussianBlur();
+            DrawOcclusion();
+            DrawGaussianBlur(1.0f);
 
             DrawFigure();
-            Blit();
-            DrawMain();
+            Blit(); // from:dev to:amb
+            DrawMain(); // main in:amb occ out:dev
+
+            Blit(); // from:dev to:amb
+            DrawDiffusion(); // df in:amb out:occ
+            DrawGaussianBlur(DiffusionConfig.Extent); // gb in:occ out:occ
+            DrawScreen(); // screen in:amb occ out:dev
+            break;
+        default:
+            DrawDepthNormalMap();
+            DrawOcclusion();
+            DrawGaussianBlur(1.0f);
+
+            DrawFigure();
+            Blit(); // from:dev to:amb
+            DrawMain(); // main in:amb occ out:dev
             break;
         }
 
@@ -1310,21 +1330,6 @@ public class Viewer : IDisposable
         }
     }
 
-    void DrawPlane(Effect effect)
-    {
-        device.VertexFormat = CustomVertex.PositionTextured.Format;
-        device.SetStreamSource(0, vb, 0);
-
-        int npass = effect.Begin(0);
-        for (int ipass = 0; ipass < npass; ipass++)
-        {
-            effect.BeginPass(ipass);
-            device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
-            effect.EndPass();
-        }
-        effect.End();
-    }
-
     public static string GetHideTechsPath()
     {
         return Path.Combine(Application.StartupPath, @"hidetechs.txt");
@@ -1372,7 +1377,7 @@ public class Viewer : IDisposable
         device.DepthStencilSurface = tex_zbuf;
         device.Clear(ClearFlags.ZBuffer, Color.White, 1.0f, 0);
 
-        DrawPlane(effect_dnclear);
+        screen.Draw(effect_dnclear);
 
         device.VertexDeclaration = vd;
 
@@ -1439,38 +1444,38 @@ public class Viewer : IDisposable
     // draw Gaussian Blur
     // x direction
     //   in occ_texture
-    //   out amb_texture
+    //   out tmp_surface
     // y direction
-    //   in amb_texture
+    //   in tmp_texture
     //   out occ_surface
-    void DrawGaussianBlur()
+    void DrawGaussianBlur(float extent)
     {
         Debug.WriteLine("DrawGaussianBlur");
 
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         effect_gb.SetValue("Ambient_texture", occ_texture); // in
-        device.SetRenderTarget(0, amb_surface); // out
+        device.SetRenderTarget(0, tmp_surface); // out
         device.DepthStencilSurface = tex_zbuf;
 
-        effect_gb.SetValue("dir", new Vector4(1.0f/(float)dev_rect.Width, 0, 0, 0));
-        DrawPlane(effect_gb);
+        effect_gb.SetValue("dir", new Vector4(extent/(float)dev_rect.Width, 0, 0, 0));
+        screen.Draw(effect_gb);
 
-        effect_gb.SetValue("Ambient_texture", amb_texture); // in
+        effect_gb.SetValue("Ambient_texture", tmp_texture); // in
         device.SetRenderTarget(0, occ_surface); // out
         device.DepthStencilSurface = tex_zbuf;
 
-        effect_gb.SetValue("dir", new Vector4(0, 1.0f/(float)dev_rect.Height, 0, 0));
-        DrawPlane(effect_gb);
+        effect_gb.SetValue("dir", new Vector4(0, extent/(float)dev_rect.Height, 0, 0));
+        screen.Draw(effect_gb);
     }
 
     // draw Ambient Occlusion
     // in depthmap_texture
     // in normalmap_texture
     // out occ_surface
-    public void DrawAmbientOcclusion()
+    public void DrawOcclusion()
     {
-        Debug.WriteLine("DrawAmbientOcclusion");
+        Debug.WriteLine("DrawOcclusion");
 
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
@@ -1480,7 +1485,22 @@ public class Viewer : IDisposable
         if (MotionEnabled)
             effect_ao.SetValue(handle_ao_UVSCR, UVSCR());
 
-        DrawPlane(effect_ao);
+        screen.Draw(effect_ao);
+    }
+
+    // draw Diffusion
+    // in amb_texture
+    // out occ_surface
+    public void DrawDiffusion()
+    {
+        Debug.WriteLine("DrawDiffusion");
+
+        device.SetRenderState(RenderStates.AlphaBlendEnable, false);
+
+        device.SetRenderTarget(0, occ_surface); // out
+        device.DepthStencilSurface = tex_zbuf;
+
+        screen.Draw(effect_df);
     }
 
     // draw depth
@@ -1495,7 +1515,7 @@ public class Viewer : IDisposable
         device.SetRenderTarget(0, dev_surface); // out
         device.DepthStencilSurface = dev_zbuf;
 
-        DrawPlane(effect_depth);
+        screen.Draw(effect_depth);
     }
 
     // draw main
@@ -1511,7 +1531,25 @@ public class Viewer : IDisposable
         device.SetRenderTarget(0, dev_surface); // out
         device.DepthStencilSurface = dev_zbuf;
 
-        DrawPlane(effect_main);
+        effect_main.Technique = "Main";
+        screen.Draw(effect_main);
+    }
+
+    // draw main
+    // in amb_texture
+    // in occ_texture
+    // out dev_surface
+    void DrawScreen()
+    {
+        Debug.WriteLine("DrawMain");
+
+        device.SetRenderState(RenderStates.AlphaBlendEnable, false);
+
+        device.SetRenderTarget(0, dev_surface); // out
+        device.DepthStencilSurface = dev_zbuf;
+
+        effect_main.Technique = "Screen";
+        screen.Draw(effect_main);
     }
 
     /// <summary>
@@ -1555,8 +1593,8 @@ public class Viewer : IDisposable
         if (sprite != null)
             sprite.Dispose();
 
-        if (vb != null)
-            vb.Dispose();
+        if (screen != null)
+            screen.Dispose();
 
         if (amb_surface != null)
             amb_surface.Dispose();
@@ -1566,6 +1604,8 @@ public class Viewer : IDisposable
             normalmap_surface.Dispose();
         if (occ_surface != null)
             occ_surface.Dispose();
+        if (tmp_surface != null)
+            tmp_surface.Dispose();
 
         if (amb_texture != null)
             amb_texture.Dispose();
@@ -1575,6 +1615,8 @@ public class Viewer : IDisposable
             normalmap_texture.Dispose();
         if (occ_texture != null)
             occ_texture.Dispose();
+        if (tmp_texture != null)
+            tmp_texture.Dispose();
 
         if (tex_zbuf != null)
             tex_zbuf.Dispose();
@@ -1586,6 +1628,10 @@ public class Viewer : IDisposable
         if (vd != null)
             vd.Dispose();
 
+        if (effect_df != null)
+            effect_df.Dispose();
+        if (effect_main != null)
+            effect_main.Dispose();
         if (effect_gb != null)
             effect_gb.Dispose();
         if (effect_ao != null)

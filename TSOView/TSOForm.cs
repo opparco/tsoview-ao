@@ -24,6 +24,7 @@ public partial class TSOForm : Form
     internal int keyDepth      = (int)Keys.Z;
     internal int keyNormal      = (int)Keys.X;
     internal int keyOcclusion   = (int)Keys.O;
+    internal int keyDiffusion   = (int)Keys.Home;
     internal int keyFigure      = (int)Keys.Tab;
     internal int keyDelete      = (int)Keys.Delete;
     internal int keyCameraReset = (int)Keys.D0;
@@ -63,13 +64,17 @@ public partial class TSOForm : Form
         this.figureForm = new FigureForm();
         this.configForm = new ConfigForm();
 
-        DepthMapConfig dmapConfig = new DepthMapConfig();
-        OcclusionConfig occConfig = new OcclusionConfig();
+        DepthMapConfig depthmap_config = new DepthMapConfig();
+        OcclusionConfig occlusion_config = new OcclusionConfig();
+        DiffusionConfig diffusion_config = new DiffusionConfig();
 
-        viewer.DepthMapConfig = dmapConfig;
-        viewer.OcclusionConfig = occConfig;
-        configForm.DepthConfig = dmapConfig;
-        configForm.OcclusionConfig = occConfig;
+        viewer.DepthMapConfig = depthmap_config;
+        viewer.OcclusionConfig = occlusion_config;
+        viewer.DiffusionConfig = diffusion_config;
+
+        configForm.DepthConfig = depthmap_config;
+        configForm.OcclusionConfig = occlusion_config;
+        configForm.DiffusionConfig = diffusion_config;
 
         if (viewer.InitializeApplication(this, true))
         {
@@ -143,6 +148,9 @@ public partial class TSOForm : Form
             case RenderMode.Occlusion:
                 viewer.SaveToPng("sample-o.png");
                 break;
+            case RenderMode.Diffusion:
+                viewer.SaveToPng("sample-df.png");
+                break;
             }
         }
         if (keysEnabled[keyMotion] && keys[keyMotion])
@@ -199,6 +207,19 @@ public partial class TSOForm : Form
                 break;
             default:
                 viewer.RenderMode = RenderMode.Occlusion;
+                break;
+            }
+        }
+        if (keysEnabled[keyDiffusion] && keys[keyDiffusion])
+        {
+            keysEnabled[keyDiffusion] = false;
+            switch (viewer.RenderMode)
+            {
+            case RenderMode.Diffusion:
+                viewer.RenderMode = RenderMode.Figure;
+                break;
+            default:
+                viewer.RenderMode = RenderMode.Diffusion;
                 break;
             }
         }

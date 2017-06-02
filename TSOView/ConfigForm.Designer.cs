@@ -34,14 +34,22 @@
             this.tbznearPlane = new System.Windows.Forms.TextBox();
             this.lbznearPlane = new System.Windows.Forms.Label();
             this.gbAmbientOcclusion = new System.Windows.Forms.GroupBox();
-            this.tbRadius = new System.Windows.Forms.TrackBar();
-            this.lbRadius = new System.Windows.Forms.Label();
-            this.tbIntensity = new System.Windows.Forms.TrackBar();
-            this.lbIntensity = new System.Windows.Forms.Label();
+            this.tbAORadius = new System.Windows.Forms.TrackBar();
+            this.lbAORadius = new System.Windows.Forms.Label();
+            this.tbAOIntensity = new System.Windows.Forms.TrackBar();
+            this.lbAOIntensity = new System.Windows.Forms.Label();
+            this.gbDiffusion = new System.Windows.Forms.GroupBox();
+            this.tbDFExtent = new System.Windows.Forms.TrackBar();
+            this.lbDFExtent = new System.Windows.Forms.Label();
+            this.tbDFIntensity = new System.Windows.Forms.TrackBar();
+            this.lbDFIntensity = new System.Windows.Forms.Label();
             this.gbDepthMap.SuspendLayout();
             this.gbAmbientOcclusion.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.tbRadius)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbIntensity)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbAORadius)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbAOIntensity)).BeginInit();
+            this.gbDiffusion.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tbDFExtent)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbDFIntensity)).BeginInit();
             this.SuspendLayout();
             // 
             // gbDepthMap
@@ -54,14 +62,14 @@
             this.gbDepthMap.Controls.Add(this.lbznearPlane);
             this.gbDepthMap.Location = new System.Drawing.Point(12, 12);
             this.gbDepthMap.Name = "gbDepthMap";
-            this.gbDepthMap.Size = new System.Drawing.Size(260, 96);
+            this.gbDepthMap.Size = new System.Drawing.Size(260, 65);
             this.gbDepthMap.TabIndex = 10;
             this.gbDepthMap.TabStop = false;
             this.gbDepthMap.Text = "Depth map";
             // 
             // tbzfarPlane
             // 
-            this.tbzfarPlane.Location = new System.Drawing.Point(73, 67);
+            this.tbzfarPlane.Location = new System.Drawing.Point(113, 37);
             this.tbzfarPlane.Name = "tbzfarPlane";
             this.tbzfarPlane.Size = new System.Drawing.Size(50, 19);
             this.tbzfarPlane.TabIndex = 11;
@@ -72,7 +80,7 @@
             // lbzfarPlane
             // 
             this.lbzfarPlane.AutoSize = true;
-            this.lbzfarPlane.Location = new System.Drawing.Point(44, 52);
+            this.lbzfarPlane.Location = new System.Drawing.Point(44, 40);
             this.lbzfarPlane.Name = "lbzfarPlane";
             this.lbzfarPlane.Size = new System.Drawing.Size(55, 12);
             this.lbzfarPlane.TabIndex = 10;
@@ -80,7 +88,7 @@
             // 
             // tbznearPlane
             // 
-            this.tbznearPlane.Location = new System.Drawing.Point(73, 30);
+            this.tbznearPlane.Location = new System.Drawing.Point(113, 12);
             this.tbznearPlane.Name = "tbznearPlane";
             this.tbznearPlane.Size = new System.Drawing.Size(50, 19);
             this.tbznearPlane.TabIndex = 9;
@@ -101,60 +109,119 @@
             // 
             this.gbAmbientOcclusion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.gbAmbientOcclusion.Controls.Add(this.tbRadius);
-            this.gbAmbientOcclusion.Controls.Add(this.lbRadius);
-            this.gbAmbientOcclusion.Controls.Add(this.tbIntensity);
-            this.gbAmbientOcclusion.Controls.Add(this.lbIntensity);
-            this.gbAmbientOcclusion.Location = new System.Drawing.Point(12, 114);
+            this.gbAmbientOcclusion.Controls.Add(this.tbAORadius);
+            this.gbAmbientOcclusion.Controls.Add(this.lbAORadius);
+            this.gbAmbientOcclusion.Controls.Add(this.tbAOIntensity);
+            this.gbAmbientOcclusion.Controls.Add(this.lbAOIntensity);
+            this.gbAmbientOcclusion.Location = new System.Drawing.Point(12, 83);
             this.gbAmbientOcclusion.Name = "gbAmbientOcclusion";
-            this.gbAmbientOcclusion.Size = new System.Drawing.Size(260, 135);
+            this.gbAmbientOcclusion.Size = new System.Drawing.Size(260, 95);
             this.gbAmbientOcclusion.TabIndex = 11;
             this.gbAmbientOcclusion.TabStop = false;
             this.gbAmbientOcclusion.Text = "Ambient Occlusion";
             // 
-            // tbRadius
+            // tbAORadius
             // 
-            this.tbRadius.Location = new System.Drawing.Point(46, 81);
-            this.tbRadius.Maximum = 20;
-            this.tbRadius.Name = "tbRadius";
-            this.tbRadius.Size = new System.Drawing.Size(168, 45);
-            this.tbRadius.TabIndex = 17;
-            this.tbRadius.Value = 10;
-            this.tbRadius.ValueChanged += new System.EventHandler(this.tbRadius_ValueChanged);
+            this.tbAORadius.AutoSize = false;
+            this.tbAORadius.Location = new System.Drawing.Point(61, 54);
+            this.tbAORadius.Maximum = 20;
+            this.tbAORadius.Name = "tbAORadius";
+            this.tbAORadius.Size = new System.Drawing.Size(168, 30);
+            this.tbAORadius.TabIndex = 17;
+            this.tbAORadius.Value = 10;
+            this.tbAORadius.ValueChanged += new System.EventHandler(this.tbRadius_ValueChanged);
             // 
-            // lbRadius
+            // lbAORadius
             // 
-            this.lbRadius.AutoSize = true;
-            this.lbRadius.Location = new System.Drawing.Point(44, 63);
-            this.lbRadius.Name = "lbRadius";
-            this.lbRadius.Size = new System.Drawing.Size(36, 12);
-            this.lbRadius.TabIndex = 15;
-            this.lbRadius.Text = "radius";
+            this.lbAORadius.AutoSize = true;
+            this.lbAORadius.Location = new System.Drawing.Point(6, 54);
+            this.lbAORadius.Name = "lbAORadius";
+            this.lbAORadius.Size = new System.Drawing.Size(36, 12);
+            this.lbAORadius.TabIndex = 15;
+            this.lbAORadius.Text = "radius";
             // 
-            // tbIntensity
+            // tbAOIntensity
             // 
-            this.tbIntensity.Location = new System.Drawing.Point(46, 30);
-            this.tbIntensity.Maximum = 20;
-            this.tbIntensity.Name = "tbIntensity";
-            this.tbIntensity.Size = new System.Drawing.Size(168, 45);
-            this.tbIntensity.TabIndex = 16;
-            this.tbIntensity.Value = 10;
-            this.tbIntensity.ValueChanged += new System.EventHandler(this.tbIntensity_ValueChanged);
+            this.tbAOIntensity.AutoSize = false;
+            this.tbAOIntensity.Location = new System.Drawing.Point(61, 18);
+            this.tbAOIntensity.Maximum = 20;
+            this.tbAOIntensity.Name = "tbAOIntensity";
+            this.tbAOIntensity.Size = new System.Drawing.Size(168, 30);
+            this.tbAOIntensity.TabIndex = 16;
+            this.tbAOIntensity.Value = 10;
+            this.tbAOIntensity.ValueChanged += new System.EventHandler(this.tbIntensity_ValueChanged);
             // 
-            // lbIntensity
+            // lbAOIntensity
             // 
-            this.lbIntensity.AutoSize = true;
-            this.lbIntensity.Location = new System.Drawing.Point(44, 15);
-            this.lbIntensity.Name = "lbIntensity";
-            this.lbIntensity.Size = new System.Drawing.Size(49, 12);
-            this.lbIntensity.TabIndex = 14;
-            this.lbIntensity.Text = "intensity";
+            this.lbAOIntensity.AutoSize = true;
+            this.lbAOIntensity.Location = new System.Drawing.Point(6, 18);
+            this.lbAOIntensity.Name = "lbAOIntensity";
+            this.lbAOIntensity.Size = new System.Drawing.Size(49, 12);
+            this.lbAOIntensity.TabIndex = 14;
+            this.lbAOIntensity.Text = "intensity";
+            // 
+            // gbDiffusion
+            // 
+            this.gbDiffusion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.gbDiffusion.Controls.Add(this.tbDFExtent);
+            this.gbDiffusion.Controls.Add(this.lbDFExtent);
+            this.gbDiffusion.Controls.Add(this.tbDFIntensity);
+            this.gbDiffusion.Controls.Add(this.lbDFIntensity);
+            this.gbDiffusion.Location = new System.Drawing.Point(12, 184);
+            this.gbDiffusion.Name = "gbDiffusion";
+            this.gbDiffusion.Size = new System.Drawing.Size(260, 95);
+            this.gbDiffusion.TabIndex = 18;
+            this.gbDiffusion.TabStop = false;
+            this.gbDiffusion.Text = "Diffusion";
+            // 
+            // tbDFExtent
+            // 
+            this.tbDFExtent.AutoSize = false;
+            this.tbDFExtent.Location = new System.Drawing.Point(61, 54);
+            this.tbDFExtent.Maximum = 30;
+            this.tbDFExtent.Minimum = 10;
+            this.tbDFExtent.Name = "tbDFExtent";
+            this.tbDFExtent.Size = new System.Drawing.Size(168, 30);
+            this.tbDFExtent.TabIndex = 19;
+            this.tbDFExtent.Value = 20;
+            this.tbDFExtent.ValueChanged += new System.EventHandler(this.tbDFExtent_ValueChanged);
+            // 
+            // lbDFExtent
+            // 
+            this.lbDFExtent.AutoSize = true;
+            this.lbDFExtent.Location = new System.Drawing.Point(6, 54);
+            this.lbDFExtent.Name = "lbDFExtent";
+            this.lbDFExtent.Size = new System.Drawing.Size(37, 12);
+            this.lbDFExtent.TabIndex = 18;
+            this.lbDFExtent.Text = "extent";
+            // 
+            // tbDFIntensity
+            // 
+            this.tbDFIntensity.AutoSize = false;
+            this.tbDFIntensity.Location = new System.Drawing.Point(61, 18);
+            this.tbDFIntensity.Maximum = 20;
+            this.tbDFIntensity.Name = "tbDFIntensity";
+            this.tbDFIntensity.Size = new System.Drawing.Size(168, 30);
+            this.tbDFIntensity.TabIndex = 16;
+            this.tbDFIntensity.Value = 10;
+            this.tbDFIntensity.ValueChanged += new System.EventHandler(this.tbDFIntensity_ValueChanged);
+            // 
+            // lbDFIntensity
+            // 
+            this.lbDFIntensity.AutoSize = true;
+            this.lbDFIntensity.Location = new System.Drawing.Point(6, 18);
+            this.lbDFIntensity.Name = "lbDFIntensity";
+            this.lbDFIntensity.Size = new System.Drawing.Size(49, 12);
+            this.lbDFIntensity.TabIndex = 14;
+            this.lbDFIntensity.Text = "intensity";
             // 
             // ConfigForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 261);
+            this.ClientSize = new System.Drawing.Size(284, 291);
+            this.Controls.Add(this.gbDiffusion);
             this.Controls.Add(this.gbAmbientOcclusion);
             this.Controls.Add(this.gbDepthMap);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -165,8 +232,12 @@
             this.gbDepthMap.PerformLayout();
             this.gbAmbientOcclusion.ResumeLayout(false);
             this.gbAmbientOcclusion.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.tbRadius)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbIntensity)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbAORadius)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbAOIntensity)).EndInit();
+            this.gbDiffusion.ResumeLayout(false);
+            this.gbDiffusion.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tbDFExtent)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbDFIntensity)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -179,9 +250,14 @@
         private System.Windows.Forms.Label lbzfarPlane;
         private System.Windows.Forms.TextBox tbznearPlane;
         private System.Windows.Forms.Label lbznearPlane;
-        private System.Windows.Forms.TrackBar tbRadius;
-        private System.Windows.Forms.Label lbRadius;
-        private System.Windows.Forms.TrackBar tbIntensity;
-        private System.Windows.Forms.Label lbIntensity;
+        private System.Windows.Forms.TrackBar tbAORadius;
+        private System.Windows.Forms.Label lbAORadius;
+        private System.Windows.Forms.TrackBar tbAOIntensity;
+        private System.Windows.Forms.Label lbAOIntensity;
+        private System.Windows.Forms.GroupBox gbDiffusion;
+        private System.Windows.Forms.TrackBar tbDFIntensity;
+        private System.Windows.Forms.Label lbDFIntensity;
+        private System.Windows.Forms.TrackBar tbDFExtent;
+        private System.Windows.Forms.Label lbDFExtent;
     }
 }

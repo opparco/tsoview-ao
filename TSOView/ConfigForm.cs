@@ -14,6 +14,7 @@ namespace TSOView
     {
         public DepthMapConfig DepthConfig = null;
         public OcclusionConfig OcclusionConfig = null;
+        public DiffusionConfig DiffusionConfig = null;
 
         public ConfigForm()
         {
@@ -55,12 +56,22 @@ namespace TSOView
 
         private void tbIntensity_ValueChanged(object sender, EventArgs e)
         {
-            OcclusionConfig.Intensity = tbIntensity.Value / 20.0f;
+            OcclusionConfig.Intensity = tbAOIntensity.Value / 20.0f;
         }
 
         private void tbRadius_ValueChanged(object sender, EventArgs e)
         {
-            OcclusionConfig.Radius = tbRadius.Value / 4.0f;
+            OcclusionConfig.Radius = tbAORadius.Value / 4.0f;
+        }
+
+        private void tbDFIntensity_ValueChanged(object sender, EventArgs e)
+        {
+            DiffusionConfig.Intensity = tbDFIntensity.Value / 20.0f;
+        }
+
+        private void tbDFExtent_ValueChanged(object sender, EventArgs e)
+        {
+            DiffusionConfig.Extent = tbDFExtent.Value / 10.0f;
         }
     }
 }
