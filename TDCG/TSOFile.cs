@@ -1552,11 +1552,16 @@ namespace TDCG
                 return;
             current_shader = shader;
 
-            if (! techmap.ContainsKey(shader.technique))
+            try
+            {
+                effect.Technique = techmap[shader.technique];
+            }
+            catch (KeyNotFoundException)
             {
                 Console.WriteLine("Error: shader technique not found. " + shader.technique);
                 return;
             }
+            effect.ValidateTechnique(effect.Technique);
 
             foreach (ShaderParameter p in shader.shader_parameters)
             {
@@ -1589,9 +1594,6 @@ namespace TDCG
             TSOTex colorTex;
             if (shader.ColorTexName != null && texmap.TryGetValue(shader.ColorTexName, out colorTex))
                 effect.SetValue(handle_ColorTex_texture, colorTex.d3d_tex);
-
-            effect.Technique = techmap[shader.technique];
-            effect.ValidateTechnique(effect.Technique);
         }
 
         /// <summary>
@@ -1602,6 +1604,31 @@ namespace TDCG
         {
             Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
             SwitchShader(sub_scripts[sub_mesh.spec].shader);
+        }
+
+        /// <summary>
+        /// シェーダ設定を切り替えます。色テクスチャのみ切り替えます。
+        /// </summary>
+        /// <param name="shader">シェーダ設定</param>
+        public void SwitchShaderColorTex(Shader shader)
+        {
+            if (shader == current_shader)
+                return;
+            current_shader = shader;
+
+            TSOTex colorTex;
+            if (shader.ColorTexName != null && texmap.TryGetValue(shader.ColorTexName, out colorTex))
+                effect.SetValue(handle_ColorTex_texture, colorTex.d3d_tex);
+        }
+
+        /// <summary>
+        /// シェーダ設定を切り替えます。色テクスチャのみ切り替えます。
+        /// </summary>
+        /// <param name="sub_mesh">切り替え対象となるサブメッシュ</param>
+        public void SwitchShaderColorTex(TSOSubMesh sub_mesh)
+        {
+            Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
+            SwitchShaderColorTex(sub_scripts[sub_mesh.spec].shader);
         }
 
         /// <summary>

@@ -221,6 +221,9 @@ public class Viewer : IDisposable
         DeviceSize = new Size(0, 0);
         ScreenColor = Color.LightGray;
         HohoAlpha = 1.0f;
+
+        techmap = new Dictionary<string, bool>();
+        LoadTechMap();
     }
 
     /// <summary>
@@ -1322,6 +1325,38 @@ public class Viewer : IDisposable
         effect.End();
     }
 
+    public static string GetHideTechsPath()
+    {
+        return Path.Combine(Application.StartupPath, @"hidetechs.txt");
+    }
+
+    Dictionary<string, bool> techmap;
+
+    void LoadTechMap()
+    {
+        char[] delim = { ' ' };
+        using (StreamReader source = new StreamReader(File.OpenRead(GetHideTechsPath())))
+        {
+            string line;
+            while ((line = source.ReadLine()) != null)
+            {
+                string[] tokens = line.Split(delim);
+                string op = tokens[0];
+                if (op == "hide")
+                {
+                    Debug.Assert(tokens.Length == 2, "tokens length should be 2");
+                    string techname = tokens[1];
+                    techmap[techname] = true;
+                }
+            }
+        }
+    }
+
+    bool HiddenTechnique(string technique)
+    {
+        return techmap.ContainsKey(technique);
+    }
+
     // draw depthmap and normalmap
     // out depthmap_surface
     // out normalmap_surface
@@ -1344,15 +1379,20 @@ public class Viewer : IDisposable
         foreach (Figure fig in FigureList)
         foreach (TSOFile tso in fig.TSOList)
         {
-            //tso.BeginRender();
+            tso.BeginRender();
 
             foreach (TSOMesh mesh in tso.meshes)
             foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
             {
+                Shader shader = tso.sub_scripts[sub_mesh.spec].shader;
+
+                if (HiddenTechnique(shader.technique))
+                    continue;
+
                 //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
                 device.SetStreamSource(0, sub_mesh.vb, 0, 52);
 
-                //tso.SwitchShader(sub_mesh);
+                tso.SwitchShaderColorTex(shader);
                 effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh)); // shared
 
                 int npass = effect_dnmap.Begin(0);
@@ -1364,7 +1404,7 @@ public class Viewer : IDisposable
                 }
                 effect_dnmap.End();
             }
-            //tso.EndRender();
+            tso.EndRender();
         }
         device.SetRenderTarget(1, null); // attention!
     }
