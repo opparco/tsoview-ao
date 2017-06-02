@@ -301,6 +301,11 @@ public class Figure : IDisposable
     }
 
     /// <summary>
+    /// bone行列更新時に呼び出されるハンドラ
+    /// </summary>
+    public event EventHandler UpdateBoneMatricesEvent;
+
+    /// <summary>
     /// bone行列を更新します。
     /// </summary>
     /// <param name="forced">falseの場合frame indexに変更なければ更新しません。</param>
@@ -313,6 +318,9 @@ public class Figure : IDisposable
         TMOFrame tmo_frame = GetTMOFrame();
 
         UpdateBoneMatrices(tmo, tmo_frame);
+
+        if (UpdateBoneMatricesEvent != null)
+            UpdateBoneMatricesEvent(this, EventArgs.Empty);
     }
     
     /// <summary>

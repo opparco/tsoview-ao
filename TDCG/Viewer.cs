@@ -21,6 +21,60 @@ namespace TDCG
         NormalMap,
         Occlusion
     };
+    public class DepthMapConfig
+    {
+        public event EventHandler ChangeZnearPlane;
+        float zn = 15.0f;
+        public float ZnearPlane
+        {
+            get { return zn; }
+            set
+            {
+                zn = value;
+                if (ChangeZnearPlane != null)
+                    ChangeZnearPlane(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler ChangeZfarPlane;
+        float zf = 50.0f;
+        public float ZfarPlane
+        {
+            get { return zf; }
+            set
+            {
+                zf = value;
+                if (ChangeZfarPlane != null)
+                    ChangeZfarPlane(this, EventArgs.Empty);
+            }
+        }
+    }
+    public class OcclusionConfig
+    {
+        public event EventHandler ChangeIntensity;
+        public event EventHandler ChangeRadius;
+        float intensity = 0.5f;
+        public float Intensity
+        {
+            get { return intensity; }
+            set
+            {
+                intensity = value;
+                if (ChangeIntensity != null)
+                    ChangeIntensity(this, EventArgs.Empty);
+            }
+        }
+        float radius = 2.5f;
+        public float Radius
+        {
+            get { return radius; }
+            set
+            {
+                radius = value;
+                if (ChangeRadius != null)
+                    ChangeRadius(this, EventArgs.Empty);
+            }
+        }
+    }
     /// <summary>
     /// セーブファイルの内容を保持します。
     /// </summary>
@@ -134,6 +188,9 @@ public class Viewer : IDisposable
         }
     }
 
+    public DepthMapConfig DepthMapConfig = null;
+    public OcclusionConfig OcclusionConfig = null;
+
     protected Texture amb_texture;
     protected Texture depthmap_texture;
     protected Texture normalmap_texture;
@@ -174,6 +231,7 @@ public class Viewer : IDisposable
     {
         foreach (Figure fig in FigureList)
             fig.LightDirection = dir;
+        need_render = true;
     }
 
     /// マウスボタンを押したときに実行するハンドラ
@@ -183,10 +241,7 @@ public class Viewer : IDisposable
         {
         case MouseButtons.Left:
             if (Control.ModifierKeys == Keys.Control)
-            {
                 SetLightDirection(ScreenToOrientation(e.X, e.Y));
-                need_render = true;
-            }
             break;
         }
 
@@ -204,10 +259,7 @@ public class Viewer : IDisposable
         {
         case MouseButtons.Left:
             if (Control.ModifierKeys == Keys.Control)
-            {
                 SetLightDirection(ScreenToOrientation(e.X, e.Y));
-                need_render = true;
-            }
             else
                 Camera.Move(dx, -dy, 0.0f);
             break;
@@ -224,7 +276,7 @@ public class Viewer : IDisposable
     }
 
     // 選択フィギュアindex
-    int fig_index = 0;
+    int fig_idx = 0;
 
     // スクリーンの中心座標
     private float screenCenterX = 800 / 2.0f;
@@ -308,21 +360,26 @@ public class Viewer : IDisposable
     /// <summary>
     /// フィギュア選択時に呼び出されるハンドラ
     /// </summary>
-    public event EventHandler FigureEvent;
+    public event EventHandler FigureSelectEvent;
+
+    /// <summary>
+    /// フィギュア更新時に呼び出されるハンドラ
+    /// </summary>
+    public event EventHandler FigureUpdateEvent;
 
     /// <summary>
     /// フィギュアを選択します。
     /// </summary>
-    /// <param name="fig_index">フィギュア番号</param>
-    public void SetFigureIndex(int fig_index)
+    /// <param name="fig_idx">フィギュア番号</param>
+    public void SetFigureIndex(int fig_idx)
     {
-        if (fig_index < 0)
-            fig_index = 0;
-        if (fig_index > FigureList.Count - 1)
-            fig_index = 0;
-        this.fig_index = fig_index;
-        if (FigureEvent != null)
-            FigureEvent(this, EventArgs.Empty);
+        if (fig_idx < 0)
+            fig_idx = 0;
+        if (fig_idx > FigureList.Count - 1)
+            fig_idx = 0;
+        this.fig_idx = fig_idx;
+        if (FigureSelectEvent != null)
+            FigureSelectEvent(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -355,12 +412,14 @@ public class Viewer : IDisposable
         }
         fig.UpdateNodeMapAndBoneMatrices();
         int idx = FigureList.Count;
+        //todo: override List#Add
         FigureList.Add(fig);
+        fig.UpdateBoneMatricesEvent += delegate(object sender, EventArgs e)
+        {
+            if (GetSelectedFigure() == sender)
+                need_render = true;
+        };
         SetFigureIndex(idx);
-        /*
-        if (FigureEvent != null)
-            FigureEvent(this, EventArgs.Empty);
-        */
     }
 
     /// <summary>
@@ -372,7 +431,7 @@ public class Viewer : IDisposable
         if (FigureList.Count == 0)
             fig = null;
         else
-            fig = FigureList[fig_index];
+            fig = FigureList[fig_idx];
         return fig;
     }
 
@@ -385,11 +444,17 @@ public class Viewer : IDisposable
         if (FigureList.Count == 0)
             fig = new Figure();
         else
-            fig = FigureList[fig_index];
+            fig = FigureList[fig_idx];
         if (FigureList.Count == 0)
         {
             int idx = FigureList.Count;
+            //todo: override List#Add
             FigureList.Add(fig);
+            fig.UpdateBoneMatricesEvent += delegate(object sender, EventArgs e)
+            {
+                if (GetSelectedFigure() == sender)
+                    need_render = true;
+            };
             SetFigureIndex(idx);
         }
         return fig;
@@ -441,8 +506,8 @@ public class Viewer : IDisposable
             fig.TSOList.Add(tso);
         }
         fig.UpdateNodeMapAndBoneMatrices();
-        if (FigureEvent != null)
-            FigureEvent(this, EventArgs.Empty);
+        if (FigureUpdateEvent != null)
+            FigureUpdateEvent(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -451,15 +516,15 @@ public class Viewer : IDisposable
     public bool TryGetFigure(out Figure fig)
     {
         fig = null;
-        if (fig_index < FigureList.Count)
-            fig = FigureList[fig_index];
+        if (fig_idx < FigureList.Count)
+            fig = FigureList[fig_idx];
         return fig != null;
     }
 
     /// 次のフィギュアを選択します。
     public void NextFigure()
     {
-        SetFigureIndex(fig_index+1);
+        SetFigureIndex(fig_idx+1);
     }
 
     /// <summary>
@@ -492,8 +557,8 @@ public class Viewer : IDisposable
                 Console.WriteLine("Error: " + ex);
             }
             fig.UpdateNodeMapAndBoneMatrices();
-            if (FigureEvent != null)
-                FigureEvent(this, EventArgs.Empty);
+            if (FigureUpdateEvent != null)
+                FigureUpdateEvent(this, EventArgs.Empty);
         }
     }
 
@@ -516,8 +581,8 @@ public class Viewer : IDisposable
                 fig.Tmo = sav.Tmo;
                 //fig.TransformTpo();
                 fig.UpdateNodeMapAndBoneMatrices();
-                if (FigureEvent != null)
-                    FigureEvent(this, EventArgs.Empty);
+                if (FigureUpdateEvent != null)
+                    FigureUpdateEvent(this, EventArgs.Empty);
             }
         }
         else
@@ -530,9 +595,17 @@ public class Viewer : IDisposable
             {
                 fig.OpenTSOFile(device, effect);
                 fig.UpdateNodeMapAndBoneMatrices();
+                //todo: override List#Add
                 FigureList.Add(fig);
+                fig.UpdateBoneMatricesEvent += delegate(object sender, EventArgs e)
+                {
+                    if (GetSelectedFigure() == sender)
+                        need_render = true;
+                };
             }
             SetFigureIndex(idx);
+            if (FigureUpdateEvent != null)
+                FigureUpdateEvent(this, EventArgs.Empty);
         }
     }
 
@@ -577,19 +650,9 @@ public class Viewer : IDisposable
     /// deviceを作成します。
     /// </summary>
     /// <param name="control">レンダリング先となるcontrol</param>
-    /// <returns>deviceの作成に成功したか</returns>
-    public bool InitializeApplication(Control control)
-    {
-        return InitializeApplication(control, false);
-    }
-
-    /// <summary>
-    /// deviceを作成します。
-    /// </summary>
-    /// <param name="control">レンダリング先となるcontrol</param>
     /// <param name="shadow_map_enabled">シャドウマップを作成するか</param>
     /// <returns>deviceの作成に成功したか</returns>
-    public bool InitializeApplication(Control control, bool shadow_map_enabled)
+    public bool InitializeApplication(Control control, bool shadow_map_enabled = false)
     {
         this.shadow_map_enabled = shadow_map_enabled;
         SetControl(control);
@@ -645,100 +708,36 @@ public class Viewer : IDisposable
         device.DeviceReset += new EventHandler(OnDeviceReset);
         device.DeviceResizing += new CancelEventHandler(OnDeviceResizing);
 
-        EffectPool effect_pool = new EffectPool();
-
-        Stopwatch sw = new Stopwatch();
-        sw.Start();
-        {
-            string effect_file = Path.Combine(Application.StartupPath, @"toonshader-shared.cgfx");
-            if (! File.Exists(effect_file))
-            {
-                Console.WriteLine("File not found: " + effect_file);
-                return false;
-            }
-            using (FileStream effect_stream = File.OpenRead(effect_file))
-            {
-                string compile_error;
-                effect = Effect.FromStream(device, effect_stream, null, ShaderFlags.None, effect_pool, out compile_error);
-                if (compile_error != null)
-                {
-                    Console.WriteLine(compile_error);
-                    return false;
-                }
-            }
-        }
-        sw.Stop();
-        Console.WriteLine("toonshader-shared.cgfx read time: " + sw.Elapsed);
-
-        // no shared
-        {
-            string effect_file = Path.Combine(Application.StartupPath, @"dnclear.fx");
-            if (! File.Exists(effect_file))
-            {
-                Console.WriteLine("File not found: " + effect_file);
-                return false;
-            }
-            using (FileStream effect_stream = File.OpenRead(effect_file))
-            {
-                string compile_error;
-                effect_dnclear = Effect.FromStream(device, effect_stream, null, ShaderFlags.None, null, out compile_error);
-                if (compile_error != null)
-                {
-                    Console.WriteLine(compile_error);
-                    return false;
-                }
-            }
-        }
-
         Macro[] macros = new Macro[1];
         macros[0].Name = "XRGB_DEPTH";
         macros[0].Definition = XRGBDepth ? "1" : "0";
 
-        {
-            string effect_file = Path.Combine(Application.StartupPath, @"dnmap.fx");
-            if (! File.Exists(effect_file))
-            {
-                Console.WriteLine("File not found: " + effect_file);
-                return false;
-            }
-            using (FileStream effect_stream = File.OpenRead(effect_file))
-            {
-                string compile_error;
-                effect_dnmap = Effect.FromStream(device, effect_stream, macros, null, ShaderFlags.None, effect_pool, out compile_error);
-                if (compile_error != null)
-                {
-                    Console.WriteLine(compile_error);
-                    return false;
-                }
-            }
-        }
+        EffectPool effect_pool = new EffectPool();
 
-        {
-            string effect_file = Path.Combine(Application.StartupPath, @"depth.fx");
-            if (!File.Exists(effect_file))
-            {
-                Console.WriteLine("File not found: " + effect_file);
-                return false;
-            }
-            using (FileStream effect_stream = File.OpenRead(effect_file))
-            {
-                string compile_error;
-                effect_depth = Effect.FromStream(device, effect_stream, macros, null, ShaderFlags.None, null, out compile_error);
-                if (compile_error != null)
-                {
-                    Console.WriteLine(compile_error);
-                    return false;
-                }
-            }
-        }
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
+        string toonshader_filename = @"toonshader-shared.cgfx";
+        if (!LoadEffect(toonshader_filename, out effect, null, effect_pool))
+            return false;
+        sw.Stop();
+        Console.WriteLine(toonshader_filename + " read time: " + sw.Elapsed);
 
-        if (!LoadEffectAO())
+        if (!LoadEffect(@"dnclear.fx", out effect_dnclear))
             return false;
 
-        if (!LoadEffectGB())
+        if (!LoadEffect(@"dnmap.fx", out effect_dnmap, macros, effect_pool))
             return false;
 
-        if (!LoadEffectMain())
+        if (!LoadEffect(@"depth.fx", out effect_depth, macros))
+            return false;
+
+        if (!LoadEffect(@"ao.fx", out effect_ao, macros))
+            return false;
+
+        if (!LoadEffect(@"gb.fx", out effect_gb))
+            return false;
+
+        if (!LoadEffect(@"main.fx", out effect_main))
             return false;
 
         handle_LocalBoneMats = effect.GetParameter(null, "LocalBoneMats");
@@ -752,21 +751,42 @@ public class Viewer : IDisposable
         camera.Update();
         OnDeviceReset(device, null);
 
-        FigureEvent += delegate(object sender, EventArgs e)
+        FigureSelectEvent += delegate(object sender, EventArgs e)
         {
+            need_render = true;
+        };
+        FigureUpdateEvent += delegate(object sender, EventArgs e)
+        {
+            need_render = true;
+        };
+        DepthMapConfig.ChangeZnearPlane += delegate (object sender, EventArgs e)
+        {
+            AssignDepthProjection();
+            need_render = true;
+        };
+        DepthMapConfig.ChangeZfarPlane += delegate (object sender, EventArgs e)
+        {
+            AssignDepthProjection();
+            need_render = true;
+        };
+        OcclusionConfig.ChangeIntensity += delegate(object sender, EventArgs e)
+        {
+            effect_ao.SetValue("_Intensity", OcclusionConfig.Intensity); // in
+            need_render = true;
+        };
+        OcclusionConfig.ChangeRadius += delegate (object sender, EventArgs e)
+        {
+            effect_ao.SetValue("_Radius", OcclusionConfig.Radius); // in
             need_render = true;
         };
         return true;
     }
 
-    // no shared
-    bool LoadEffectAO()
+    bool LoadEffect(string effect_filename, out Effect effect, Macro[] macros = null, EffectPool effect_pool = null)
     {
-        Macro[] macros = new Macro[1];
-        macros[0].Name = "XRGB_DEPTH";
-        macros[0].Definition = XRGBDepth ? "1" : "0";
+        effect = null;
 
-        string effect_file = Path.Combine(Application.StartupPath, @"ao.fx");
+        string effect_file = Path.Combine(Application.StartupPath, effect_filename);
         if (!File.Exists(effect_file))
         {
             Console.WriteLine("File not found: " + effect_file);
@@ -775,7 +795,7 @@ public class Viewer : IDisposable
         using (FileStream effect_stream = File.OpenRead(effect_file))
         {
             string compile_error;
-            effect_ao = Effect.FromStream(device, effect_stream, macros, null, ShaderFlags.None, null, out compile_error);
+            effect = Effect.FromStream(device, effect_stream, macros, null, ShaderFlags.None, effect_pool, out compile_error);
             if (compile_error != null)
             {
                 Console.WriteLine(compile_error);
@@ -785,48 +805,15 @@ public class Viewer : IDisposable
         return true;
     }
 
-    // no shared
-    bool LoadEffectGB()
+    void AssignDepthProjection()
     {
-        string effect_file = Path.Combine(Application.StartupPath, @"gb.fx");
-        if (!File.Exists(effect_file))
-        {
-            Console.WriteLine("File not found: " + effect_file);
-            return false;
-        }
-        using (FileStream effect_stream = File.OpenRead(effect_file))
-        {
-            string compile_error;
-            effect_gb = Effect.FromStream(device, effect_stream, null, ShaderFlags.None, null, out compile_error);
-            if (compile_error != null)
-            {
-                Console.WriteLine(compile_error);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // no shared
-    bool LoadEffectMain()
-    {
-        string effect_file = Path.Combine(Application.StartupPath, @"main.fx");
-        if (!File.Exists(effect_file))
-        {
-            Console.WriteLine("File not found: " + effect_file);
-            return false;
-        }
-        using (FileStream effect_stream = File.OpenRead(effect_file))
-        {
-            string compile_error;
-            effect_main = Effect.FromStream(device, effect_stream, null, ShaderFlags.None, null, out compile_error);
-            if (compile_error != null)
-            {
-                Console.WriteLine(compile_error);
-                return false;
-            }
-        }
-        return true;
+        Matrix depth_projection = Matrix.PerspectiveFovRH(
+                Geometry.DegreeToRadian(30.0f),
+                (float)device.Viewport.Width / (float)device.Viewport.Height,
+                DepthMapConfig.ZnearPlane,
+                DepthMapConfig.ZfarPlane);
+        effect_dnmap.SetValue("depthproj", depth_projection); // in
+        effect_ao.SetValue("depthproj", depth_projection); // in
     }
 
     CustomVertex.PositionTextured[] vertices;
@@ -835,17 +822,12 @@ public class Viewer : IDisposable
     {
         vertices = new CustomVertex.PositionTextured[6];
 
-        float left = rect.Left;
-        float right = rect.Width;
-        float top = rect.Top;
-        float bottom = rect.Height;
-
         const float z = 0.5f;
 
-        vertices[0] = new CustomVertex.PositionTextured(left, bottom, z, 0.0f, 1.0f);
-        vertices[1] = new CustomVertex.PositionTextured(left, top, z, 0.0f, 0.0f);
-        vertices[2] = new CustomVertex.PositionTextured(right, bottom, z, 1.0f, 1.0f);
-        vertices[3] = new CustomVertex.PositionTextured(right, top, z, 1.0f, 0.0f);
+        vertices[0] = new CustomVertex.PositionTextured(rect.Left, rect.Bottom, z, 0.0f, 1.0f);
+        vertices[1] = new CustomVertex.PositionTextured(rect.Left, rect.Top, z, 0.0f, 0.0f);
+        vertices[2] = new CustomVertex.PositionTextured(rect.Right, rect.Bottom, z, 1.0f, 1.0f);
+        vertices[3] = new CustomVertex.PositionTextured(rect.Right, rect.Top, z, 1.0f, 0.0f);
 
         for (int i = 0; i < 4; i++)
         {
@@ -978,7 +960,7 @@ public class Viewer : IDisposable
             effect_gb.SetValue("wvp", world_view_projection);
             effect_main.SetValue("wvp", world_view_projection);
 
-            effect_ao.SetValue("proj", Transform_Projection); // attention!
+            AssignDepthProjection();
         }
 
         device.SetRenderState(RenderStates.Lighting, false);
@@ -1028,12 +1010,21 @@ public class Viewer : IDisposable
         {
             fig.Dispose();
             FigureList.Remove(fig);
-            SetFigureIndex(fig_index-1);
+            SetFigureIndex(fig_idx-1);
         }
         fig = null;
         // free meshes and textures.
         Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
     }
+
+    /// <summary>
+    /// スプライトの有無
+    /// </summary>
+    [Obsolete("use RenderMode")]
+    public bool SpriteShown = false;
+
+    long start_ticks = 0;
+    int start_frame_idx = 0;
 
     bool motionEnabled = false;
 
@@ -1042,10 +1033,7 @@ public class Viewer : IDisposable
     /// </summary>
     public bool MotionEnabled
     {
-        get
-        {
-            return motionEnabled;
-        }
+        get { return motionEnabled; }
         set
         {
             motionEnabled = value;
@@ -1053,44 +1041,17 @@ public class Viewer : IDisposable
             if (motionEnabled)
             {
                 start_ticks = DateTime.Now.Ticks;
-                start_frame_index = frame_index;
+                start_frame_idx = frame_idx;
             }
         }
     }
 
-    /// <summary>
-    /// スプライトの有無
-    /// </summary>
-    public bool SpriteShown = false;
+    int frame_idx = 0;
 
     /// <summary>
-    /// モーションが有効であるか。
+    /// フレーム番号
     /// </summary>
-    [Obsolete("use MotionEnabled", true)]
-    public bool IsMotionEnabled()
-    {
-        return motionEnabled;
-    }
-
-    /// <summary>
-    /// モーションの有無を切り替えます。
-    /// </summary>
-    [Obsolete("use MotionEnabled", true)]
-    public void SwitchMotionEnabled()
-    {
-        MotionEnabled = ! MotionEnabled;
-    }
-    long start_ticks = 0;
-    int start_frame_index = 0;
-
-    /// <summary>
-    /// スプライトの有無を切り替えます。
-    /// </summary>
-    [Obsolete("use SpriteShown", true)]
-    public void SwitchSpriteShown()
-    {
-        SpriteShown = ! SpriteShown;
-    }
+    public int FrameIndex { get { return frame_idx; } set { frame_idx = value; } }
 
     /// <summary>
     /// フレームを進めるのに用いるデリゲート型
@@ -1113,29 +1074,23 @@ public class Viewer : IDisposable
             if (frame_len > 0)
             {
                 long ticks = DateTime.Now.Ticks - start_ticks;
-                long current_frame_index = (long)(start_frame_index + ticks * 0.000006);
-                frame_index = (int)(current_frame_index % frame_len);
-                Debug.Assert(frame_index >= 0);
-                Debug.Assert(frame_index < frame_len);
+                long current_frame_idx = (long)(start_frame_idx + ticks * 0.000006);
+                frame_idx = (int)(current_frame_idx % frame_len);
+                Debug.Assert(frame_idx >= 0);
+                Debug.Assert(frame_idx < frame_len);
             }
-
-            //フレーム番号を通知する。
-            //camera.SetFrameIndex(frame_index);
         }
-        FrameMove(frame_index);
+        FrameMove(frame_idx);
 
         if (FrameMoving != null)
             FrameMoving();
     }
 
-    bool need_render = true;
-    public bool NeedRender { get { return need_render; } }
-
     /// <summary>
     /// 指定シーンフレームに進みます。
     /// </summary>
-    /// <param name="frame_index">フレーム番号</param>
-    public void FrameMove(int frame_index)
+    /// <param name="frame_idx">フレーム番号</param>
+    public void FrameMove(int frame_idx)
     {
         if (camera.NeedUpdate)
         {
@@ -1152,7 +1107,7 @@ public class Viewer : IDisposable
         {
             //フレーム番号を通知する。
             foreach (Figure fig in FigureList)
-                fig.SetFrameIndex(frame_index);
+                fig.SetFrameIndex(frame_idx);
 
             //device.Transform.World = world_matrix;
             foreach (Figure fig in FigureList)
@@ -1161,12 +1116,6 @@ public class Viewer : IDisposable
             need_render = true;
         }
     }
-
-    private int frame_index = 0;
-    /// <summary>
-    /// フレーム番号
-    /// </summary>
-    public int FrameIndex { get { return frame_index; } set { frame_index = value; } }
 
     /// <summary>
     /// tmo file中で最大のフレーム長さを得ます。
@@ -1180,6 +1129,13 @@ public class Viewer : IDisposable
                 max = fig.Tmo.frames.Length;
         return max;
     }
+
+    bool need_render = true;
+
+    /// <summary>
+    /// レンダリングは必要か
+    /// </summary>
+    public bool NeedRender { get { return need_render; } }
 
     /// <summary>
     /// レンダリングするのに用いるデリゲート型
@@ -1201,6 +1157,7 @@ public class Viewer : IDisposable
 
         need_render = false;
 
+        Debug.WriteLine("-- device BeginScene --");
         device.BeginScene();
 
         {
@@ -1215,8 +1172,6 @@ public class Viewer : IDisposable
         {
         case RenderMode.Ambient:
             DrawFigure();
-            //Blit();
-            //DrawSprite_amb();
             break;
         case RenderMode.DepthMap:
             DrawDepthNormalMap();
@@ -1224,13 +1179,13 @@ public class Viewer : IDisposable
             break;
         case RenderMode.NormalMap:
             DrawDepthNormalMap();
-            DrawSprite_normalmap();
+            DrawSprite(normalmap_texture);
             break;
         case RenderMode.Occlusion:
             DrawDepthNormalMap();
             DrawAmbientOcclusion();
             //DrawGaussianBlur();
-            DrawSprite_occ();
+            DrawSprite(occ_texture);
             break;
         default:
             DrawDepthNormalMap();
@@ -1246,6 +1201,7 @@ public class Viewer : IDisposable
         if (Rendering != null)
             Rendering();
 
+        Debug.WriteLine("-- device EndScene --");
         device.EndScene();
         {
             int ret;
@@ -1266,6 +1222,7 @@ public class Viewer : IDisposable
             }
         }
 
+        Debug.WriteLine("!! device Present !!");
         device.Present();
         Thread.Sleep(30);
     }
@@ -1309,6 +1266,8 @@ public class Viewer : IDisposable
     /// </summary>
     protected virtual void DrawFigure()
     {
+        Debug.WriteLine("DrawFigure");
+
         device.SetRenderState(RenderStates.AlphaBlendEnable, true);
 
         device.SetRenderTarget(0, dev_surface);
@@ -1348,11 +1307,28 @@ public class Viewer : IDisposable
         }
     }
 
+    void DrawPlane(Effect effect)
+    {
+        device.VertexFormat = CustomVertex.PositionTextured.Format;
+        device.SetStreamSource(0, vb, 0);
+
+        int npass = effect.Begin(0);
+        for (int ipass = 0; ipass < npass; ipass++)
+        {
+            effect.BeginPass(ipass);
+            device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+            effect.EndPass();
+        }
+        effect.End();
+    }
+
     // draw depthmap and normalmap
     // out depthmap_surface
     // out normalmap_surface
     void DrawDepthNormalMap()
     {
+        Debug.WriteLine("DrawDepthNormalMap");
+
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         device.SetRenderTarget(0, depthmap_surface);
@@ -1361,19 +1337,7 @@ public class Viewer : IDisposable
         device.DepthStencilSurface = tex_zbuf;
         device.Clear(ClearFlags.ZBuffer, Color.White, 1.0f, 0);
 
-        {
-            device.VertexFormat = CustomVertex.PositionTextured.Format;
-            device.SetStreamSource(0, vb, 0);
-
-            int npass = effect_dnclear.Begin(0);
-            for (int ipass = 0; ipass < npass; ipass++)
-            {
-                effect_dnclear.BeginPass(ipass);
-                device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
-                effect_dnclear.EndPass();
-            }
-            effect_dnclear.End();
-        }
+        DrawPlane(effect_dnclear);
 
         device.VertexDeclaration = vd;
 
@@ -1405,11 +1369,10 @@ public class Viewer : IDisposable
         device.SetRenderTarget(1, null); // attention!
     }
 
-    // show amb
-    // in amb_texture
-    // out dev_surface
-    void DrawSprite_amb()
+    void DrawSprite(Texture src_texture)
     {
+        Debug.WriteLine("DrawSprite");
+
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         device.SetRenderTarget(0, dev_surface);
@@ -1419,61 +1382,7 @@ public class Viewer : IDisposable
         sprite.Transform = Matrix.Identity;
 
         sprite.Begin(0);
-        sprite.Draw(amb_texture, dev_rect, new Vector3(0, 0, 0), new Vector3(0, 0, 0), Color.White);
-        sprite.End();
-    }
-
-    // show depthmap
-    // in depthmap_texture
-    // out dev_surface
-    void DrawSprite_depthmap()
-    {
-        device.SetRenderState(RenderStates.AlphaBlendEnable, false);
-
-        device.SetRenderTarget(0, dev_surface);
-        device.DepthStencilSurface = dev_zbuf;
-        device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
-
-        sprite.Transform = Matrix.Identity;
-
-        sprite.Begin(0);
-        sprite.Draw(depthmap_texture, dev_rect, new Vector3(0, 0, 0), new Vector3(0, 0, 0), Color.White);
-        sprite.End();
-    }
-
-    // show normalmap
-    // in normalmap_texture
-    // out dev_surface
-    void DrawSprite_normalmap()
-    {
-        device.SetRenderState(RenderStates.AlphaBlendEnable, false);
-
-        device.SetRenderTarget(0, dev_surface);
-        device.DepthStencilSurface = dev_zbuf;
-        device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
-
-        sprite.Transform = Matrix.Identity;
-
-        sprite.Begin(0);
-        sprite.Draw(normalmap_texture, dev_rect, new Vector3(0, 0, 0), new Vector3(0, 0, 0), Color.White);
-        sprite.End();
-    }
-
-    // show occ
-    // in occ_texture
-    // out dev_surface
-    void DrawSprite_occ()
-    {
-        device.SetRenderState(RenderStates.AlphaBlendEnable, false);
-
-        device.SetRenderTarget(0, dev_surface);
-        device.DepthStencilSurface = dev_zbuf;
-        device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
-
-        sprite.Transform = Matrix.Identity;
-
-        sprite.Begin(0);
-        sprite.Draw(occ_texture, dev_rect, new Vector3(0, 0, 0), new Vector3(0, 0, 0), Color.White);
+        sprite.Draw(src_texture, dev_rect, new Vector3(0, 0, 0), new Vector3(0, 0, 0), Color.White);
         sprite.End();
     }
 
@@ -1482,50 +1391,37 @@ public class Viewer : IDisposable
     // to amb_texture
     void Blit()
     {
+        Debug.WriteLine("Blit");
+
         device.StretchRectangle(dev_surface, dev_rect, amb_surface, dev_rect, TextureFilter.Point);
     }
 
     // draw Gaussian Blur
-    // in amb_texture
-    // out dev_surface
+    // x direction
+    //   in occ_texture
+    //   out amb_texture
+    // y direction
+    //   in amb_texture
+    //   out occ_surface
     void DrawGaussianBlur()
     {
+        Debug.WriteLine("DrawGaussianBlur");
+
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         effect_gb.SetValue("Ambient_texture", occ_texture); // in
         device.SetRenderTarget(0, amb_surface); // out
         device.DepthStencilSurface = tex_zbuf;
 
-        device.VertexFormat = CustomVertex.PositionTextured.Format;
-        device.SetStreamSource(0, vb, 0);
-
         effect_gb.SetValue("dir", new Vector4(1.0f/(float)dev_rect.Width, 0, 0, 0));
-        {
-            int npass = effect_gb.Begin(0);
-            for (int ipass = 0; ipass < npass; ipass++)
-            {
-                effect_gb.BeginPass(ipass);
-                device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
-                effect_gb.EndPass();
-            }
-            effect_gb.End();
-        }
+        DrawPlane(effect_gb);
 
         effect_gb.SetValue("Ambient_texture", amb_texture); // in
         device.SetRenderTarget(0, occ_surface); // out
         device.DepthStencilSurface = tex_zbuf;
 
         effect_gb.SetValue("dir", new Vector4(0, 1.0f/(float)dev_rect.Height, 0, 0));
-        {
-            int npass = effect_gb.Begin(0);
-            for (int ipass = 0; ipass < npass; ipass++)
-            {
-                effect_gb.BeginPass(ipass);
-                device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
-                effect_gb.EndPass();
-            }
-            effect_gb.End();
-        }
+        DrawPlane(effect_gb);
     }
 
     // draw Ambient Occlusion
@@ -1534,26 +1430,17 @@ public class Viewer : IDisposable
     // out occ_surface
     public void DrawAmbientOcclusion()
     {
+        Debug.WriteLine("DrawAmbientOcclusion");
+
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         device.SetRenderTarget(0, occ_surface); // out
         device.DepthStencilSurface = tex_zbuf;
-        //device.Clear(ClearFlags.Target, Color.CornflowerBlue, 1.0f, 0);
-
-        device.VertexFormat = CustomVertex.PositionTextured.Format;
-        device.SetStreamSource(0, vb, 0);
 
         if (MotionEnabled)
             effect_ao.SetValue(handle_ao_UVSCR, UVSCR());
 
-        int npass = effect_ao.Begin(0);
-        for (int ipass = 0; ipass < npass; ipass++)
-        {
-            effect_ao.BeginPass(ipass);
-            device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
-            effect_ao.EndPass();
-        }
-        effect_ao.End();
+        DrawPlane(effect_ao);
     }
 
     // draw depth
@@ -1561,23 +1448,14 @@ public class Viewer : IDisposable
     // out dev_surface
     void DrawDepth()
     {
+        Debug.WriteLine("DrawDepth");
+
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         device.SetRenderTarget(0, dev_surface); // out
         device.DepthStencilSurface = dev_zbuf;
-        //device.Clear(ClearFlags.Target, Color.CornflowerBlue, 1.0f, 0);
 
-        device.VertexFormat = CustomVertex.PositionTextured.Format;
-        device.SetStreamSource(0, vb, 0);
-
-        int npass = effect_depth.Begin(0);
-        for (int ipass = 0; ipass < npass; ipass++)
-        {
-            effect_depth.BeginPass(ipass);
-            device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
-            effect_depth.EndPass();
-        }
-        effect_depth.End();
+        DrawPlane(effect_depth);
     }
 
     // draw main
@@ -1586,23 +1464,14 @@ public class Viewer : IDisposable
     // out dev_surface
     void DrawMain()
     {
+        Debug.WriteLine("DrawMain");
+
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         device.SetRenderTarget(0, dev_surface); // out
         device.DepthStencilSurface = dev_zbuf;
-        //device.Clear(ClearFlags.Target, Color.CornflowerBlue, 1.0f, 0);
 
-        device.VertexFormat = CustomVertex.PositionTextured.Format;
-        device.SetStreamSource(0, vb, 0);
-
-        int npass = effect_main.Begin(0);
-        for (int ipass = 0; ipass < npass; ipass++)
-        {
-            effect_main.BeginPass(ipass);
-            device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
-            effect_main.EndPass();
-        }
-        effect_main.End();
+        DrawPlane(effect_main);
     }
 
     /// <summary>

@@ -29,10 +29,12 @@ public partial class TSOForm : Form
     internal int keyCameraReset = (int)Keys.D0;
     internal int keyCenter      = (int)Keys.F;
     internal int keyFigureForm = (int)Keys.G;
+    internal int keyConfigForm = (int)Keys.H;
 
     internal Viewer viewer = null;
-    internal FigureForm fig_form = null;
-    
+    internal FigureForm figureForm = null;
+    internal ConfigForm configForm = null;
+
     string save_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\TechArts3D\TDCG";
 
     public TSOForm(TSOConfig tso_config, string[] args)
@@ -58,17 +60,26 @@ public partial class TSOForm : Form
         viewer.SetDepthMapFormat(tso_config.DepthMapFormat);
         viewer.SetNormalMapFormat(tso_config.NormalMapFormat);
 
-        this.fig_form = new FigureForm();
+        this.figureForm = new FigureForm();
+        this.configForm = new ConfigForm();
+
+        DepthMapConfig dmapConfig = new DepthMapConfig();
+        OcclusionConfig occConfig = new OcclusionConfig();
+
+        viewer.DepthMapConfig = dmapConfig;
+        viewer.OcclusionConfig = occConfig;
+        configForm.DepthConfig = dmapConfig;
+        configForm.OcclusionConfig = occConfig;
 
         if (viewer.InitializeApplication(this, true))
         {
-            viewer.FigureEvent += delegate(object sender, EventArgs e)
+            viewer.FigureSelectEvent += delegate(object sender, EventArgs e)
             {
                 Figure fig;
                 if (viewer.TryGetFigure(out fig))
-                    fig_form.SetFigure(fig);
+                    figureForm.SetFigure(fig);
                 else
-                    fig_form.Clear();
+                    figureForm.Clear();
             };
             viewer.Camera.SetTranslation(0.0f, +10.0f, +44.0f);
             foreach (string arg in args)
@@ -191,6 +202,14 @@ public partial class TSOForm : Form
                 break;
             }
         }
+        if (keysEnabled[keyConfigForm] && keys[keyConfigForm])
+        {
+            keys[keyConfigForm] = false;
+            keysEnabled[keyConfigForm] = true;
+            // stale KeyUp event
+            configForm.Show();
+            configForm.Activate();
+        }
         if (keysEnabled[keyFigure] && keys[keyFigure])
         {
             keysEnabled[keyFigure] = false;
@@ -224,8 +243,8 @@ public partial class TSOForm : Form
             keys[keyFigureForm] = false;
             keysEnabled[keyFigureForm] = true;
             // stale KeyUp event
-            fig_form.Show();
-            fig_form.Activate();
+            figureForm.Show();
+            figureForm.Activate();
         }
 
         float keyL = 0.0f;
