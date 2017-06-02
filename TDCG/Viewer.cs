@@ -23,10 +23,58 @@ namespace TDCG
         Diffusion,
         Shadow
     };
+    public class CameraConfig
+    {
+        public event EventHandler ChangeFovy;
+        public event EventHandler ChangeRoll;
+
+        float fovy = (float)(Math.PI / 6.0);
+        float roll = 0;
+
+        public float Fovy
+        {
+            get { return fovy; }
+        }
+
+        public float Roll
+        {
+            get { return roll; }
+        }
+
+        public float GetFovyDegree()
+        {
+            return (float)(this.fovy * 180.0 / Math.PI);
+        }
+
+        public void SetFovyDegree(float fovy)
+        {
+            this.fovy = (float)(Math.PI * fovy / 180.0);
+            //Console.WriteLine("update fovy {0} rad", this.fovy);
+            if (ChangeFovy != null)
+                ChangeFovy(this, EventArgs.Empty);
+        }
+
+        public float GetRollDegree()
+        {
+            return (float)(this.roll * 180.0 / Math.PI);
+        }
+
+        public void SetRollDegree(float roll)
+        {
+            this.roll = (float)(Math.PI * roll / 180.0);
+            //Console.WriteLine("update roll {0} rad", this.roll);
+            if (ChangeRoll != null)
+                ChangeRoll(this, EventArgs.Empty);
+        }
+    }
     public class DepthMapConfig
     {
         public event EventHandler ChangeZnearPlane;
+        public event EventHandler ChangeZfarPlane;
+
         float zn = 15.0f;
+        float zf = 50.0f;
+
         public float ZnearPlane
         {
             get { return zn; }
@@ -37,8 +85,7 @@ namespace TDCG
                     ChangeZnearPlane(this, EventArgs.Empty);
             }
         }
-        public event EventHandler ChangeZfarPlane;
-        float zf = 50.0f;
+
         public float ZfarPlane
         {
             get { return zf; }
@@ -54,7 +101,10 @@ namespace TDCG
     {
         public event EventHandler ChangeIntensity;
         public event EventHandler ChangeRadius;
+
         float intensity = 0.5f;
+        float radius = 2.5f;
+
         public float Intensity
         {
             get { return intensity; }
@@ -65,7 +115,7 @@ namespace TDCG
                     ChangeIntensity(this, EventArgs.Empty);
             }
         }
-        float radius = 2.5f;
+
         public float Radius
         {
             get { return radius; }
@@ -173,6 +223,12 @@ public class Viewer : IDisposable
     protected EffectHandle handle_LightDirForced;
 
     /// <summary>
+    /// effect handle for Ambient
+    /// since v0.90
+    /// </summary>
+    protected EffectHandle handle_Ambient;
+
+    /// <summary>
     /// effect handle for HohoAlpha
     /// since v0.90
     /// </summary>
@@ -229,6 +285,7 @@ public class Viewer : IDisposable
         }
     }
 
+    public CameraConfig CameraConfig = null;
     public DepthMapConfig DepthMapConfig = null;
     public OcclusionConfig OcclusionConfig = null;
     public DiffusionConfig DiffusionConfig = null;
@@ -264,6 +321,7 @@ public class Viewer : IDisposable
         DeviceSize = new Size(0, 0);
         SetFieldOfViewY(30.0f);
         ScreenColor = Color.LightGray;
+        Ambient = new Vector4(1, 1, 1, 1);
         HohoAlpha = 1.0f;
         XRGBDepth = true;
 
@@ -812,6 +870,7 @@ public class Viewer : IDisposable
 
         handle_LocalBoneMats = effect.GetParameter(null, "LocalBoneMats");
         handle_LightDirForced = effect.GetParameter(null, "LightDirForced");
+        handle_Ambient = effect.GetParameter(null, "ColorRate");
         handle_HohoAlpha = effect.GetParameter(null, "HohoAlpha");
         handle_UVSCR = effect.GetParameter(null, "UVSCR");
         handle_ao_UVSCR = effect_ao.GetParameter(null, "UVSCR");
@@ -835,6 +894,20 @@ public class Viewer : IDisposable
 
     public void ConfigConnect()
     {
+        CameraConfig.ChangeFovy += delegate (object sender, EventArgs e)
+        {
+            fieldOfViewY = CameraConfig.Fovy;
+            AssignProjection();
+            AssignDepthProjection();
+            need_render = true;
+        };
+        CameraConfig.ChangeRoll += delegate (object sender, EventArgs e)
+        {
+            Vector3 angle = camera.Angle;
+            angle.Z =-CameraConfig.Roll;
+            camera.SetAngle(angle);
+            need_render = true;
+        };
         DepthMapConfig.ChangeZnearPlane += delegate (object sender, EventArgs e)
         {
             AssignDepthProjection();
@@ -888,6 +961,18 @@ public class Viewer : IDisposable
             }
         }
         return true;
+    }
+
+    void AssignProjection()
+    {
+        Transform_Projection = Matrix.PerspectiveFovRH(
+                fieldOfViewY,
+                (float)device.Viewport.Width / (float)device.Viewport.Height,
+                1.0f,
+                500.0f);
+        // xxx: for w-buffering
+        device.Transform.Projection = Transform_Projection;
+        effect.SetValue("proj", Transform_Projection);
     }
 
     void AssignDepthProjection()
@@ -992,14 +1077,7 @@ public class Viewer : IDisposable
 
         screen.Create(dev_rect);
 
-        Transform_Projection = Matrix.PerspectiveFovRH(
-                fieldOfViewY,
-                (float)device.Viewport.Width / (float)device.Viewport.Height,
-                1.0f,
-                1000.0f );
-        // xxx: for w-buffering
-        device.Transform.Projection = Transform_Projection;
-        effect.SetValue("proj", Transform_Projection);
+        AssignProjection();
 
         screen.AssignWorldViewProjection(effect_clear);
         screen.AssignWorldViewProjection(effect_dnclear);
@@ -1296,6 +1374,9 @@ public class Viewer : IDisposable
     /// config: スクリーン塗りつぶし色
     public Color ScreenColor { get; set; }
 
+    /// config: 環境光
+    public Vector4 Ambient { get; set; }
+
     /// config: ほほ赤みの濃さ
     public float HohoAlpha { get; set; }
 
@@ -1347,6 +1428,7 @@ public class Viewer : IDisposable
         device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
 
         device.VertexDeclaration = vd;
+        effect.SetValue(handle_Ambient, Ambient);
         effect.SetValue(handle_HohoAlpha, HohoAlpha);
         effect.SetValue(handle_UVSCR, UVSCR());
         foreach (Figure fig in FigureList)

@@ -12,6 +12,7 @@ namespace TSOView
 {
     public partial class ConfigForm : Form
     {
+        public CameraConfig CameraConfig = null;
         public DepthMapConfig DepthMapConfig = null;
         public OcclusionConfig OcclusionConfig = null;
         public DiffusionConfig DiffusionConfig = null;
@@ -19,6 +20,27 @@ namespace TSOView
         public ConfigForm()
         {
             InitializeComponent();
+        }
+
+        private void tbFovy_ConfigChanged(object sender, EventArgs e)
+        {
+            tbFovy.ValueChanged -= new EventHandler(tbFovy_ValueChanged);
+            int fovy = (int)CameraConfig.GetFovyDegree();
+            tbFovy.Value = (fovy - 15) / 5;
+            edFovy.Text = string.Format("{0}", fovy);
+            tbFovy.ValueChanged += new EventHandler(tbFovy_ValueChanged);
+        }
+
+        private void tbRoll_ConfigChanged(object sender, EventArgs e)
+        {
+            cbInverse.CheckedChanged -= new EventHandler(cbInverse_CheckedChanged);
+            tbRoll.ValueChanged -= new EventHandler(tbRoll_ValueChanged);
+            int roll = (int)CameraConfig.GetRollDegree();
+            cbInverse.Checked = (roll < 0);
+            tbRoll.Value = (roll < 0 ? -roll : roll) / 5;
+            edRoll.Text = string.Format("{0}", roll);
+            tbRoll.ValueChanged += new EventHandler(tbRoll_ValueChanged);
+            cbInverse.CheckedChanged += new EventHandler(cbInverse_CheckedChanged);
         }
 
         private void tbznearPlane_ConfigChanged(object sender, EventArgs e)
@@ -69,6 +91,9 @@ namespace TSOView
 
         public void ConfigConnect()
         {
+            CameraConfig.ChangeFovy += new EventHandler(tbFovy_ConfigChanged);
+            CameraConfig.ChangeRoll += new EventHandler(tbRoll_ConfigChanged);
+
             DepthMapConfig.ChangeZnearPlane += new EventHandler(tbznearPlane_ConfigChanged);
             DepthMapConfig.ChangeZfarPlane += new EventHandler(tbzfarPlane_ConfigChanged);
 
@@ -96,6 +121,33 @@ namespace TSOView
                 this.Hide();
                 e.Cancel = true;
             }
+        }
+
+        private void tbFovy_ValueChanged(object sender, EventArgs e)
+        {
+            CameraConfig.ChangeFovy -= new EventHandler(tbFovy_ConfigChanged);
+            int fovy = tbFovy.Value * 5 + 15;
+            edFovy.Text = string.Format("{0}", fovy);
+            CameraConfig.SetFovyDegree(fovy);
+            CameraConfig.ChangeFovy += new EventHandler(tbFovy_ConfigChanged);
+        }
+
+        private void tbRoll_ValueChanged(object sender, EventArgs e)
+        {
+            CameraConfig.ChangeRoll -= new EventHandler(tbRoll_ConfigChanged);
+            int roll = tbRoll.Value * 5 * (cbInverse.Checked ? -1 : 1);
+            edRoll.Text = string.Format("{0}", roll);
+            CameraConfig.SetRollDegree(roll);
+            CameraConfig.ChangeRoll += new EventHandler(tbRoll_ConfigChanged);
+        }
+
+        private void cbInverse_CheckedChanged(object sender, EventArgs e)
+        {
+            CameraConfig.ChangeRoll -= new EventHandler(tbRoll_ConfigChanged);
+            int roll = tbRoll.Value * 5 * (cbInverse.Checked ? -1 : 1);
+            edRoll.Text = string.Format("{0}", roll);
+            CameraConfig.SetRollDegree(roll);
+            CameraConfig.ChangeRoll += new EventHandler(tbRoll_ConfigChanged);
         }
 
         private void tbznearPlane_TextChanged(object sender, EventArgs e)

@@ -25,10 +25,10 @@ public class Screen
 
         const float z = 0.5f;
 
-        vertices[0] = new CustomVertex.PositionTextured(rect.Left, rect.Bottom, z, 0.0f, 1.0f);
-        vertices[1] = new CustomVertex.PositionTextured(rect.Left, rect.Top, z, 0.0f, 0.0f);
-        vertices[2] = new CustomVertex.PositionTextured(rect.Right, rect.Bottom, z, 1.0f, 1.0f);
-        vertices[3] = new CustomVertex.PositionTextured(rect.Right, rect.Top, z, 1.0f, 0.0f);
+        vertices[0] = new CustomVertex.PositionTextured(0, 0, z, 0.0f, 0.0f);
+        vertices[1] = new CustomVertex.PositionTextured(rect.Width, 0, z, 1.0f, 0.0f);
+        vertices[2] = new CustomVertex.PositionTextured(0, rect.Height, z, 0.0f, 1.0f);
+        vertices[3] = new CustomVertex.PositionTextured(rect.Width, rect.Height, z, 1.0f, 1.0f);
 
         for (int i = 0; i < 4; i++)
         {

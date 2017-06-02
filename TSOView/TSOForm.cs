@@ -60,8 +60,8 @@ public partial class TSOForm : Form
         this.viewer = new Viewer();
         viewer.Windowed = tso_config.Windowed;
         viewer.DeviceSize = tso_config.DeviceSize;
-        viewer.SetFieldOfViewY(tso_config.FieldOfViewY);
         viewer.ScreenColor = tso_config.ScreenColor;
+        viewer.Ambient = tso_config.Ambient;
         viewer.HohoAlpha = tso_config.HohoAlpha;
         viewer.XRGBDepth = tso_config.XRGBDepth;
         viewer.SetDepthMapFormat(tso_config.DepthMapFormat);
@@ -71,14 +71,17 @@ public partial class TSOForm : Form
         this.figureForm = new FigureForm();
         this.configForm = new ConfigForm();
 
+        CameraConfig camera_config = new CameraConfig();
         DepthMapConfig depthmap_config = new DepthMapConfig();
         OcclusionConfig occlusion_config = new OcclusionConfig();
         DiffusionConfig diffusion_config = new DiffusionConfig();
 
+        viewer.CameraConfig = camera_config;
         viewer.DepthMapConfig = depthmap_config;
         viewer.OcclusionConfig = occlusion_config;
         viewer.DiffusionConfig = diffusion_config;
 
+        configForm.CameraConfig = camera_config;
         configForm.DepthMapConfig = depthmap_config;
         configForm.OcclusionConfig = occlusion_config;
         configForm.DiffusionConfig = diffusion_config;
@@ -270,7 +273,6 @@ public partial class TSOForm : Form
         float keyD = 0.0f;
         float keyPush = 0.0f;
         float keyPull = 0.0f;
-        float keyZRol = 0.0f;
 
         if (keys[(int)Keys.Left])
             keyL = 2.0f;
@@ -284,10 +286,6 @@ public partial class TSOForm : Form
             keyPush = 1.0f;
         if (keys[(int)Keys.Down])
             keyPull = 1.0f;
-        if (keys[(int)Keys.A])
-            keyZRol = -2.0f;
-        if (keys[(int)Keys.D])
-            keyZRol = +2.0f;
 
         if (Control.ModifierKeys == Keys.Shift)
         {
@@ -298,7 +296,6 @@ public partial class TSOForm : Form
         else
         {
             viewer.Camera.Move(keyR - keyL, keyU - keyD, keyPull - keyPush);
-            viewer.Camera.RotZ(DegreeToRadian(keyZRol));
         }
     }
 

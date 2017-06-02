@@ -13,7 +13,6 @@ public class TSOConfig
     public Size ClientSize { get; set; }
     public bool Windowed { get; set; }
     public Size DeviceSize { get; set; }
-    public float FieldOfViewY { get; set; }
     Color screen_color;
     public Color ScreenColor { get { return screen_color; } }
     public string ScreenColorName
@@ -21,6 +20,7 @@ public class TSOConfig
         get { return ColorTranslator.ToHtml(screen_color); }
         set { screen_color = ColorTranslator.FromHtml(value); }
     }
+    public Microsoft.DirectX.Vector4 Ambient { get; set; }
     public float HohoAlpha { get; set; }
     public bool XRGBDepth { get; set; }
     public string DepthMapFormat { get; set; }
@@ -33,8 +33,8 @@ public class TSOConfig
         this.ClientSize = new Size(800, 600);
         this.Windowed = true;
         this.DeviceSize = new Size(0, 0);
-        this.FieldOfViewY = 30.0f;
         screen_color = Color.LightGray;
+        this.Ambient = new Microsoft.DirectX.Vector4(1, 1, 1, 1);
         this.HohoAlpha = 1.0f;
         this.XRGBDepth = true;
         this.DepthMapFormat = "X8R8G8B8";
