@@ -1223,14 +1223,19 @@ namespace TDCG
         }
 
         /// <summary>
-        /// 変形行列。これは 回転行列 x 位置行列 です。
+        /// 変形行列。これは 拡大行列 x 回転行列 x 位置行列 です。
         /// </summary>
         public Matrix TransformationMatrix
         {
             get {
                 if (need_update_transformation)
                 {
-                    transformation_matrix = ScalingMatrix * RotationMatrix * TranslationMatrix;
+                    Matrix m = RotationMatrix;
+                    Helper.Scale1(ref m, scaling);
+                    m.M41 = translation.X;
+                    m.M42 = translation.Y;
+                    m.M43 = translation.Z;
+                    transformation_matrix = m;
                     need_update_transformation = false;
                 }
                 return transformation_matrix;
@@ -1436,7 +1441,7 @@ namespace TDCG
         /// <summary>
         /// tmoを生成します。
         /// </summary>
-        public TMOFile GenerateTMO()
+        public TMOFile GenerateTmo()
         {
             TMOFile tmo = new TMOFile();
             tmo.header = new byte[8] { 0, 0, 0, 0, 0, 0, 0, 0 };

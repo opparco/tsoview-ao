@@ -192,5 +192,29 @@ namespace TDCG
         {
             return value1 + (value2 - value1) * amount;
         }
+
+        /// <summary>
+        /// 指定ベクトルで拡大します。位置は変更しません。
+        /// </summary>
+        /// <param name="scaling">scaling vector</param>
+        public static void Scale1(ref Matrix m, Vector3 scaling)
+        {
+            m.M11 *= scaling.X;
+            m.M12 *= scaling.X;
+            m.M13 *= scaling.X;
+            m.M21 *= scaling.Y;
+            m.M22 *= scaling.Y;
+            m.M23 *= scaling.Y;
+            m.M31 *= scaling.Z;
+            m.M32 *= scaling.Z;
+            m.M33 *= scaling.Z;
+        }
+
+        public static void Translate1(ref Matrix m, Vector3 translation)
+        {
+            m.M41 = translation.X;
+            m.M42 = translation.Y;
+            m.M43 = translation.Z;
+        }
     }
 }

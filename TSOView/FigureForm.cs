@@ -62,14 +62,14 @@ public partial class FigureForm : Form
             this.tbSlideArm.Value = (int)(fig.slider_matrix.ArmRatio * (float)tbSlideArm.Maximum);
             this.tbSlideLeg.Value = (int)(fig.slider_matrix.LegRatio * (float)tbSlideLeg.Maximum);
             this.tbSlideWaist.Value = (int)(fig.slider_matrix.WaistRatio * (float)tbSlideWaist.Maximum);
-            this.tbSlideBust.Value = (int)(fig.slider_matrix.BustRatio * (float)tbSlideBust.Maximum);
-            this.tbSlideTall.Value = (int)(fig.slider_matrix.TallRatio * (float)tbSlideTall.Maximum);
+            this.tbSlideOppai.Value = (int)(fig.slider_matrix.OppaiRatio * (float)tbSlideOppai.Maximum);
+            this.tbSlideAge.Value = (int)(fig.slider_matrix.AgeRatio * (float)tbSlideAge.Maximum);
             this.tbSlideEye.Value = (int)(fig.slider_matrix.EyeRatio * (float)tbSlideEye.Maximum);
         }        
         lvTSOFiles.Items.Clear();
-        for (int i = 0; i < fig.TSOList.Count; i++)
+        for (int i = 0; i < fig.TsoList.Count; i++)
         {
-            TSOFile tso = fig.TSOList[i];
+            TSOFile tso = fig.TsoList[i];
             ListViewItem li = new ListViewItem(tso.FileName ?? "TSO #" + i.ToString());
             li.Tag = tso;
             lvTSOFiles.Items.Add(li);
@@ -214,21 +214,21 @@ public partial class FigureForm : Form
         fig.UpdateBoneMatrices(true);
     }
 
-    private void tbSlideBust_ValueChanged(object sender, EventArgs e)
+    private void tbSlideOppai_ValueChanged(object sender, EventArgs e)
     {
         if (fig == null)
             return;
 
-        fig.slider_matrix.BustRatio = tbSlideBust.Value / (float)tbSlideBust.Maximum;
+        fig.slider_matrix.OppaiRatio = tbSlideOppai.Value / (float)tbSlideOppai.Maximum;
         fig.UpdateBoneMatrices(true);
     }
 
-    private void tbSlideTall_ValueChanged(object sender, EventArgs e)
+    private void tbSlideAge_ValueChanged(object sender, EventArgs e)
     {
         if (fig == null)
             return;
 
-        fig.slider_matrix.TallRatio = tbSlideTall.Value / (float)tbSlideTall.Maximum;
+        fig.slider_matrix.AgeRatio = tbSlideAge.Value / (float)tbSlideAge.Maximum;
         fig.UpdateBoneMatrices(true);
     }
 

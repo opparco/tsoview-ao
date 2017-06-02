@@ -456,8 +456,10 @@ public class Viewer : IDisposable
         foreach (TSOFile tso in tso_list)
         {
             tso.Open(device, effect);
-            fig.TSOList.Add(tso);
+            fig.TsoList.Add(tso);
         }
+        //todo: override List.Add
+        fig.ComputeClothed();
         fig.UpdateNodeMapAndBoneMatrices();
         int idx = FigureList.Count;
         //todo: override List#Add
@@ -551,8 +553,10 @@ public class Viewer : IDisposable
         foreach (TSOFile tso in tso_list)
         {
             tso.Open(device, effect);
-            fig.TSOList.Add(tso);
+            fig.TsoList.Add(tso);
         }
+        //todo: override List.Add
+        fig.ComputeClothed();
         fig.UpdateNodeMapAndBoneMatrices();
         if (FigureUpdateEvent != null)
             FigureUpdateEvent(this, EventArgs.Empty);
@@ -642,6 +646,8 @@ public class Viewer : IDisposable
             foreach (Figure fig in sav.FigureList)
             {
                 fig.OpenTSOFile(device, effect);
+                //todo: override List.Add
+                fig.ComputeClothed();
                 fig.UpdateNodeMapAndBoneMatrices();
                 //todo: override List#Add
                 FigureList.Add(fig);
@@ -1345,8 +1351,28 @@ public class Viewer : IDisposable
         effect.SetValue(handle_UVSCR, UVSCR());
         foreach (Figure fig in FigureList)
         {
+            {
+                Matrix world = Matrix.Identity;
+
+                if (fig.slider_matrix != null)
+                {
+                    //姉妹スライダによる変形
+                    world = Matrix.Scaling(fig.slider_matrix.Local);
+                }
+
+                //移動変位を設定
+                world.M41 = fig.Translation.X;
+                world.M42 = fig.Translation.Y;
+                world.M43 = fig.Translation.Z;
+
+                Matrix world_view_matrix = world * Transform_View;
+                Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+                effect.SetValue("wld", world);
+                effect.SetValue("wv", world_view_matrix);
+                effect.SetValue("wvp", world_view_projection_matrix);
+            }
             effect.SetValue(handle_LightDirForced, fig.LightDirForced());
-            foreach (TSOFile tso in fig.TSOList)
+            foreach (TSOFile tso in fig.TsoList)
             {
                 tso.BeginRender();
 
@@ -1433,34 +1459,56 @@ public class Viewer : IDisposable
         device.VertexDeclaration = vd;
 
         foreach (Figure fig in FigureList)
-        foreach (TSOFile tso in fig.TSOList)
         {
-            tso.BeginRender();
-
-            foreach (TSOMesh mesh in tso.meshes)
-            foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
             {
-                Shader shader = tso.sub_scripts[sub_mesh.spec].shader;
+                Matrix world = Matrix.Identity;
 
-                if (HiddenTechnique(shader.technique))
-                    continue;
-
-                //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
-                device.SetStreamSource(0, sub_mesh.vb, 0, 52);
-
-                tso.SwitchShaderColorTex(shader);
-                effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh)); // shared
-
-                int npass = effect_dnmap.Begin(0);
-                for (int ipass = 0; ipass < npass; ipass++)
+                if (fig.slider_matrix != null)
                 {
-                    effect_dnmap.BeginPass(ipass);
-                    device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, sub_mesh.vertices.Length - 2);
-                    effect_dnmap.EndPass();
+                    //姉妹スライダによる変形
+                    world = Matrix.Scaling(fig.slider_matrix.Local);
                 }
-                effect_dnmap.End();
+
+                //移動変位を設定
+                world.M41 = fig.Translation.X;
+                world.M42 = fig.Translation.Y;
+                world.M43 = fig.Translation.Z;
+
+                Matrix world_view_matrix = world * Transform_View;
+                Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+                effect.SetValue("wld", world);
+                effect.SetValue("wv", world_view_matrix);
+                effect.SetValue("wvp", world_view_projection_matrix);
             }
-            tso.EndRender();
+            foreach (TSOFile tso in fig.TsoList)
+            {
+                tso.BeginRender();
+
+                foreach (TSOMesh mesh in tso.meshes)
+                foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
+                {
+                    Shader shader = tso.sub_scripts[sub_mesh.spec].shader;
+
+                    if (HiddenTechnique(shader.technique))
+                        continue;
+
+                    //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
+                    device.SetStreamSource(0, sub_mesh.vb, 0, 52);
+
+                    tso.SwitchShaderColorTex(shader);
+                    effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh)); // shared
+
+                    int npass = effect_dnmap.Begin(0);
+                    for (int ipass = 0; ipass < npass; ipass++)
+                    {
+                        effect_dnmap.BeginPass(ipass);
+                        device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, sub_mesh.vertices.Length - 2);
+                        effect_dnmap.EndPass();
+                    }
+                    effect_dnmap.End();
+                }
+                tso.EndRender();
+            }
         }
         device.SetRenderTarget(1, null); // attention!
     }
@@ -1813,11 +1861,11 @@ public class Viewer : IDisposable
                  */
                 if (fig.slider_matrix != null)
                 {
-                    fig.slider_matrix.TallRatio = ratios[0];
+                    fig.slider_matrix.AgeRatio = ratios[0];
                     fig.slider_matrix.ArmRatio = ratios[1];
                     fig.slider_matrix.LegRatio = ratios[2];
                     fig.slider_matrix.WaistRatio = ratios[3];
-                    fig.slider_matrix.BustRatio = ratios[4];
+                    fig.slider_matrix.OppaiRatio = ratios[4];
                     fig.slider_matrix.EyeRatio = ratios[5];
                 }
 
@@ -1828,7 +1876,7 @@ public class Viewer : IDisposable
                 TSOFile tso = new TSOFile();
                 tso.Load(dest);
                 tso.Row = opt1[0];
-                fig.TSOList.Add(tso);
+                fig.TsoList.Add(tso);
             };
             Debug.WriteLine("loading " + source_file);
             png.Load(source_file);
@@ -1842,17 +1890,17 @@ public class Viewer : IDisposable
 
                 if (fig.slider_matrix != null && data.bitmap.Size == new Size(128, 256))
                 {
-                    fig.slider_matrix.TallRatio = data.GetSliderValue(4);
+                    fig.slider_matrix.AgeRatio = data.GetSliderValue(4);
                     fig.slider_matrix.ArmRatio = data.GetSliderValue(5);
                     fig.slider_matrix.LegRatio = data.GetSliderValue(6);
                     fig.slider_matrix.WaistRatio = data.GetSliderValue(7);
-                    fig.slider_matrix.BustRatio = data.GetSliderValue(0);
+                    fig.slider_matrix.OppaiRatio = data.GetSliderValue(0);
                     fig.slider_matrix.EyeRatio = data.GetSliderValue(8);
                 }
 
-                for (int i = 0; i < fig.TSOList.Count; i++)
+                for (int i = 0; i < fig.TsoList.Count; i++)
                 {
-                    TSOFile tso = fig.TSOList[i];
+                    TSOFile tso = fig.TsoList[i];
                     string file = data.GetFileName(tso.Row);
                     if (file != "")
                         tso.FileName = Path.GetFileName(file);

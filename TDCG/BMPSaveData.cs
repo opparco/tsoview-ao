@@ -6,6 +6,33 @@ using System.Drawing;
 
 namespace TDCG
 {
+    public class Crc
+    {
+        public UInt32 key;
+        public int off;
+
+        public void Update(byte[] bytes, int index, int length)
+        {
+            int end = index + length;
+            for (int i = index; i < end; i++)
+            {
+                byte x = bytes[i];
+                //if (x != 0x00)
+                {
+                    key ^= (uint)(x << off);
+                    // cyclic
+                    if (off > 24)
+                    {
+                        key ^= (uint)(x >> (32 - off));
+                    }
+                    //Console.WriteLine("{0:X4} {1:X2} {2} 0x{3:X8} {4}", i, x, (char)x, key, off);
+                }
+                off += 13;
+                off %= 32;
+            }
+        }
+    }
+
     /// <summary>
     /// ビットマップに埋め込まれたパラメータを扱います。
     /// </summary>
@@ -117,6 +144,8 @@ namespace TDCG
             return bytes;
         }
 
+        bool need_update = false;
+
         /// <summary>
         /// 指定添字のファイル名を設定します。
         /// </summary>
@@ -127,6 +156,7 @@ namespace TDCG
             byte[] bytes = enc.GetBytes(file);
             Array.Resize(ref bytes, 32);
             Array.Copy(bytes, 0, savedata, index * 32, 32);
+            need_update = true;
         }
 
         /// <summary>
@@ -138,6 +168,7 @@ namespace TDCG
         {
             byte[] bytes = BitConverter.GetBytes(ratio);
             Array.Copy(bytes, 0, savedata, 32 * 32 + index * 4, 4);
+            need_update = true;
         }
 
         /// <summary>
@@ -150,6 +181,79 @@ namespace TDCG
             Array.Copy(bytes, 0, savedata, 32 * 32 + index * 4, 4);
         }
 
+        public void SetKey(int index, UInt32 key)
+        {
+            byte[] bytes = BitConverter.GetBytes(key);
+            SetBytes(index, bytes);
+        }
+
+        /**
+         * gen checksum #1
+         * offset: 0x040C
+         */
+        public UInt32 GenChecksum_1()
+        {
+            Crc crc = new Crc();
+            crc.key = 0xAE5B7BB8;
+
+            /* xor filename and slider value*1 */
+            crc.off = 17;
+            crc.Update(savedata, 0, 0x0400 + 4*1);
+
+            return crc.key;
+        }
+
+        /**
+         * gen checksum #2
+         * offset: 0x0428
+         */
+        public UInt32 GenChecksum_2()
+        {
+            Crc crc = new Crc();
+            crc.key = 0x98299EC7;
+
+            /* xor filename and slider value*1 */
+            crc.off = 5;
+            crc.Update(savedata, 0, 0x0400 + 4*1);
+
+            /* xor checksum #1 and slider value*5 */
+            crc.off = 1;
+            crc.Update(savedata, 0x0400 + 4*3, 4*6);
+
+            return crc.key;
+        }
+
+        /**
+         * gen checksum #3
+         * offset: 0x0434
+         */
+        public UInt32 GenChecksum_3()
+        {
+            Crc crc = new Crc();
+            crc.key = 0xFE02808F;
+
+            /* xor filename and slider value*1 */
+            crc.off = 9;
+            crc.Update(savedata, 0, 0x0400 + 4*1);
+
+            /* xor checksum #1 and slider value*5 */
+            crc.off = 5;
+            crc.Update(savedata, 0x0400 + 4*3, 4*6);
+
+            /* xor checksum #2 and slider value*1 */
+            crc.off = 17;
+            crc.Update(savedata, 0x0400 + 4*10, 4*2);
+
+            return crc.key;
+        }
+
+        public void UpdateKey()
+        {
+            SetKey(3, GenChecksum_1());
+            SetKey(10, GenChecksum_2());
+            SetKey(13, GenChecksum_3());
+        }
+
         /// <summary>
         /// 指定パスにビットマップを書き出します。
         /// </summary>
@@ -157,6 +261,8 @@ namespace TDCG
         public void Save(string dest_file)
         {
             Bitmap bmp = bitmap;
+            if (need_update)
+                UpdateKey();
             AssignTo(bmp);
             bmp.Save(dest_file);
         }

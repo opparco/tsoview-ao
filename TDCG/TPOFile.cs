@@ -302,24 +302,20 @@ public class TPONode
     {
         foreach (TPOCommand command in commands)
         {
-            Matrix scaling = Matrix.Identity;
+            Vector3 scaling = new Vector3(1, 1, 1);
             switch (command.type)
             {
                 case TPOCommandType.Scale:
                 case TPOCommandType.Scale1:
                 case TPOCommandType.Scale0:
-                    Vector3 v;
-                    v.X = (float)Math.Pow(command.X, ratio);
-                    v.Y = (float)Math.Pow(command.Y, ratio);
-                    v.Z = (float)Math.Pow(command.Z, ratio);
-                    scaling = Matrix.Scaling(v);
+                    scaling.X = (float)Math.Pow(command.X, ratio);
+                    scaling.Y = (float)Math.Pow(command.Y, ratio);
+                    scaling.Z = (float)Math.Pow(command.Z, ratio);
                     break;
             }
             switch (command.type)
             {
                 case TPOCommandType.Scale:
-                    mat.Scale(scaling);
-                    break;
                 case TPOCommandType.Scale1:
                     mat.Scale1(scaling);
                     break;

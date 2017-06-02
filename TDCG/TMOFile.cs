@@ -562,74 +562,27 @@ namespace TDCG
             this.m = m;
         }
 
-        /// <summary>
-        /// 指定比率で拡大します。
-        /// </summary>
-        /// <param name="x">X軸拡大比率</param>
-        /// <param name="y">Y軸拡大比率</param>
-        /// <param name="z">Z軸拡大比率</param>
-        public void Scale(float x, float y, float z)
+        static Vector3 Reciprocal(Vector3 v)
         {
-            /*
-            m.M11 *= x;
-            m.M22 *= y;
-            m.M33 *= z;
-            */
-            m.Multiply(Matrix.Scaling(x, y, z));
-            m.M41 /= x;
-            m.M42 /= y;
-            m.M43 /= z;
-        }
-
-        /// <summary>
-        /// 指定行列で拡大します。
-        /// </summary>
-        /// <param name="scaling">scaling matrix</param>
-        public void Scale(Matrix scaling)
-        {
-            /*
-            m.M11 *= x;
-            m.M22 *= y;
-            m.M33 *= z;
-            */
-            m.Multiply(scaling);
-            m.M41 /= scaling.M11;
-            m.M42 /= scaling.M22;
-            m.M43 /= scaling.M33;
+            return new Vector3(1/v.X, 1/v.Y, 1/v.Z);
         }
 
         /// <summary>
         /// 指定行列で縮小します。位置は変更しません。
         /// </summary>
         /// <param name="scaling">scaling matrix</param>
-        public void Scale0(Matrix scaling)
+        public void Scale0(Vector3 scaling)
         {
-            m.M11 /= scaling.M11;
-            m.M21 /= scaling.M11;
-            m.M31 /= scaling.M11;
-            m.M12 /= scaling.M22;
-            m.M22 /= scaling.M22;
-            m.M32 /= scaling.M22;
-            m.M13 /= scaling.M33;
-            m.M23 /= scaling.M33;
-            m.M33 /= scaling.M33;
+            Scale1(Reciprocal(scaling));
         }
 
         /// <summary>
         /// 指定行列で拡大します。位置は変更しません。
         /// </summary>
         /// <param name="scaling">scaling matrix</param>
-        public void Scale1(Matrix scaling)
+        public void Scale1(Vector3 scaling)
         {
-            m.M11 *= scaling.M11;
-            m.M12 *= scaling.M11;
-            m.M13 *= scaling.M11;
-            m.M21 *= scaling.M22;
-            m.M22 *= scaling.M22;
-            m.M23 *= scaling.M22;
-            m.M31 *= scaling.M33;
-            m.M32 *= scaling.M33;
-            m.M33 *= scaling.M33;
+            Helper.Scale1(ref m, scaling);
         }
 
         /// <summary>
@@ -1113,17 +1066,17 @@ namespace TDCG
         }
 
         /// <summary>
-        /// 指定変位だけ拡大します。
+        /// 指定変位だけ拡大します。位置は変更しません。
         /// </summary>
         /// <param name="x">X軸変位</param>
         /// <param name="y">Y軸変位</param>
         /// <param name="z">Z軸変位</param>
         public void Scale(float x, float y, float z)
         {
-            Matrix scaling = Matrix.Scaling(x, y, z);
+            Vector3 scaling = new Vector3(x, y, z);
 
             foreach (TMOMat i in matrices)
-                i.Scale(scaling);
+                i.Scale1(scaling);
         }
 
         /// <summary>
@@ -1134,21 +1087,22 @@ namespace TDCG
         /// <param name="z">Z軸変位</param>
         public void Scale0(float x, float y, float z)
         {
-            Matrix scaling = Matrix.Scaling(x, y, z);
+            Vector3 scaling = new Vector3(x, y, z);
 
             foreach (TMOMat i in matrices)
                 i.Scale0(scaling);
         }
 
         /// <summary>
-        /// 指定変位だけ拡大します。さらに各子nodeを縮小します。
+        /// 指定変位だけ拡大します。位置は変更しません。
+        /// さらに各子nodeを縮小します。
         /// </summary>
         /// <param name="x">X軸変位</param>
         /// <param name="y">Y軸変位</param>
         /// <param name="z">Z軸変位</param>
         public void Scale1(float x, float y, float z)
         {
-            Matrix scaling = Matrix.Scaling(x, y, z);
+            Vector3 scaling = new Vector3(x, y, z);
 
             foreach (TMOMat i in matrices)
                 i.Scale1(scaling);
@@ -1275,7 +1229,12 @@ namespace TDCG
             {
                 if (need_update_transformation)
                 {
-                    transformation_matrix = ScalingMatrix * RotationMatrix * TranslationMatrix;
+                    Matrix m = RotationMatrix;
+                    Helper.Scale1(ref m, scaling);
+                    m.M41 = translation.X;
+                    m.M42 = translation.Y;
+                    m.M43 = translation.Z;
+                    transformation_matrix = m;
                     need_update_transformation = false;
                 }
                 return transformation_matrix;

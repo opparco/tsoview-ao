@@ -20,7 +20,7 @@ public class Figure : IDisposable
     /// <summary>
     /// フィギュアが保持しているtsoリスト
     /// </summary>
-    public List<TSOFile> TSOList = new List<TSOFile>();
+    public List<TSOFile> TsoList = new List<TSOFile>();
 
     /// <summary>
     /// スライダ変形行列を使うか
@@ -31,6 +31,29 @@ public class Figure : IDisposable
     /// スライダ変形行列
     /// </summary>
     public SliderMatrix slider_matrix = null;
+
+    bool clothed = false;
+    /// 着衣扱いか
+    public bool Clothed
+    {
+        get { return clothed; }
+    }
+
+    public void ComputeClothed()
+    {
+        clothed = false;
+        foreach (TSOFile tso in TsoList)
+        {
+            switch (tso.Row)
+            {
+                case 0x06: // 水着
+                case 0x09: // 上衣
+                case 0x0A: // 全衣
+                    clothed = true;
+                    break;
+            }
+        }
+    }
 
     Vector3 center = Vector3.Empty;
     /// <summary>
@@ -62,7 +85,7 @@ public class Figure : IDisposable
             tmo = value;
             ResetFrameIndex();
             SetCenterToHips();
-            tpo_list.Tmo = tmo;
+            TpoList.Tmo = tmo;
         }
     }
 
@@ -73,11 +96,10 @@ public class Figure : IDisposable
     private int frame_index = 0;
     private int current_frame_index = 0;
 
-    TPOFileList tpo_list = new TPOFileList();
     /// <summary>
     /// TPOファイルのリスト
     /// </summary>
-    public TPOFileList TPOList { get { return tpo_list; } }
+    public TPOFileList TpoList = new TPOFileList();
 
     /// <summary>
     /// 体型レシピのファイル名
@@ -99,13 +121,13 @@ public class Figure : IDisposable
         nodemap = new Dictionary<TSONode, TMONode>();
         matrixStack = new MatrixStack();
 
-        tpo_list.Load();
+        TpoList.Load();
 
         string config_file = GetTPOConfigPath();
         if (File.Exists(config_file))
         {
             TPOConfig config = TPOConfig.Load(config_file);
-            tpo_list.SetRatiosFromConfig(config);
+            TpoList.SetRatiosFromConfig(config);
         }
         LightDirection = new Vector3(0.0f, 0.0f, -1.0f);
     }
@@ -118,7 +140,7 @@ public class Figure : IDisposable
         if (tmo.frames == null)
             return;
 
-        tpo_list.Transform();
+        TpoList.Transform();
     }
 
     /// <summary>
@@ -130,7 +152,7 @@ public class Figure : IDisposable
         if (tmo.frames == null)
             return;
 
-        tpo_list.Transform(frame_index);
+        TpoList.Transform(frame_index);
     }
     
     /// <summary>
@@ -162,12 +184,12 @@ public class Figure : IDisposable
     public void SwapAt(int aidx, int bidx)
     {
         Debug.Assert(aidx < bidx);
-        TSOFile a = TSOList[aidx];
-        TSOFile b = TSOList[bidx];
-        TSOList.RemoveAt(bidx);
-        TSOList.RemoveAt(aidx);
-        TSOList.Insert(aidx, b);
-        TSOList.Insert(bidx, a);
+        TSOFile a = TsoList[aidx];
+        TSOFile b = TsoList[bidx];
+        TsoList.RemoveAt(bidx);
+        TsoList.RemoveAt(aidx);
+        TsoList.Insert(aidx, b);
+        TsoList.Insert(bidx, a);
     }
 
     /// <summary>
@@ -177,7 +199,7 @@ public class Figure : IDisposable
     public void UpdateNodeMapAndBoneMatrices()
     {
         if (tmo.frames == null)
-            RegenerateTMO();
+            RegenerateTmo();
 
         UpdateNodeMap();
 
@@ -187,11 +209,11 @@ public class Figure : IDisposable
     /// <summary>
     /// 先頭のtsoからtmoを生成します。
     /// </summary>
-    public void RegenerateTMO()
+    public void RegenerateTmo()
     {
-        if (TSOList.Count != 0)
+        if (TsoList.Count != 0)
         {
-            Tmo = TSOList[0].GenerateTMO();
+            Tmo = TsoList[0].GenerateTmo();
             TransformTpo();
         }
     }
@@ -203,7 +225,7 @@ public class Figure : IDisposable
     {
         nodemap.Clear();
         if (tmo.frames != null)
-        foreach (TSOFile tso in TSOList)
+        foreach (TSOFile tso in TsoList)
             AddNodeMap(tso);
     }
 
@@ -293,14 +315,6 @@ public class Figure : IDisposable
     }
 
     /// <summary>
-    /// bone行列を更新します。
-    /// </summary>
-    public void UpdateBoneMatrices()
-    {
-        UpdateBoneMatrices(false);
-    }
-
-    /// <summary>
     /// bone行列更新時に呼び出されるハンドラ
     /// </summary>
     public event EventHandler UpdateBoneMatricesEvent;
@@ -309,7 +323,7 @@ public class Figure : IDisposable
     /// bone行列を更新します。
     /// </summary>
     /// <param name="forced">falseの場合frame indexに変更なければ更新しません。</param>
-    public void UpdateBoneMatrices(bool forced)
+    public void UpdateBoneMatrices(bool forced = false)
     {
         if (!forced && frame_index == current_frame_index)
             return;
@@ -333,28 +347,12 @@ public class Figure : IDisposable
 
         if (tmo.w_hips_node != null)
         {
-            Matrix local = Matrix.Identity;
-
-            if (slider_matrix != null)
-            {
-                //姉妹スライダによる変形
-                local = Matrix.Scaling(slider_matrix.Local);
-            }
-
-            //移動変位を設定
-            local.M41 = translation.X;
-            local.M42 = translation.Y;
-            local.M43 = translation.Z;
-
-            matrixStack.LoadMatrix(local);
+            matrixStack.LoadIdentity();
             UpdateBoneMatrices(tmo.w_hips_node, tmo_frame);
         }
         foreach (TMONode tmo_node in tmo.root_nodes_except_w_hips)
         {
-            //移動変位を設定
-            Matrix local = Matrix.Translation(translation);
-
-            matrixStack.LoadMatrix(local);
+            matrixStack.LoadIdentity();
             UpdateBoneMatricesWithoutSlider(tmo_node, tmo_frame);
         }
     }
@@ -370,7 +368,7 @@ public class Figure : IDisposable
 
         if (tmo_frame != null)
         {
-            // TMO animation
+            // tmo animation
             tmo_node.TransformationMatrix = tmo_frame.matrices[tmo_node.Id].m;
         }
         Matrix m = tmo_node.TransformationMatrix;
@@ -381,8 +379,13 @@ public class Figure : IDisposable
 
             if (chichi_p)
             {
+                slider_matrix.ScaleChichi(tmo_node, ref m);
+
                 if (slider_matrix.Flat())
-                    slider_matrix.TransformChichiFlat(tmo_node, ref m);
+                    if (clothed)
+                        slider_matrix.TransformChichiFlatClothed(tmo_node, ref m);
+                    else
+                        slider_matrix.TransformChichiFlat(tmo_node, ref m);
             }
             else
                 slider_matrix.TransformFace(tmo_node, ref m);
@@ -390,12 +393,7 @@ public class Figure : IDisposable
             matrixStack.MultiplyMatrixLocal(m);
             m = matrixStack.Top;
 
-            if (chichi_p)
-            {
-                if (! slider_matrix.Flat())
-                    slider_matrix.ScaleChichi(ref m);
-            }
-            else
+            if (! chichi_p)
                 slider_matrix.Scale(tmo_node, ref m);
         }
         else
@@ -416,7 +414,7 @@ public class Figure : IDisposable
     /// bone行列を更新します（体型変更なし）。
     /// </summary>
     /// <param name="forced">falseの場合frame indexに変更なければ更新しません。</param>
-    public void UpdateBoneMatricesWithoutSlider(bool forced)
+    public void UpdateBoneMatricesWithoutSlider(bool forced = false)
     {
         if (!forced && frame_index == current_frame_index)
             return;
@@ -437,18 +435,12 @@ public class Figure : IDisposable
 
         if (tmo.w_hips_node != null)
         {
-            //移動変位を設定
-            Matrix local = Matrix.Translation(translation);
-
-            matrixStack.LoadMatrix(local);
+            matrixStack.LoadIdentity();
             UpdateBoneMatricesWithoutSlider(tmo.w_hips_node, tmo_frame);
         }
         foreach (TMONode tmo_node in tmo.root_nodes_except_w_hips)
         {
-            //移動変位を設定
-            Matrix local = Matrix.Translation(translation);
-
-            matrixStack.LoadMatrix(local);
+            matrixStack.LoadIdentity();
             UpdateBoneMatricesWithoutSlider(tmo_node, tmo_frame);
         }
     }
@@ -462,7 +454,7 @@ public class Figure : IDisposable
 
         if (tmo_frame != null)
         {
-            // TMO animation
+            // tmo animation
             tmo_node.TransformationMatrix = tmo_frame.matrices[tmo_node.Id].m;
         }
         Matrix m = tmo_node.TransformationMatrix;
@@ -485,7 +477,7 @@ public class Figure : IDisposable
     /// <param name="effect">effect</param>
     public void OpenTSOFile(Device device, Effect effect)
     {
-        foreach (TSOFile tso in TSOList)
+        foreach (TSOFile tso in TsoList)
             tso.Open(device, effect);
     }
 
@@ -542,7 +534,7 @@ public class Figure : IDisposable
     /// </summary>
     public void Dispose()
     {
-        foreach (TSOFile tso in TSOList)
+        foreach (TSOFile tso in TsoList)
             tso.Dispose();
     }
 }
