@@ -15,12 +15,13 @@ namespace TDCG
 {
     public enum RenderMode
     {
-        Figure,
+        Main,
         Ambient,
         DepthMap,
         NormalMap,
         Occlusion,
-        Diffusion
+        Diffusion,
+        Shadow
     };
     public class DepthMapConfig
     {
@@ -145,6 +146,7 @@ public class Viewer : IDisposable
     /// effect
     /// </summary>
     protected Effect effect;
+    protected Effect effect_clear;
     protected Effect effect_dnclear;
     protected Effect effect_dnmap;
     protected Effect effect_depth;
@@ -206,7 +208,14 @@ public class Viewer : IDisposable
     /// config: BackBufferWidth BackBufferHeight
     public Size DeviceSize { get; set; }
 
-    RenderMode render_mode = RenderMode.Figure;
+    float fieldOfViewY;
+    /// config:
+    public void SetFieldOfViewY(float fieldOfViewY)
+    {
+        this.fieldOfViewY = Geometry.DegreeToRadian(fieldOfViewY);
+    }
+
+    RenderMode render_mode = RenderMode.Main;
     public RenderMode RenderMode
     {
         get { return render_mode; }
@@ -249,6 +258,7 @@ public class Viewer : IDisposable
     public Viewer()
     {
         DeviceSize = new Size(0, 0);
+        SetFieldOfViewY(30.0f);
         ScreenColor = Color.LightGray;
         HohoAlpha = 1.0f;
 
@@ -755,6 +765,9 @@ public class Viewer : IDisposable
         sw.Stop();
         Console.WriteLine(toonshader_filename + " read time: " + sw.Elapsed);
 
+        if (!LoadEffect(@"clear.fx", out effect_clear))
+            return false;
+
         if (!LoadEffect(@"dnclear.fx", out effect_dnclear))
             return false;
 
@@ -855,7 +868,7 @@ public class Viewer : IDisposable
     void AssignDepthProjection()
     {
         Matrix depth_projection = Matrix.PerspectiveFovRH(
-                Geometry.DegreeToRadian(30.0f),
+                fieldOfViewY,
                 (float)device.Viewport.Width / (float)device.Viewport.Height,
                 DepthMapConfig.ZnearPlane,
                 DepthMapConfig.ZfarPlane);
@@ -955,7 +968,7 @@ public class Viewer : IDisposable
         screen.Create(dev_rect);
 
         Transform_Projection = Matrix.PerspectiveFovRH(
-                Geometry.DegreeToRadian(30.0f),
+                fieldOfViewY,
                 (float)device.Viewport.Width / (float)device.Viewport.Height,
                 1.0f,
                 1000.0f );
@@ -963,6 +976,7 @@ public class Viewer : IDisposable
         device.Transform.Projection = Transform_Projection;
         effect.SetValue("proj", Transform_Projection);
 
+        screen.AssignWorldViewProjection(effect_clear);
         screen.AssignWorldViewProjection(effect_dnclear);
         screen.AssignWorldViewProjection(effect_depth);
         screen.AssignWorldViewProjection(effect_ao);
@@ -1210,6 +1224,10 @@ public class Viewer : IDisposable
             DrawGaussianBlur(DiffusionConfig.Extent); // gb in:occ out:occ
             DrawScreen(); // screen in:amb occ out:dev
             break;
+        case RenderMode.Shadow:
+            DrawFigure();
+            DrawShadow();
+            break;
         default:
             DrawDepthNormalMap();
             DrawOcclusion();
@@ -1247,7 +1265,7 @@ public class Viewer : IDisposable
 
         Debug.WriteLine("!! device Present !!");
         device.Present();
-        Thread.Sleep(30);
+        //Thread.Sleep(30);
     }
 
     /// config: スクリーン塗りつぶし色
@@ -1272,6 +1290,12 @@ public class Viewer : IDisposable
     public void SetNormalMapFormat(string name)
     {
         normalmap_format = (Format)Enum.Parse(typeof(Format), name);
+    }
+
+    /// config: rendermode name
+    public void SetRenderMode(string name)
+    {
+        render_mode = (RenderMode)Enum.Parse(typeof(RenderMode), name);
     }
 
     /// <summary>
@@ -1328,6 +1352,14 @@ public class Viewer : IDisposable
                 tso.EndRender();
             }
         }
+    }
+
+    void DrawShadow()
+    {
+        effect_clear.Technique = "Clear";
+        screen.Draw(effect_clear);
+        effect_clear.Technique = "White";
+        screen.Draw(effect_clear);
     }
 
     public static string GetHideTechsPath()
@@ -1642,6 +1674,8 @@ public class Viewer : IDisposable
             effect_dnmap.Dispose();
         if (effect_dnclear != null)
             effect_dnclear.Dispose();
+        if (effect_clear != null)
+            effect_clear.Dispose();
         if (effect != null)
             effect.Dispose();
         if (device != null)

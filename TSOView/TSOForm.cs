@@ -20,17 +20,27 @@ public partial class TSOForm : Form
 
     internal int keySave        = (int)Keys.Return;
     internal int keyMotion      = (int)Keys.Space;
-    internal int keyAmbient      = (int)Keys.C;
-    internal int keyDepth      = (int)Keys.Z;
-    internal int keyNormal      = (int)Keys.X;
+    internal int keyMain        = (int)Keys.C;
+    internal int keyAmbient     = (int)Keys.C;
+    internal int keyDepthMap    = (int)Keys.Z;
+    internal int keyNormalMap   = (int)Keys.X;
     internal int keyOcclusion   = (int)Keys.O;
     internal int keyDiffusion   = (int)Keys.Home;
+    internal int keyShadow      = (int)Keys.S;
     internal int keyFigure      = (int)Keys.Tab;
     internal int keyDelete      = (int)Keys.Delete;
     internal int keyCameraReset = (int)Keys.D0;
     internal int keyCenter      = (int)Keys.F;
     internal int keyFigureForm = (int)Keys.G;
     internal int keyConfigForm = (int)Keys.H;
+
+    bool record_enabled = false;
+    string dest_path = @"snapshots";
+    int orig_frame_idx;
+    int frame_len;
+    int frame_idx;
+
+    public int RecordStep { get; set; }
 
     internal Viewer viewer = null;
     internal FigureForm figureForm = null;
@@ -42,6 +52,7 @@ public partial class TSOForm : Form
     {
         InitializeComponent();
         this.ClientSize = tso_config.ClientSize;
+        this.RecordStep = tso_config.RecordStep;
 
         for (int i = 0; i < keysEnabled.Length; i++)
         {
@@ -55,11 +66,13 @@ public partial class TSOForm : Form
 
         this.viewer = new Viewer();
         viewer.DeviceSize = tso_config.DeviceSize;
+        viewer.SetFieldOfViewY(tso_config.FieldOfViewY);
         viewer.ScreenColor = tso_config.ScreenColor;
         viewer.HohoAlpha = tso_config.HohoAlpha;
         viewer.XRGBDepth = tso_config.XRGBDepth;
         viewer.SetDepthMapFormat(tso_config.DepthMapFormat);
         viewer.SetNormalMapFormat(tso_config.NormalMapFormat);
+        viewer.SetRenderMode(tso_config.RenderMode);
 
         this.figureForm = new FigureForm();
         this.configForm = new ConfigForm();
@@ -126,32 +139,51 @@ public partial class TSOForm : Form
         return (float)(Math.PI * angle / 180.0);
     }
 
+    void SaveToPng()
+    {
+        switch (viewer.RenderMode)
+        {
+        case RenderMode.Main:
+            viewer.SaveToPng("sample-ao.png");
+            break;
+        case RenderMode.Ambient:
+            viewer.SaveToPng("sample-amb.png");
+            break;
+        case RenderMode.DepthMap:
+            viewer.SaveToPng("sample-d.png");
+            break;
+        case RenderMode.NormalMap:
+            viewer.SaveToPng("sample-n.png");
+            break;
+        case RenderMode.Occlusion:
+            viewer.SaveToPng("sample-o.png");
+            break;
+        case RenderMode.Diffusion:
+            viewer.SaveToPng("sample-df.png");
+            break;
+        case RenderMode.Shadow:
+            viewer.SaveToPng("shadow.png");
+            break;
+        }
+    }
+
+    void SwitchRenderMode(RenderMode mode)
+    {
+        if (viewer.RenderMode == mode)
+            viewer.RenderMode = RenderMode.Main;
+        else
+            viewer.RenderMode = mode;
+    }
+
     public void FrameMove()
     {
         if (keysEnabled[keySave] && keys[keySave])
         {
             keysEnabled[keySave] = false;
-            switch (viewer.RenderMode)
-            {
-            case RenderMode.Figure:
-                viewer.SaveToPng("sample-ao.png");
-                break;
-            case RenderMode.Ambient:
-                viewer.SaveToPng("sample-amb.png");
-                break;
-            case RenderMode.DepthMap:
-                viewer.SaveToPng("sample-d.png");
-                break;
-            case RenderMode.NormalMap:
-                viewer.SaveToPng("sample-n.png");
-                break;
-            case RenderMode.Occlusion:
-                viewer.SaveToPng("sample-o.png");
-                break;
-            case RenderMode.Diffusion:
-                viewer.SaveToPng("sample-df.png");
-                break;
-            }
+            if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
+                RecordStart();
+            else
+                SaveToPng();
         }
         if (keysEnabled[keyMotion] && keys[keyMotion])
         {
@@ -161,67 +193,32 @@ public partial class TSOForm : Form
         if (keysEnabled[keyAmbient] && keys[keyAmbient])
         {
             keysEnabled[keyAmbient] = false;
-            switch (viewer.RenderMode)
-            {
-            case RenderMode.Ambient:
-                viewer.RenderMode = RenderMode.Figure;
-                break;
-            default:
-                viewer.RenderMode = RenderMode.Ambient;
-                break;
-            }
+            SwitchRenderMode(RenderMode.Ambient);
         }
-        if (keysEnabled[keyDepth] && keys[keyDepth])
+        if (keysEnabled[keyDepthMap] && keys[keyDepthMap])
         {
-            keysEnabled[keyDepth] = false;
-            switch (viewer.RenderMode)
-            {
-            case RenderMode.DepthMap:
-                viewer.RenderMode = RenderMode.Figure;
-                break;
-            default:
-                viewer.RenderMode = RenderMode.DepthMap;
-                break;
-            }
+            keysEnabled[keyDepthMap] = false;
+            SwitchRenderMode(RenderMode.DepthMap);
         }
-        if (keysEnabled[keyNormal] && keys[keyNormal])
+        if (keysEnabled[keyNormalMap] && keys[keyNormalMap])
         {
-            keysEnabled[keyNormal] = false;
-            switch (viewer.RenderMode)
-            {
-            case RenderMode.NormalMap:
-                viewer.RenderMode = RenderMode.Figure;
-                break;
-            default:
-                viewer.RenderMode = RenderMode.NormalMap;
-                break;
-            }
+            keysEnabled[keyNormalMap] = false;
+            SwitchRenderMode(RenderMode.NormalMap);
         }
         if (keysEnabled[keyOcclusion] && keys[keyOcclusion])
         {
             keysEnabled[keyOcclusion] = false;
-            switch (viewer.RenderMode)
-            {
-            case RenderMode.Occlusion:
-                viewer.RenderMode = RenderMode.Figure;
-                break;
-            default:
-                viewer.RenderMode = RenderMode.Occlusion;
-                break;
-            }
+            SwitchRenderMode(RenderMode.Occlusion);
         }
         if (keysEnabled[keyDiffusion] && keys[keyDiffusion])
         {
             keysEnabled[keyDiffusion] = false;
-            switch (viewer.RenderMode)
-            {
-            case RenderMode.Diffusion:
-                viewer.RenderMode = RenderMode.Figure;
-                break;
-            default:
-                viewer.RenderMode = RenderMode.Diffusion;
-                break;
-            }
+            SwitchRenderMode(RenderMode.Diffusion);
+        }
+        if (keysEnabled[keyShadow] && keys[keyShadow])
+        {
+            keysEnabled[keyShadow] = false;
+            SwitchRenderMode(RenderMode.Shadow);
         }
         if (keysEnabled[keyConfigForm] && keys[keyConfigForm])
         {
@@ -326,11 +323,50 @@ public partial class TSOForm : Form
         }
     }
 
+    void RecordStart()
+    {
+        Directory.CreateDirectory(dest_path);
+
+        orig_frame_idx = viewer.FrameIndex;
+        viewer.MotionEnabled = true;
+        frame_len = viewer.GetMaxFrameLength();
+        frame_idx = 0;
+        record_enabled = true;
+    }
+
+    void RecordEnd()
+    {
+        record_enabled = false;
+        viewer.MotionEnabled = false;
+        viewer.FrameIndex = orig_frame_idx;
+    }
+
+    void RecordNext()
+    {
+        if (frame_idx < frame_len)
+        {
+            viewer.FrameMove(frame_idx);
+            viewer.Render();
+            viewer.SaveToPng(Path.Combine(dest_path, String.Format("{0:D3}.png", frame_idx)));
+
+            frame_idx += RecordStep;
+        }
+        else
+            RecordEnd();
+    }
+
     private void timer1_Tick(object sender, EventArgs e)
     {
-        this.FrameMove();
-        viewer.FrameMove();
-        viewer.Render();
+        if (record_enabled)
+        {
+            RecordNext();
+        }
+        else
+        {
+            this.FrameMove();
+            viewer.FrameMove();
+            viewer.Render();
+        }
     }
 
     protected override void OnKeyPress(System.Windows.Forms.KeyPressEventArgs e)

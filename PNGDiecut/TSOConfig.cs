@@ -5,14 +5,13 @@ using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace TSOView
+namespace PNGDiecut
 {
 
 public class TSOConfig
 {
     public Size ClientSize { get; set; }
     public Size DeviceSize { get; set; }
-    public float FieldOfViewY { get; set; }
     Color screen_color;
     public Color ScreenColor { get { return screen_color; } }
     public string ScreenColorName
@@ -24,21 +23,15 @@ public class TSOConfig
     public bool XRGBDepth { get; set; }
     public string DepthMapFormat { get; set; }
     public string NormalMapFormat { get; set; }
-    public string RenderMode { get; set;}
-    public int RecordStep { get; set; }
-
     public TSOConfig()
     {
         this.ClientSize = new Size(800, 600);
         this.DeviceSize = new Size(0, 0);
-        this.FieldOfViewY = 30.0f;
         screen_color = Color.LightGray;
         this.HohoAlpha = 1.0f;
         this.XRGBDepth = true;
         this.DepthMapFormat = "X8R8G8B8";
         this.NormalMapFormat = "X8R8G8B8";
-        this.RenderMode = "Main";
-        this.RecordStep = 5;
     }
 
     public void Dump()
