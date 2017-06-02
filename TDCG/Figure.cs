@@ -39,6 +39,7 @@ public class Figure : IDisposable
         get { return clothed; }
     }
 
+    /// 着衣扱いかを算出します。
     public void ComputeClothed()
     {
         clothed = false;
@@ -382,10 +383,12 @@ public class Figure : IDisposable
                 slider_matrix.ScaleChichi(tmo_node, ref m);
 
                 if (slider_matrix.Flat())
+                {
                     if (clothed)
                         slider_matrix.TransformChichiFlatClothed(tmo_node, ref m);
                     else
                         slider_matrix.TransformChichiFlat(tmo_node, ref m);
+                }
             }
             else
                 slider_matrix.TransformFace(tmo_node, ref m);

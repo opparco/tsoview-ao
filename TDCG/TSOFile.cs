@@ -1109,6 +1109,11 @@ namespace TDCG
         public TSONode parent;
 
         /// <summary>
+        /// 姿勢行列。これはboneローカル座標系をワールド座標系に変換します。
+        /// </summary>
+        public Matrix posing_matrix;
+
+        /// <summary>
         /// オフセット行列。これはワールド座標系をboneローカル座標系に変換します。
         /// </summary>
         public Matrix offset_matrix;
@@ -1135,29 +1140,6 @@ namespace TDCG
         /// 名称の短い形式。これはTSOFile中で重複する可能性があります。
         /// </summary>
         public string Name { get { return name; } }
-#if false
-        /// <summary>
-        /// 指定nodeに対するオフセット行列を計算します。
-        /// </summary>
-        /// <param name="node">node</param>
-        public static Matrix GetOffsetMatrix(TSONode node)
-        {
-            Matrix m = Matrix.Identity;
-            while (node != null)
-            {
-                m.Multiply(node.TransformationMatrix);
-                node = node.parent;
-            }
-            return Matrix.Invert(m);
-        }
-#endif
-        /// <summary>
-        /// オフセット行列を計算します。
-        /// </summary>
-        public void ComputeOffsetMatrix()
-        {
-            offset_matrix = Matrix.Invert(GetWorldCoordinate());
-        }
 
         /// <summary>
         /// ワールド座標系での位置を得ます。
@@ -1185,7 +1167,7 @@ namespace TDCG
             Matrix m = Matrix.Identity;
             while (node != null)
             {
-                m.Multiply(node.TransformationMatrix);
+                m *= node.TransformationMatrix;
                 node = node.parent;
             }
             return m;
@@ -1346,6 +1328,32 @@ namespace TDCG
                 Load(source_stream);
         }
 
+        void ComputePosingMatrix(TSONode node, ref Matrix m)
+        {
+            node.posing_matrix = node.TransformationMatrix * m;
+
+            foreach (TSONode child in node.children)
+                ComputePosingMatrix(child, ref node.posing_matrix);
+        }
+
+        /// <summary>
+        /// 姿勢行列を計算します。
+        /// </summary>
+        public void ComputePosingMatrices()
+        {
+            Matrix m = Matrix.Identity;
+            ComputePosingMatrix(this.nodes[0], ref m);
+        }
+
+        /// <summary>
+        /// オフセット行列を計算します。
+        /// </summary>
+        public void ComputeOffsetMatrices()
+        {
+            for (int i = 0, len = this.nodes.Length; i < len; i++)
+                nodes[i].offset_matrix = Matrix.Invert(nodes[i].posing_matrix);
+        }
+
         /// <summary>
         /// 指定ストリームから読み込みます。
         /// </summary>
@@ -1376,10 +1384,8 @@ namespace TDCG
                 reader.ReadMatrix(ref m);
                 nodes[i].TransformationMatrix = m;
             }
-            for (int i = 0; i < node_matrix_count; i++)
-            {
-                nodes[i].ComputeOffsetMatrix();
-            }
+            ComputePosingMatrices();
+            ComputeOffsetMatrices();
 
             UInt32 texture_count = reader.ReadUInt32();
             textures = new TSOTex[texture_count];

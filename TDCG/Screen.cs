@@ -10,6 +10,7 @@ public class Screen
 {
     Device device;
 
+    /// constructor
     public Screen(Device device)
     {
         this.device = device;
@@ -55,6 +56,7 @@ public class Screen
 
     Matrix world_view_projection;
 
+    /// 作成する
     public void Create(Rectangle rect)
     {
         CreateVertices(rect);
@@ -69,12 +71,14 @@ public class Screen
         world_view_projection = world_view * projection;
     }
 
+    /// uniform wvp を設定
     public void AssignWorldViewProjection(Effect effect)
     {
         //todo: shared
         effect.SetValue("wvp", world_view_projection);
     }
 
+    /// 描画する
     public void Draw(Effect effect)
     {
         device.VertexFormat = CustomVertex.PositionTextured.Format;

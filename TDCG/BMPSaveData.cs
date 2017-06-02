@@ -6,11 +6,15 @@ using System.Drawing;
 
 namespace TDCG
 {
+    /// 13 bit シフトによる CRC
     public class Crc
     {
+        /// key
         public UInt32 key;
+        /// off
         public int off;
 
+        /// 更新する
         public void Update(byte[] bytes, int index, int length)
         {
             int end = index + length;
@@ -175,12 +179,17 @@ namespace TDCG
         /// 指定添字のバイト配列を設定します。
         /// </summary>
         /// <param name="index">添字</param>
-        /// <param name="bytes">バイナリ値</param>
+        /// <param name="bytes">バイト配列</param>
         public void SetBytes(int index, byte[] bytes)
         {
             Array.Copy(bytes, 0, savedata, 32 * 32 + index * 4, 4);
         }
 
+        /// <summary>
+        /// 指定添字の key 値を設定します。
+        /// </summary>
+        /// <param name="index">添字</param>
+        /// <param name="key">key 値</param>
         public void SetKey(int index, UInt32 key)
         {
             byte[] bytes = BitConverter.GetBytes(key);
@@ -247,6 +256,7 @@ namespace TDCG
             return crc.key;
         }
 
+        /// key を更新します。
         public void UpdateKey()
         {
             SetKey(3, GenChecksum_1());

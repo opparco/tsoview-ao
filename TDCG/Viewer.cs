@@ -13,39 +13,55 @@ using Direct3D = Microsoft.DirectX.Direct3D;
 
 namespace TDCG
 {
+    /// 描画 mode
     public enum RenderMode
     {
+        /// main
         Main,
+        /// 環境光
         Ambient,
+        /// 深度マップ
         DepthMap,
+        /// 法線マップ
         NormalMap,
+        /// occlusion
         Occlusion,
+        /// diffusion
         Diffusion,
+        /// 影絵
         Shadow
     };
+
+    /// カメラ設定
     public class CameraConfig
     {
+        /// 視野角を変更すると呼ばれる
         public event EventHandler ChangeFovy;
+        /// 回転角を変更すると呼ばれる
         public event EventHandler ChangeRoll;
 
         float fovy = (float)(Math.PI / 6.0);
         float roll = 0;
 
+        /// カメラのY軸（垂直）方向の視野角を得ます。単位は radian です。
         public float Fovy
         {
             get { return fovy; }
         }
 
+        /// カメラのZ軸回転角を得ます。単位は radian です。
         public float Roll
         {
             get { return roll; }
         }
 
+        /// 視野角を得ます。単位は degree です。
         public float GetFovyDegree()
         {
             return (float)(this.fovy * 180.0 / Math.PI);
         }
 
+        /// 視野角を設定します。単位は degree です。
         public void SetFovyDegree(float fovy)
         {
             this.fovy = (float)(Math.PI * fovy / 180.0);
@@ -54,11 +70,13 @@ namespace TDCG
                 ChangeFovy(this, EventArgs.Empty);
         }
 
+        /// 回転角を得ます。単位は degree です。
         public float GetRollDegree()
         {
             return (float)(this.roll * 180.0 / Math.PI);
         }
 
+        /// 回転角を設定します。単位は degree です。
         public void SetRollDegree(float roll)
         {
             this.roll = (float)(Math.PI * roll / 180.0);
@@ -67,14 +85,19 @@ namespace TDCG
                 ChangeRoll(this, EventArgs.Empty);
         }
     }
+
+    /// 深度マップ設定
     public class DepthMapConfig
     {
+        /// zn を変更すると呼ばれる
         public event EventHandler ChangeZnearPlane;
+        /// zf を変更すると呼ばれる
         public event EventHandler ChangeZfarPlane;
 
         float zn = 15.0f;
         float zf = 50.0f;
 
+        /// 近クリップ面までの距離
         public float ZnearPlane
         {
             get { return zn; }
@@ -86,6 +109,7 @@ namespace TDCG
             }
         }
 
+        /// 遠クリップ面までの距離
         public float ZfarPlane
         {
             get { return zf; }
@@ -97,14 +121,19 @@ namespace TDCG
             }
         }
     }
+
+    /// occlusion 設定
     public class OcclusionConfig
     {
+        /// 強度を変更すると呼ばれる
         public event EventHandler ChangeIntensity;
+        /// 半径を変更すると呼ばれる
         public event EventHandler ChangeRadius;
 
         float intensity = 0.5f;
         float radius = 2.5f;
 
+        /// 強度
         public float Intensity
         {
             get { return intensity; }
@@ -116,6 +145,7 @@ namespace TDCG
             }
         }
 
+        /// 半径
         public float Radius
         {
             get { return radius; }
@@ -127,11 +157,19 @@ namespace TDCG
             }
         }
     }
+
+    /// diffusion 設定
     public class DiffusionConfig
     {
+        /// 強度を変更すると呼ばれる
         public event EventHandler ChangeIntensity;
+        /// 範囲を変更すると呼ばれる
         public event EventHandler ChangeExtent;
+
         float intensity = 0.5f;
+        float extent = 2.0f;
+
+        /// 強度
         public float Intensity
         {
             get { return intensity; }
@@ -142,7 +180,8 @@ namespace TDCG
                     ChangeIntensity(this, EventArgs.Empty);
             }
         }
-        float extent = 2.0f;
+
+        /// 範囲
         public float Extent
         {
             get { return extent; }
@@ -154,6 +193,7 @@ namespace TDCG
             }
         }
     }
+
     /// <summary>
     /// セーブファイルの内容を保持します。
     /// </summary>
@@ -196,14 +236,14 @@ public class Viewer : IDisposable
     /// effect
     /// </summary>
     protected Effect effect;
-    protected Effect effect_clear;
-    protected Effect effect_dnclear;
-    protected Effect effect_dnmap;
-    protected Effect effect_depth;
-    protected Effect effect_ao;
-    protected Effect effect_gb;
-    protected Effect effect_main;
-    protected Effect effect_df;
+    Effect effect_clear;
+    Effect effect_dnclear;
+    Effect effect_dnmap;
+    Effect effect_depth;
+    Effect effect_ao;
+    Effect effect_gb;
+    Effect effect_main;
+    Effect effect_df;
 
     /// <summary>
     /// toonshader.cgfx に渡す頂点宣言
@@ -239,7 +279,6 @@ public class Viewer : IDisposable
     /// since v0.91
     /// </summary>
     protected EffectHandle handle_UVSCR;
-    protected EffectHandle handle_ao_UVSCR;
 
     bool shadow_map_enabled;
     /// <summary>
@@ -247,18 +286,14 @@ public class Viewer : IDisposable
     /// </summary>
     public bool ShadowMapEnabled { get { return shadow_map_enabled; } }
 
-    public Screen screen = null;
-    public Sprite sprite = null;
-    internal Line line = null;
+    Screen screen = null;
+    Sprite sprite = null;
 
-    /// <summary>
     /// surface of device
-    /// </summary>
     protected Surface dev_surface = null;
-    /// <summary>
     /// zbuffer of device
-    /// </summary>
     protected Surface dev_zbuf = null;
+    /// zbuffer of render target
     protected Surface tex_zbuf = null;
 
     /// config:
@@ -268,13 +303,16 @@ public class Viewer : IDisposable
     public Size DeviceSize { get; set; }
 
     float fieldOfViewY;
-    /// config:
+
+    /// config: 視野角を設定します。単位は degree です。
     public void SetFieldOfViewY(float fieldOfViewY)
     {
         this.fieldOfViewY = Geometry.DegreeToRadian(fieldOfViewY);
     }
 
     RenderMode render_mode = RenderMode.Main;
+
+    /// 描画 mode
     public RenderMode RenderMode
     {
         get { return render_mode; }
@@ -285,23 +323,27 @@ public class Viewer : IDisposable
         }
     }
 
+    /// カメラ設定を保持する
     public CameraConfig CameraConfig = null;
+    /// 深度マップ設定を保持する
     public DepthMapConfig DepthMapConfig = null;
+    /// occlusion 設定を保持する
     public OcclusionConfig OcclusionConfig = null;
+    /// diffusion 設定を保持する
     public DiffusionConfig DiffusionConfig = null;
 
-    protected Texture amb_texture;
-    protected Texture depthmap_texture;
-    protected Texture normalmap_texture;
-    protected Texture randommap_texture;
-    protected Texture occ_texture;
-    protected Texture tmp_texture;
+    Texture amb_texture;
+    Texture depthmap_texture;
+    Texture normalmap_texture;
+    Texture randommap_texture;
+    Texture occ_texture;
+    Texture tmp_texture;
 
-    protected Surface amb_surface;
-    protected Surface depthmap_surface;
-    protected Surface normalmap_surface;
-    protected Surface occ_surface;
-    protected Surface tmp_surface;
+    Surface amb_surface;
+    Surface depthmap_surface;
+    Surface normalmap_surface;
+    Surface occ_surface;
+    Surface tmp_surface;
 
     /// <summary>
     /// viewerが保持しているフィギュアリスト
@@ -874,11 +916,9 @@ public class Viewer : IDisposable
         handle_Ambient = effect.GetParameter(null, "ColorRate");
         handle_HohoAlpha = effect.GetParameter(null, "HohoAlpha");
         handle_UVSCR = effect.GetParameter(null, "UVSCR");
-        handle_ao_UVSCR = effect_ao.GetParameter(null, "UVSCR");
 
         screen = new Screen(device);
         sprite = new Sprite(device);
-        line = new Line(device);
         camera.Update();
         OnDeviceReset(device, null);
 
@@ -893,6 +933,7 @@ public class Viewer : IDisposable
         return true;
     }
 
+    /// 設定を変更したら描画に反映する
     public void ConfigConnect()
     {
         CameraConfig.ChangeFovy += delegate (object sender, EventArgs e)
@@ -1496,12 +1537,12 @@ public class Viewer : IDisposable
         screen.Draw(effect_clear);
     }
 
-    public static string GetHideTechsPath()
+    static string GetHideTechsPath()
     {
         return Path.Combine(Application.StartupPath, @"hidetechs.txt");
     }
 
-    public static string GetRandomTexturePath()
+    static string GetRandomTexturePath()
     {
         return Path.Combine(Application.StartupPath, @"rand.png");
     }
@@ -1666,7 +1707,7 @@ public class Viewer : IDisposable
     // in depthmap_texture
     // in normalmap_texture
     // out occ_surface
-    public void DrawOcclusion()
+    void DrawOcclusion()
     {
         Debug.WriteLine("DrawOcclusion");
 
@@ -1675,16 +1716,13 @@ public class Viewer : IDisposable
         device.SetRenderTarget(0, occ_surface); // out
         device.DepthStencilSurface = tex_zbuf;
 
-        if (MotionEnabled)
-            effect_ao.SetValue(handle_ao_UVSCR, UVSCR());
-
         screen.Draw(effect_ao);
     }
 
     // draw Diffusion
     // in amb_texture
     // out occ_surface
-    public void DrawDiffusion()
+    void DrawDiffusion()
     {
         Debug.WriteLine("DrawDiffusion");
 
@@ -1781,8 +1819,6 @@ public class Viewer : IDisposable
     {
         foreach (Figure fig in FigureList)
             fig.Dispose();
-        if (line != null)
-            line.Dispose();
         if (sprite != null)
             sprite.Dispose();
 

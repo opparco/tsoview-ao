@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 //using System.Drawing;
 //using System.Threading;
 //using System.ComponentModel;
@@ -141,32 +142,42 @@ public partial class TSOForm : Form
         return (float)(Math.PI * angle / 180.0);
     }
 
+    string GetSaveFileName(string type)
+    {
+        DateTime ti = DateTime.Now;
+        CultureInfo ci = CultureInfo.InvariantCulture;
+        string ti_string = ti.ToString("yyyyMMdd-hhmmss-fff", ci);
+        return string.Format("{0}-{1}.png", ti_string, type);
+    }
+
     void SaveToPng()
     {
+        string type = "none";
         switch (viewer.RenderMode)
         {
         case RenderMode.Main:
-            viewer.SaveToPng("sample-ao.png");
+            type = "ao";
             break;
         case RenderMode.Ambient:
-            viewer.SaveToPng("sample-amb.png");
+            type = "amb";
             break;
         case RenderMode.DepthMap:
-            viewer.SaveToPng("sample-d.png");
+            type = "d";
             break;
         case RenderMode.NormalMap:
-            viewer.SaveToPng("sample-n.png");
+            type = "n";
             break;
         case RenderMode.Occlusion:
-            viewer.SaveToPng("sample-o.png");
+            type = "o";
             break;
         case RenderMode.Diffusion:
-            viewer.SaveToPng("sample-df.png");
+            type = "df";
             break;
         case RenderMode.Shadow:
-            viewer.SaveToPng("shadow.png");
+            type = "shadow";
             break;
         }
+        viewer.SaveToPng(GetSaveFileName(type));
     }
 
     void SwitchRenderMode(RenderMode mode)

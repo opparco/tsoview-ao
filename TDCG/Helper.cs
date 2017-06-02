@@ -194,8 +194,9 @@ namespace TDCG
         }
 
         /// <summary>
-        /// 指定ベクトルで拡大します。位置は変更しません。
+        /// 指定ベクトルで拡大します。移動変位は変更しません。
         /// </summary>
+        /// <param name="m">matrix</param>
         /// <param name="scaling">scaling vector</param>
         public static void Scale1(ref Matrix m, Vector3 scaling)
         {
@@ -210,6 +211,11 @@ namespace TDCG
             m.M33 *= scaling.Z;
         }
 
+        /// <summary>
+        /// 移動変位を設定します。
+        /// </summary>
+        /// <param name="m">matrix</param>
+        /// <param name="translation">translation vector</param>
         public static void Translate1(ref Matrix m, Vector3 translation)
         {
             m.M41 = translation.X;
