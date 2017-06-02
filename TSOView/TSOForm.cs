@@ -54,6 +54,9 @@ public partial class TSOForm : Form
         viewer.DeviceSize = tso_config.DeviceSize;
         viewer.ScreenColor = tso_config.ScreenColor;
         viewer.HohoAlpha = tso_config.HohoAlpha;
+        viewer.XRGBDepth = tso_config.XRGBDepth;
+        viewer.SetDepthMapFormat(tso_config.DepthMapFormat);
+        viewer.SetNormalMapFormat(tso_config.NormalMapFormat);
 
         this.fig_form = new FigureForm();
 

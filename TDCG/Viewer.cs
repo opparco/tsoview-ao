@@ -65,6 +65,7 @@ public class Viewer : IDisposable
     protected Effect effect;
     protected Effect effect_dnclear;
     protected Effect effect_dnmap;
+    protected Effect effect_depth;
     protected Effect effect_ao;
     protected Effect effect_gb;
     protected Effect effect_main;
@@ -117,6 +118,7 @@ public class Viewer : IDisposable
     /// zbuffer of device
     /// </summary>
     protected Surface dev_zbuf = null;
+    protected Surface tex_zbuf = null;
 
     /// config: BackBufferWidth BackBufferHeight
     public Size DeviceSize { get; set; }
@@ -688,6 +690,10 @@ public class Viewer : IDisposable
             }
         }
 
+        Macro[] macros = new Macro[1];
+        macros[0].Name = "XRGB_DEPTH";
+        macros[0].Definition = XRGBDepth ? "1" : "0";
+
         {
             string effect_file = Path.Combine(Application.StartupPath, @"dnmap.fx");
             if (! File.Exists(effect_file))
@@ -698,7 +704,26 @@ public class Viewer : IDisposable
             using (FileStream effect_stream = File.OpenRead(effect_file))
             {
                 string compile_error;
-                effect_dnmap = Effect.FromStream(device, effect_stream, null, ShaderFlags.None, effect_pool, out compile_error);
+                effect_dnmap = Effect.FromStream(device, effect_stream, macros, null, ShaderFlags.None, effect_pool, out compile_error);
+                if (compile_error != null)
+                {
+                    Console.WriteLine(compile_error);
+                    return false;
+                }
+            }
+        }
+
+        {
+            string effect_file = Path.Combine(Application.StartupPath, @"depth.fx");
+            if (!File.Exists(effect_file))
+            {
+                Console.WriteLine("File not found: " + effect_file);
+                return false;
+            }
+            using (FileStream effect_stream = File.OpenRead(effect_file))
+            {
+                string compile_error;
+                effect_depth = Effect.FromStream(device, effect_stream, macros, null, ShaderFlags.None, null, out compile_error);
                 if (compile_error != null)
                 {
                     Console.WriteLine(compile_error);
@@ -737,6 +762,10 @@ public class Viewer : IDisposable
     // no shared
     bool LoadEffectAO()
     {
+        Macro[] macros = new Macro[1];
+        macros[0].Name = "XRGB_DEPTH";
+        macros[0].Definition = XRGBDepth ? "1" : "0";
+
         string effect_file = Path.Combine(Application.StartupPath, @"ao.fx");
         if (!File.Exists(effect_file))
         {
@@ -746,7 +775,7 @@ public class Viewer : IDisposable
         using (FileStream effect_stream = File.OpenRead(effect_file))
         {
             string compile_error;
-            effect_ao = Effect.FromStream(device, effect_stream, null, ShaderFlags.None, null, out compile_error);
+            effect_ao = Effect.FromStream(device, effect_stream, macros, null, ShaderFlags.None, null, out compile_error);
             if (compile_error != null)
             {
                 Console.WriteLine(compile_error);
@@ -866,6 +895,8 @@ public class Viewer : IDisposable
         if (occ_texture != null)
             occ_texture.Dispose();
 
+        if (tex_zbuf != null)
+            tex_zbuf.Dispose();
         if (dev_zbuf != null)
             dev_zbuf.Dispose();
         if (dev_surface != null)
@@ -888,26 +919,30 @@ public class Viewer : IDisposable
 
         dev_rect = new Rectangle(0, 0, devw, devh);
 
-        int dev_zbufw = 0;
-        int dev_zbufh = 0;
         dev_zbuf = device.DepthStencilSurface;
         {
+            int dev_zbufw = 0;
+            int dev_zbufh = 0;
             dev_zbufw = dev_surface.Description.Width;
             dev_zbufh = dev_surface.Description.Height;
+            Console.WriteLine("dev_zbuf {0}x{1}", dev_zbufw, dev_zbufh);
         }
-        Console.WriteLine("dev_zbuf {0}x{1}", dev_zbufw, dev_zbufh);
 
-        amb_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default);
+        tex_zbuf = device.CreateDepthStencilSurface(devw, devh, DepthFormat.D16, MultiSampleType.None, 0, false);
+
+        amb_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
         amb_surface = amb_texture.GetSurfaceLevel(0);
 
-        depthmap_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.R32F, Pool.Default);
+        depthmap_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, depthmap_format, Pool.Default);
         depthmap_surface = depthmap_texture.GetSurfaceLevel(0);
 
-        normalmap_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.A2R10G10B10, Pool.Default);
+        normalmap_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, normalmap_format, Pool.Default);
         normalmap_surface = normalmap_texture.GetSurfaceLevel(0);
 
-        occ_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default);
+        occ_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
         occ_surface = occ_texture.GetSurfaceLevel(0);
+
+        effect_depth.SetValue("DepthMap_texture", depthmap_texture); // in
 
         effect_ao.SetValue("DepthMap_texture", depthmap_texture); // in
         effect_ao.SetValue("NormalMap_texture", normalmap_texture); // in
@@ -938,6 +973,7 @@ public class Viewer : IDisposable
 
             //todo: shared
             effect_dnclear.SetValue("wvp", world_view_projection);
+            effect_depth.SetValue("wvp", world_view_projection);
             effect_ao.SetValue("wvp", world_view_projection);
             effect_gb.SetValue("wvp", world_view_projection);
             effect_main.SetValue("wvp", world_view_projection);
@@ -1184,7 +1220,7 @@ public class Viewer : IDisposable
             break;
         case RenderMode.DepthMap:
             DrawDepthNormalMap();
-            DrawSprite_depthmap();
+            DrawDepth();
             break;
         case RenderMode.NormalMap:
             DrawDepthNormalMap();
@@ -1234,11 +1270,29 @@ public class Viewer : IDisposable
         Thread.Sleep(30);
     }
 
+    /// config: スクリーン塗りつぶし色
+    public Color ScreenColor { get; set; }
+
     /// config: ほほ赤みの濃さ
     public float HohoAlpha { get; set; }
 
-    /// config: スクリーン塗りつぶし色
-    public Color ScreenColor { get; set; }
+    /// config: enhance depth precision on Format.X8A8G8B8
+    public bool XRGBDepth { get; set; }
+
+    Format depthmap_format;
+    Format normalmap_format;
+
+    /// config: depthmap format name
+    public void SetDepthMapFormat(string name)
+    {
+        depthmap_format = (Format)Enum.Parse(typeof(Format), name);
+    }
+
+    /// config: normalmap format name
+    public void SetNormalMapFormat(string name)
+    {
+        normalmap_format = (Format)Enum.Parse(typeof(Format), name);
+    }
 
     /// <summary>
     /// UVSCR値を得ます。
@@ -1258,6 +1312,7 @@ public class Viewer : IDisposable
         device.SetRenderState(RenderStates.AlphaBlendEnable, true);
 
         device.SetRenderTarget(0, dev_surface);
+        device.DepthStencilSurface = dev_zbuf;
         device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
 
         device.VertexDeclaration = vd;
@@ -1303,6 +1358,7 @@ public class Viewer : IDisposable
         device.SetRenderTarget(0, depthmap_surface);
         device.SetRenderTarget(1, normalmap_surface);
 
+        device.DepthStencilSurface = tex_zbuf;
         device.Clear(ClearFlags.ZBuffer, Color.White, 1.0f, 0);
 
         {
@@ -1357,6 +1413,7 @@ public class Viewer : IDisposable
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         device.SetRenderTarget(0, dev_surface);
+        device.DepthStencilSurface = dev_zbuf;
         device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
         sprite.Transform = Matrix.Identity;
@@ -1374,6 +1431,7 @@ public class Viewer : IDisposable
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         device.SetRenderTarget(0, dev_surface);
+        device.DepthStencilSurface = dev_zbuf;
         device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
         sprite.Transform = Matrix.Identity;
@@ -1391,6 +1449,7 @@ public class Viewer : IDisposable
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         device.SetRenderTarget(0, dev_surface);
+        device.DepthStencilSurface = dev_zbuf;
         device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
         sprite.Transform = Matrix.Identity;
@@ -1408,6 +1467,7 @@ public class Viewer : IDisposable
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         device.SetRenderTarget(0, dev_surface);
+        device.DepthStencilSurface = dev_zbuf;
         device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
         sprite.Transform = Matrix.Identity;
@@ -1434,6 +1494,7 @@ public class Viewer : IDisposable
 
         effect_gb.SetValue("Ambient_texture", occ_texture); // in
         device.SetRenderTarget(0, amb_surface); // out
+        device.DepthStencilSurface = tex_zbuf;
 
         device.VertexFormat = CustomVertex.PositionTextured.Format;
         device.SetStreamSource(0, vb, 0);
@@ -1452,6 +1513,7 @@ public class Viewer : IDisposable
 
         effect_gb.SetValue("Ambient_texture", amb_texture); // in
         device.SetRenderTarget(0, occ_surface); // out
+        device.DepthStencilSurface = tex_zbuf;
 
         effect_gb.SetValue("dir", new Vector4(0, 1.0f/(float)dev_rect.Height, 0, 0));
         {
@@ -1475,6 +1537,7 @@ public class Viewer : IDisposable
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         device.SetRenderTarget(0, occ_surface); // out
+        device.DepthStencilSurface = tex_zbuf;
         //device.Clear(ClearFlags.Target, Color.CornflowerBlue, 1.0f, 0);
 
         device.VertexFormat = CustomVertex.PositionTextured.Format;
@@ -1493,6 +1556,30 @@ public class Viewer : IDisposable
         effect_ao.End();
     }
 
+    // draw depth
+    // in depthmap_texture
+    // out dev_surface
+    void DrawDepth()
+    {
+        device.SetRenderState(RenderStates.AlphaBlendEnable, false);
+
+        device.SetRenderTarget(0, dev_surface); // out
+        device.DepthStencilSurface = dev_zbuf;
+        //device.Clear(ClearFlags.Target, Color.CornflowerBlue, 1.0f, 0);
+
+        device.VertexFormat = CustomVertex.PositionTextured.Format;
+        device.SetStreamSource(0, vb, 0);
+
+        int npass = effect_depth.Begin(0);
+        for (int ipass = 0; ipass < npass; ipass++)
+        {
+            effect_depth.BeginPass(ipass);
+            device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+            effect_depth.EndPass();
+        }
+        effect_depth.End();
+    }
+
     // draw main
     // in amb_texture
     // in occ_texture
@@ -1502,6 +1589,7 @@ public class Viewer : IDisposable
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
         device.SetRenderTarget(0, dev_surface); // out
+        device.DepthStencilSurface = dev_zbuf;
         //device.Clear(ClearFlags.Target, Color.CornflowerBlue, 1.0f, 0);
 
         device.VertexFormat = CustomVertex.PositionTextured.Format;
@@ -1579,6 +1667,8 @@ public class Viewer : IDisposable
         if (occ_texture != null)
             occ_texture.Dispose();
 
+        if (tex_zbuf != null)
+            tex_zbuf.Dispose();
         if (dev_zbuf != null)
             dev_zbuf.Dispose();
         if (dev_surface != null)
@@ -1591,6 +1681,8 @@ public class Viewer : IDisposable
             effect_gb.Dispose();
         if (effect_ao != null)
             effect_ao.Dispose();
+        if (effect_depth != null)
+            effect_depth.Dispose();
         if (effect_dnmap != null)
             effect_dnmap.Dispose();
         if (effect_dnclear != null)

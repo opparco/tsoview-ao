@@ -20,12 +20,18 @@ public class TSOConfig
         set { screen_color = ColorTranslator.FromHtml(value); }
     }
     public float HohoAlpha { get; set; }
+    public bool XRGBDepth { get; set; }
+    public string DepthMapFormat { get; set; }
+    public string NormalMapFormat { get; set; }
     public TSOConfig()
     {
         this.ClientSize = new Size(800, 600);
         this.DeviceSize = new Size(0, 0);
         screen_color = Color.LightGray;
         this.HohoAlpha = 1.0f;
+        this.XRGBDepth = true;
+        this.DepthMapFormat = "X8R8G8B8";
+        this.NormalMapFormat = "X8R8G8B8";
     }
 
     public void Dump()
