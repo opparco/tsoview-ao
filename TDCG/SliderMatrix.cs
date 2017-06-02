@@ -444,8 +444,8 @@ m.M41 = -0.000283f; m.M42 = 0.049725f; m.M43 = 0.110266f; m.M44 = 1.000000f;
             }
             // linear ?
             {
-                const float a = 1.1204f;
-                const float b = 0.9784f;
+                const float a = 1.2660f * 0.8850f;
+                const float b = 0.9230f * 1.0600f;
                 float scale = a + (b - a) * age_ratio;
                 FaceOya.Y = scale;
             }

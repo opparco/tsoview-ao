@@ -293,6 +293,7 @@ public class Viewer : IDisposable
     protected Texture amb_texture;
     protected Texture depthmap_texture;
     protected Texture normalmap_texture;
+    protected Texture randommap_texture;
     protected Texture occ_texture;
     protected Texture tmp_texture;
 
@@ -984,6 +985,7 @@ public class Viewer : IDisposable
                 DepthMapConfig.ZfarPlane);
         effect_dnmap.SetValue("depthproj", depth_projection); // in
         effect_ao.SetValue("depthproj", depth_projection); // in
+        effect_ao.SetValue("vp", new Vector4(device.Viewport.Width, device.Viewport.Height, 0, 0)); // in
     }
 
     private void OnDeviceLost(object sender, EventArgs e)
@@ -1010,6 +1012,8 @@ public class Viewer : IDisposable
             depthmap_texture.Dispose();
         if (normalmap_texture != null)
             normalmap_texture.Dispose();
+        if (randommap_texture != null)
+            randommap_texture.Dispose();
         if (occ_texture != null)
             occ_texture.Dispose();
         if (tmp_texture != null)
@@ -1059,6 +1063,8 @@ public class Viewer : IDisposable
         normalmap_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, normalmap_format, Pool.Default);
         normalmap_surface = normalmap_texture.GetSurfaceLevel(0);
 
+        randommap_texture = TextureLoader.FromFile(device, GetRandomTexturePath());
+
         occ_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
         occ_surface = occ_texture.GetSurfaceLevel(0);
 
@@ -1069,6 +1075,7 @@ public class Viewer : IDisposable
 
         effect_ao.SetValue("DepthMap_texture", depthmap_texture); // in
         effect_ao.SetValue("NormalMap_texture", normalmap_texture); // in
+        effect_ao.SetValue("RandomMap_texture", randommap_texture); // in
 
         effect_main.SetValue("Ambient_texture", amb_texture); // in
         effect_main.SetValue("Occlusion_texture", occ_texture); // in
@@ -1492,6 +1499,11 @@ public class Viewer : IDisposable
     public static string GetHideTechsPath()
     {
         return Path.Combine(Application.StartupPath, @"hidetechs.txt");
+    }
+
+    public static string GetRandomTexturePath()
+    {
+        return Path.Combine(Application.StartupPath, @"rand.png");
     }
 
     Dictionary<string, bool> techmap;
