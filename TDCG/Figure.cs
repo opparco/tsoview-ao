@@ -86,7 +86,6 @@ public class Figure : IDisposable
             tmo = value;
             ResetFrameIndex();
             SetCenterToHips();
-            TpoList.Tmo = tmo;
         }
     }
 
@@ -96,20 +95,6 @@ public class Figure : IDisposable
     private MatrixStack matrixStack = null;
     private int frame_index = 0;
     private int current_frame_index = 0;
-
-    /// <summary>
-    /// TPOファイルのリスト
-    /// </summary>
-    public TPOFileList TpoList = new TPOFileList();
-
-    /// <summary>
-    /// 体型レシピのファイル名
-    /// </summary>
-    /// <returns></returns>
-    public static string GetTPOConfigPath()
-    {
-        return Path.Combine(Application.StartupPath, @"TPOConfig.xml");
-    }
 
     /// <summary>
     /// フィギュアを生成します。
@@ -122,40 +107,9 @@ public class Figure : IDisposable
         nodemap = new Dictionary<TSONode, TMONode>();
         matrixStack = new MatrixStack();
 
-        TpoList.Load();
-
-        string config_file = GetTPOConfigPath();
-        if (File.Exists(config_file))
-        {
-            TPOConfig config = TPOConfig.Load(config_file);
-            TpoList.SetRatiosFromConfig(config);
-        }
         LightDirection = new Vector3(0.0f, 0.0f, -1.0f);
     }
 
-    /// <summary>
-    /// 体型変形を行います。
-    /// </summary>
-    public void TransformTpo()
-    {
-        if (tmo.frames == null)
-            return;
-
-        TpoList.Transform();
-    }
-
-    /// <summary>
-    /// 体型変形を行います。
-    /// </summary>
-    /// <param name="frame_index">フレーム番号</param>
-    public void TransformTpo(int frame_index)
-    {
-        if (tmo.frames == null)
-            return;
-
-        TpoList.Transform(frame_index);
-    }
-    
     /// <summary>
     /// フィギュアを移動します（相対座標）。
     /// </summary>
@@ -215,7 +169,6 @@ public class Figure : IDisposable
         if (TsoList.Count != 0)
         {
             Tmo = TsoList[0].GenerateTmo();
-            TransformTpo();
         }
     }
 

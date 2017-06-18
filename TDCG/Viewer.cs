@@ -732,7 +732,6 @@ public class Viewer : IDisposable
                 if (sav.LightDirection != Vector3.Empty)
                     fig.LightDirection = sav.LightDirection;
                 fig.Tmo = sav.Tmo;
-                //fig.TransformTpo();
                 fig.UpdateNodeMapAndBoneMatrices();
                 if (FigureUpdateEvent != null)
                     FigureUpdateEvent(this, EventArgs.Empty);
@@ -1998,8 +1997,6 @@ public class Viewer : IDisposable
                     fig.slider_matrix.OppaiRatio = ratios[4];
                     fig.slider_matrix.EyeRatio = ratios[5];
                 }
-
-                //fig.TransformTpo();
             };
             png.Ftso += delegate(Stream dest, int extract_length, byte[] opt1)
             {
