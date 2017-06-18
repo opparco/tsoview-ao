@@ -7,7 +7,6 @@ using System.Globalization;
 //using System.ComponentModel;
 using System.Windows.Forms;
 using System.IO;
-using CSScriptLibrary;
 using TDCG;
 
 namespace TSOView
@@ -107,14 +106,6 @@ public partial class TSOForm : Form
                 viewer.LoadAnyFile(arg, true);
             if (viewer.FigureList.Count == 0)
                 viewer.LoadAnyFile(Path.Combine(save_path, "system.tdcgsav.png"), true);
-
-            string script_file = Path.Combine(Application.StartupPath, "Script.cs");
-            if (File.Exists(script_file))
-            {
-                string assembly_file = Path.GetTempFileName();
-                var script = CSScript.Load(script_file, assembly_file, true, null).CreateInstance("TDCG.Script").AlignToInterface<IScript>();
-                script.Hello(viewer);
-            }
 
             this.timer1.Enabled = true;
         }
