@@ -1362,6 +1362,7 @@ public class Viewer : IDisposable
             Blit(); // from:dev to:amb
             DrawMain(); // main in:amb occ out:dev
 
+            Blit(); // from:dev to:amb
             BlitFromDeviceToOcclusion(); // from:dev to:occ
             DrawGaussianBlur(DiffusionConfig.Extent); // gb in:occ out:occ
             DrawScreen(); // screen in:amb occ out:dev
