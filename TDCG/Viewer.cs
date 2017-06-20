@@ -243,7 +243,6 @@ public class Viewer : IDisposable
     Effect effect_ao;
     Effect effect_gb;
     Effect effect_main;
-    Effect effect_df;
 
     /// <summary>
     /// toonshader.cgfx に渡す頂点宣言
@@ -907,9 +906,6 @@ public class Viewer : IDisposable
         if (!LoadEffect(@"main.fx", out effect_main))
             return false;
 
-        if (!LoadEffect(@"df.fx", out effect_df))
-            return false;
-
         handle_LocalBoneMats = effect.GetParameter(null, "LocalBoneMats");
         handle_LightDirForced = effect.GetParameter(null, "LightDirForced");
         handle_Ambient = effect.GetParameter(null, "ColorRate");
@@ -1120,8 +1116,6 @@ public class Viewer : IDisposable
         effect_main.SetValue("Ambient_texture", amb_texture); // in
         effect_main.SetValue("Occlusion_texture", occ_texture); // in
 
-        effect_df.SetValue("Ambient_texture", amb_texture); // in
-
         screen.Create(dev_rect);
 
         AssignProjection();
@@ -1132,7 +1126,6 @@ public class Viewer : IDisposable
         screen.AssignWorldViewProjection(effect_ao);
         screen.AssignWorldViewProjection(effect_gb);
         screen.AssignWorldViewProjection(effect_main);
-        screen.AssignWorldViewProjection(effect_df);
 
         AssignDepthProjection();
 
@@ -1369,8 +1362,7 @@ public class Viewer : IDisposable
             Blit(); // from:dev to:amb
             DrawMain(); // main in:amb occ out:dev
 
-            Blit(); // from:dev to:amb
-            DrawDiffusion(); // df in:amb out:occ
+            BlitFromDeviceToOcclusion(); // from:dev to:occ
             DrawGaussianBlur(DiffusionConfig.Extent); // gb in:occ out:occ
             DrawScreen(); // screen in:amb occ out:dev
             break;
@@ -1666,12 +1658,22 @@ public class Viewer : IDisposable
 
     // blit
     // from dev_surface
-    // to amb_texture
+    // to amb_surface
     void Blit()
     {
-        Debug.WriteLine("Blit");
+        Debug.WriteLine("Blit from dev to amb");
 
         device.StretchRectangle(dev_surface, dev_rect, amb_surface, dev_rect, TextureFilter.Point);
+    }
+
+    // blit
+    // from dev_surface
+    // to occ_surface
+    void BlitFromDeviceToOcclusion()
+    {
+        Debug.WriteLine("Blit from dev to occ");
+
+        device.StretchRectangle(dev_surface, dev_rect, occ_surface, dev_rect, TextureFilter.Point);
     }
 
     // draw Gaussian Blur
@@ -1716,21 +1718,6 @@ public class Viewer : IDisposable
         device.DepthStencilSurface = tex_zbuf;
 
         screen.Draw(effect_ao);
-    }
-
-    // draw Diffusion
-    // in amb_texture
-    // out occ_surface
-    void DrawDiffusion()
-    {
-        Debug.WriteLine("DrawDiffusion");
-
-        device.SetRenderState(RenderStates.AlphaBlendEnable, false);
-
-        device.SetRenderTarget(0, occ_surface); // out
-        device.DepthStencilSurface = tex_zbuf;
-
-        screen.Draw(effect_df);
     }
 
     // draw depth
@@ -1856,8 +1843,6 @@ public class Viewer : IDisposable
         if (vd != null)
             vd.Dispose();
 
-        if (effect_df != null)
-            effect_df.Dispose();
         if (effect_main != null)
             effect_main.Dispose();
         if (effect_gb != null)
