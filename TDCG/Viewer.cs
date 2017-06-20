@@ -1019,9 +1019,11 @@ public class Viewer : IDisposable
                 (float)device.Viewport.Width / (float)device.Viewport.Height,
                 DepthMapConfig.ZnearPlane,
                 DepthMapConfig.ZfarPlane);
+        Vector4 vp = new Vector4(device.Viewport.Width, device.Viewport.Height, 0, 0);
+
         effect_dnmap.SetValue("depthproj", depth_projection); // in
         effect_ao.SetValue("depthproj", depth_projection); // in
-        effect_ao.SetValue("vp", new Vector4(device.Viewport.Width, device.Viewport.Height, 0, 0)); // in
+        effect_ao.SetValue("vp", vp); // in
     }
 
     private void OnDeviceLost(object sender, EventArgs e)
@@ -1113,6 +1115,7 @@ public class Viewer : IDisposable
         effect_ao.SetValue("NormalMap_texture", normalmap_texture); // in
         effect_ao.SetValue("RandomMap_texture", randommap_texture); // in
 
+        effect_main.SetValue("DepthMap_texture", depthmap_texture); // in
         effect_main.SetValue("Ambient_texture", amb_texture); // in
         effect_main.SetValue("Occlusion_texture", occ_texture); // in
 
