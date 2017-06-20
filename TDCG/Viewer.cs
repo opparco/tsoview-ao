@@ -1759,7 +1759,7 @@ public class Viewer : IDisposable
     // out dev_surface
     void DrawScreen()
     {
-        Debug.WriteLine("DrawMain");
+        Debug.WriteLine("DrawScreen");
 
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
