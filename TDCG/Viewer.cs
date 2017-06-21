@@ -903,7 +903,7 @@ public class Viewer : IDisposable
         if (!LoadEffect(@"gb.fx", out effect_gb))
             return false;
 
-        if (!LoadEffect(@"main.fx", out effect_main))
+        if (!LoadEffect(@"main.fx", out effect_main, macros))
             return false;
 
         handle_LocalBoneMats = effect.GetParameter(null, "LocalBoneMats");
