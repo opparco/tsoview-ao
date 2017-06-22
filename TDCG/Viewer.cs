@@ -243,6 +243,7 @@ public class Viewer : IDisposable
     Effect effect_ao;
     Effect effect_gb;
     Effect effect_main;
+    Effect effect_screen;
 
     /// <summary>
     /// toonshader.cgfx に渡す頂点宣言
@@ -903,7 +904,10 @@ public class Viewer : IDisposable
         if (!LoadEffect(@"gb.fx", out effect_gb))
             return false;
 
-        if (!LoadEffect(@"main.fx", out effect_main, macros))
+        if (!LoadEffect(@"main.fx", out effect_main))
+            return false;
+
+        if (!LoadEffect(@"screen.fx", out effect_screen, macros))
             return false;
 
         handle_LocalBoneMats = effect.GetParameter(null, "LocalBoneMats");
@@ -967,7 +971,7 @@ public class Viewer : IDisposable
         };
         DiffusionConfig.ChangeIntensity += delegate(object sender, EventArgs e)
         {
-            effect_main.SetValue("_Intensity", DiffusionConfig.Intensity); // in
+            effect_screen.SetValue("_Intensity", DiffusionConfig.Intensity); // in
             need_render = true;
         };
         DiffusionConfig.ChangeExtent += delegate (object sender, EventArgs e)
@@ -1115,9 +1119,12 @@ public class Viewer : IDisposable
         effect_ao.SetValue("NormalMap_texture", normalmap_texture); // in
         effect_ao.SetValue("RandomMap_texture", randommap_texture); // in
 
-        effect_main.SetValue("DepthMap_texture", depthmap_texture); // in
         effect_main.SetValue("Ambient_texture", amb_texture); // in
         effect_main.SetValue("Occlusion_texture", occ_texture); // in
+
+        effect_screen.SetValue("DepthMap_texture", depthmap_texture); // in
+        effect_screen.SetValue("Ambient_texture", amb_texture); // in
+        effect_screen.SetValue("Occlusion_texture", occ_texture); // in
 
         screen.Create(dev_rect);
 
@@ -1129,6 +1136,7 @@ public class Viewer : IDisposable
         screen.AssignWorldViewProjection(effect_ao);
         screen.AssignWorldViewProjection(effect_gb);
         screen.AssignWorldViewProjection(effect_main);
+        screen.AssignWorldViewProjection(effect_screen);
 
         AssignDepthProjection();
 
@@ -1752,7 +1760,6 @@ public class Viewer : IDisposable
         device.SetRenderTarget(0, dev_surface); // out
         device.DepthStencilSurface = dev_zbuf;
 
-        effect_main.Technique = "Main";
         screen.Draw(effect_main);
     }
 
@@ -1769,8 +1776,7 @@ public class Viewer : IDisposable
         device.SetRenderTarget(0, dev_surface); // out
         device.DepthStencilSurface = dev_zbuf;
 
-        effect_main.Technique = "Screen";
-        screen.Draw(effect_main);
+        screen.Draw(effect_screen);
     }
 
     /// <summary>
@@ -1847,6 +1853,8 @@ public class Viewer : IDisposable
         if (vd != null)
             vd.Dispose();
 
+        if (effect_screen != null)
+            effect_screen.Dispose();
         if (effect_main != null)
             effect_main.Dispose();
         if (effect_gb != null)
