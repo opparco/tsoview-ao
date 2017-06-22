@@ -23,6 +23,8 @@ public class TSOConfig
     public Microsoft.DirectX.Vector4 Ambient { get; set; }
     public float HohoAlpha { get; set; }
     public bool XRGBDepth { get; set; }
+    public bool MainGel { get; set; }
+    public bool ScreenDof { get; set; }
     public string DepthMapFormat { get; set; }
     public string NormalMapFormat { get; set; }
     public string RenderMode { get; set;}
@@ -40,6 +42,8 @@ public class TSOConfig
         this.DepthMapFormat = "X8R8G8B8";
         this.NormalMapFormat = "X8R8G8B8";
         this.RenderMode = "Main";
+        this.MainGel = false;
+        this.ScreenDof = false;
         this.RecordStep = 5;
     }
 

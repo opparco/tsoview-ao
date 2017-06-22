@@ -67,6 +67,8 @@ public partial class TSOForm : Form
         viewer.SetDepthMapFormat(tso_config.DepthMapFormat);
         viewer.SetNormalMapFormat(tso_config.NormalMapFormat);
         viewer.SetRenderMode(tso_config.RenderMode);
+        viewer.MainGel = tso_config.MainGel;
+        viewer.ScreenDof = tso_config.ScreenDof;
 
         this.figureForm = new FigureForm();
         this.configForm = new ConfigForm();

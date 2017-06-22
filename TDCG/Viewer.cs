@@ -367,6 +367,8 @@ public class Viewer : IDisposable
         Ambient = new Vector4(1, 1, 1, 1);
         HohoAlpha = 1.0f;
         XRGBDepth = true;
+        MainGel = false;
+        ScreenDof = false;
 
         techmap = new Dictionary<string, bool>();
         LoadTechMap();
@@ -872,9 +874,13 @@ public class Viewer : IDisposable
         device.DeviceReset += new EventHandler(OnDeviceReset);
         device.DeviceResizing += new CancelEventHandler(OnDeviceResizing);
 
-        Macro[] macros = new Macro[1];
+        Macro[] macros = new Macro[3];
         macros[0].Name = "XRGB_DEPTH";
         macros[0].Definition = XRGBDepth ? "1" : "0";
+        macros[1].Name = "MAIN_GEL";
+        macros[1].Definition = MainGel ? "1" : "0";
+        macros[2].Name = "SCREEN_DOF";
+        macros[2].Definition = ScreenDof ? "1" : "0";
 
         EffectPool effect_pool = new EffectPool();
 
@@ -904,7 +910,7 @@ public class Viewer : IDisposable
         if (!LoadEffect(@"gb.fx", out effect_gb))
             return false;
 
-        if (!LoadEffect(@"main.fx", out effect_main))
+        if (!LoadEffect(@"main.fx", out effect_main, macros))
             return false;
 
         if (!LoadEffect(@"screen.fx", out effect_screen, macros))
@@ -1454,6 +1460,12 @@ public class Viewer : IDisposable
     {
         render_mode = (RenderMode)Enum.Parse(typeof(RenderMode), name);
     }
+
+    /// config: gel mode
+    public bool MainGel { get; set; }
+
+    /// config: dof mode
+    public bool ScreenDof { get; set; }
 
     /// <summary>
     /// UVSCR値を得ます。
