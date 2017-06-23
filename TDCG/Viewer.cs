@@ -1376,11 +1376,11 @@ public class Viewer : IDisposable
             DrawGaussianBlur(1.0f);
 
             DrawFigure();
-            Blit(); // from:dev to:amb
+            Blit(dev_surface, amb_surface); // from:dev to:amb
             DrawMain(); // main in:amb occ out:dev
 
-            Blit(); // from:dev to:amb
-            BlitFromDeviceToOcclusion(); // from:dev to:occ
+            Blit(dev_surface, amb_surface); // from:dev to:amb
+            Blit(dev_surface, occ_surface); // from:dev to:occ
             DrawGaussianBlur(DiffusionConfig.Extent); // gb in:occ out:occ
             DrawScreen(); // screen in:amb occ out:dev
             break;
@@ -1394,7 +1394,7 @@ public class Viewer : IDisposable
             DrawGaussianBlur(1.0f);
 
             DrawFigure();
-            Blit(); // from:dev to:amb
+            Blit(dev_surface, amb_surface); // from:dev to:amb
             DrawMain(); // main in:amb occ out:dev
             break;
         }
@@ -1681,23 +1681,11 @@ public class Viewer : IDisposable
     }
 
     // blit
-    // from dev_surface
-    // to amb_surface
-    void Blit()
+    void Blit(Surface source, Surface dest)
     {
-        Debug.WriteLine("Blit from dev to amb");
+        Debug.WriteLine("Blit");
 
-        device.StretchRectangle(dev_surface, dev_rect, amb_surface, dev_rect, TextureFilter.Point);
-    }
-
-    // blit
-    // from dev_surface
-    // to occ_surface
-    void BlitFromDeviceToOcclusion()
-    {
-        Debug.WriteLine("Blit from dev to occ");
-
-        device.StretchRectangle(dev_surface, dev_rect, occ_surface, dev_rect, TextureFilter.Point);
+        device.StretchRectangle(source, dev_rect, dest, dev_rect, TextureFilter.Point);
     }
 
     // draw Gaussian Blur
