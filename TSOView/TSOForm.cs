@@ -46,6 +46,10 @@ public partial class TSOForm : Form
     {
         InitializeComponent();
         this.ClientSize = tso_config.ClientSize;
+        if (tso_config.PseudoFullScreen)
+            this.FormBorderStyle = FormBorderStyle.None;
+        if (tso_config.Keying)
+            this.TransparencyKey = tso_config.ScreenColor;
 
         for (int i = 0; i < keysEnabled.Length; i++)
         {

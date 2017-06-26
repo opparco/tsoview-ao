@@ -27,7 +27,9 @@ public class TSOConfig
     public bool ScreenDof { get; set; }
     public string DepthMapFormat { get; set; }
     public string NormalMapFormat { get; set; }
-    public string RenderMode { get; set;}
+    public string RenderMode { get; set; }
+    public bool PseudoFullScreen { get; set; }
+    public bool Keying { get; set; }
     public int RecordStep { get; set; }
 
     public TSOConfig()
@@ -44,6 +46,8 @@ public class TSOConfig
         this.RenderMode = "Main";
         this.MainGel = false;
         this.ScreenDof = false;
+        this.PseudoFullScreen = false;
+        this.Keying = false;
         this.RecordStep = 5;
     }
 
