@@ -33,9 +33,15 @@ namespace TSOView
                 this.Dispose(); // Esc was pressed
         }
 
-        private Figure fig = null;
-        private TSOFile tso = null;
-        private TSOSubScript sub_script = null;
+        Viewer viewer = null;
+        Figure fig = null;
+        TSOFile tso = null;
+        TSOSubScript sub_script = null;
+
+        public void SetViewer(Viewer viewer)
+        {
+            this.viewer = viewer;
+        }
 
         /// <summary>
         /// フィギュア情報を削除します。
@@ -239,6 +245,29 @@ namespace TSOView
 
             fig.slider_matrix.EyeRatio = tbSlideEye.Value / (float)tbSlideEye.Maximum;
             fig.UpdateBoneMatrices(true);
+        }
+
+        private void FigureForm_DragDrop(object sender, DragEventArgs e)
+        {
+            if (viewer == null)
+                return;
+
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                foreach (string src in (string[])e.Data.GetData(DataFormats.FileDrop))
+                    viewer.LoadAnyFile(src, (e.KeyState & 8) == 8);
+            }
+        }
+
+        private void FigureForm_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                if ((e.KeyState & 8) == 8)
+                    e.Effect = DragDropEffects.Copy;
+                else
+                    e.Effect = DragDropEffects.Move;
+            }
         }
     }
 }

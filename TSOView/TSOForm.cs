@@ -98,7 +98,7 @@ namespace TSOView
             if (viewer.InitializeApplication(this, true))
             {
                 viewer.ConfigConnect();
-
+                figureForm.SetViewer(viewer);
                 viewer.FigureSelectEvent += delegate (object sender, EventArgs e)
                 {
                     Figure fig;

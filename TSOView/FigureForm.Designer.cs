@@ -262,6 +262,7 @@ namespace TSOView
             // 
             // FigureForm
             // 
+            this.AllowDrop = true;
             this.ClientSize = new System.Drawing.Size(784, 563);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.lbSlideEye);
@@ -285,6 +286,8 @@ namespace TSOView
             this.Name = "FigureForm";
             this.Text = "TSOGrid";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FigureForm_FormClosing);
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.FigureForm_DragDrop);
+            this.DragOver += new System.Windows.Forms.DragEventHandler(this.FigureForm_DragOver);
             ((System.ComponentModel.ISupportInitialize)(this.gvShaderParams)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbSlideEye)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbSlideLeg)).EndInit();
