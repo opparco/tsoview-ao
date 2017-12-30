@@ -1012,11 +1012,11 @@ public class Viewer : IDisposable
 
     void AssignProjection()
     {
-        Transform_Projection = Matrix.PerspectiveFovRH(
-                fieldOfViewY,
-                (float)device.Viewport.Width / (float)device.Viewport.Height,
-                1.0f,
-                500.0f);
+        float aspect = (float)device.Viewport.Width / (float)device.Viewport.Height;
+        float d = camera.Translation.Z;
+        float h = d * (float)Math.Tan(fieldOfViewY / 2.0f);
+        float w = h * aspect;
+        Transform_Projection = Matrix.OrthoRH(w * 2.0f, h * 2.0f, 1.0f, 500.0f);
         // xxx: for w-buffering
         device.Transform.Projection = Transform_Projection;
         effect.SetValue("proj", Transform_Projection);
@@ -1024,11 +1024,11 @@ public class Viewer : IDisposable
 
     void AssignDepthProjection()
     {
-        Matrix depth_projection = Matrix.PerspectiveFovRH(
-                fieldOfViewY,
-                (float)device.Viewport.Width / (float)device.Viewport.Height,
-                DepthMapConfig.ZnearPlane,
-                DepthMapConfig.ZfarPlane);
+        float aspect = (float)device.Viewport.Width / (float)device.Viewport.Height;
+        float d = camera.Translation.Z;
+        float h = d * (float)Math.Tan(fieldOfViewY / 2.0f);
+        float w = h * aspect;
+        Matrix depth_projection = Matrix.OrthoRH(w * 2.0f, h * 2.0f, DepthMapConfig.ZnearPlane, DepthMapConfig.ZfarPlane);
         Vector4 vp = new Vector4(device.Viewport.Width, device.Viewport.Height, 0, 0);
 
         effect_dnmap.SetValue("depthproj", depth_projection); // in
@@ -1282,6 +1282,9 @@ public class Viewer : IDisposable
             // xxx: for w-buffering
             device.Transform.View = Transform_View;
             effect.SetValue("view", Transform_View);
+
+            AssignProjection();
+            AssignDepthProjection();
 
             need_render = true;
         }
