@@ -33,14 +33,11 @@ namespace TSOView
 
         private void tbRoll_ConfigChanged(object sender, EventArgs e)
         {
-            cbInverse.CheckedChanged -= new EventHandler(cbInverse_CheckedChanged);
             tbRoll.ValueChanged -= new EventHandler(tbRoll_ValueChanged);
             int roll = (int)CameraConfig.GetRollDegree();
-            cbInverse.Checked = (roll < 0);
-            tbRoll.Value = (roll < 0 ? -roll : roll) / 5;
+            tbRoll.Value = roll / 5;
             edRoll.Text = string.Format("{0}", roll);
             tbRoll.ValueChanged += new EventHandler(tbRoll_ValueChanged);
-            cbInverse.CheckedChanged += new EventHandler(cbInverse_CheckedChanged);
         }
 
         private void tbznearPlane_ConfigChanged(object sender, EventArgs e)
@@ -135,16 +132,7 @@ namespace TSOView
         private void tbRoll_ValueChanged(object sender, EventArgs e)
         {
             CameraConfig.ChangeRoll -= new EventHandler(tbRoll_ConfigChanged);
-            int roll = tbRoll.Value * 5 * (cbInverse.Checked ? -1 : 1);
-            edRoll.Text = string.Format("{0}", roll);
-            CameraConfig.SetRollDegree(roll);
-            CameraConfig.ChangeRoll += new EventHandler(tbRoll_ConfigChanged);
-        }
-
-        private void cbInverse_CheckedChanged(object sender, EventArgs e)
-        {
-            CameraConfig.ChangeRoll -= new EventHandler(tbRoll_ConfigChanged);
-            int roll = tbRoll.Value * 5 * (cbInverse.Checked ? -1 : 1);
+            int roll = tbRoll.Value * 5;
             edRoll.Text = string.Format("{0}", roll);
             CameraConfig.SetRollDegree(roll);
             CameraConfig.ChangeRoll += new EventHandler(tbRoll_ConfigChanged);

@@ -951,7 +951,7 @@ public class Viewer : IDisposable
         CameraConfig.ChangeRoll += delegate (object sender, EventArgs e)
         {
             Vector3 angle = camera.Angle;
-            angle.Z =-CameraConfig.Roll;
+            angle.Z = CameraConfig.Roll;
             camera.SetAngle(angle);
             need_render = true;
         };

@@ -50,7 +50,6 @@
             this.gbCamera = new System.Windows.Forms.GroupBox();
             this.edRoll = new System.Windows.Forms.TextBox();
             this.edFovy = new System.Windows.Forms.TextBox();
-            this.cbInverse = new System.Windows.Forms.CheckBox();
             this.tbRoll = new System.Windows.Forms.TrackBar();
             this.lbRoll = new System.Windows.Forms.Label();
             this.tbFovy = new System.Windows.Forms.TrackBar();
@@ -279,7 +278,6 @@
             // 
             this.gbCamera.Controls.Add(this.edRoll);
             this.gbCamera.Controls.Add(this.edFovy);
-            this.gbCamera.Controls.Add(this.cbInverse);
             this.gbCamera.Controls.Add(this.tbRoll);
             this.gbCamera.Controls.Add(this.lbRoll);
             this.gbCamera.Controls.Add(this.tbFovy);
@@ -311,23 +309,13 @@
             this.edFovy.Text = "30";
             this.edFovy.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
-            // cbInverse
-            // 
-            this.cbInverse.AutoSize = true;
-            this.cbInverse.Location = new System.Drawing.Point(26, 90);
-            this.cbInverse.Name = "cbInverse";
-            this.cbInverse.Size = new System.Drawing.Size(104, 16);
-            this.cbInverse.TabIndex = 6;
-            this.cbInverse.Text = "inverse rotation";
-            this.cbInverse.UseVisualStyleBackColor = true;
-            this.cbInverse.CheckedChanged += new System.EventHandler(this.cbInverse_CheckedChanged);
-            // 
             // tbRoll
             // 
             this.tbRoll.AutoSize = false;
             this.tbRoll.LargeChange = 3;
             this.tbRoll.Location = new System.Drawing.Point(61, 54);
             this.tbRoll.Maximum = 18;
+            this.tbRoll.Minimum = -18;
             this.tbRoll.Name = "tbRoll";
             this.tbRoll.Size = new System.Drawing.Size(152, 30);
             this.tbRoll.TabIndex = 4;
@@ -418,7 +406,6 @@
         private System.Windows.Forms.GroupBox gbCamera;
         private System.Windows.Forms.TextBox edRoll;
         private System.Windows.Forms.TextBox edFovy;
-        private System.Windows.Forms.CheckBox cbInverse;
         private System.Windows.Forms.TrackBar tbRoll;
         private System.Windows.Forms.Label lbRoll;
         private System.Windows.Forms.TrackBar tbFovy;
