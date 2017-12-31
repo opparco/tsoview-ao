@@ -13,6 +13,13 @@ using Direct3D = Microsoft.DirectX.Direct3D;
 
 namespace TDCG
 {
+    /// 射影 mode
+    public enum ProjectionMode
+    {
+        Ortho,
+        Perspective
+    };
+
     /// 描画 mode
     public enum RenderMode
     {
@@ -1010,13 +1017,37 @@ public class Viewer : IDisposable
         return true;
     }
 
+    ProjectionMode projection_mode = ProjectionMode.Perspective;
+
+    public ProjectionMode ProjectionMode
+    {
+        get { return projection_mode; }
+        set
+        {
+            projection_mode = value;
+            Console.WriteLine("projection_mode:{0}", projection_mode);
+
+            AssignProjection();
+            AssignDepthProjection();
+
+            need_render = true;
+        }
+    }
+
     void AssignProjection()
     {
         float aspect = (float)device.Viewport.Width / (float)device.Viewport.Height;
-        float d = camera.Translation.Z;
+        float d;
+        if (projection_mode == ProjectionMode.Ortho)
+            d = camera.Translation.Z;
+        else
+            d = 1.0f; // zn
         float h = d * (float)Math.Tan(fieldOfViewY / 2.0f);
         float w = h * aspect;
-        Transform_Projection = Matrix.OrthoRH(w * 2.0f, h * 2.0f, 1.0f, 500.0f);
+        if (projection_mode == ProjectionMode.Ortho)
+            Transform_Projection = Matrix.OrthoRH(w * 2.0f, h * 2.0f, 1.0f, 500.0f);
+        else
+            Transform_Projection = Matrix.PerspectiveRH(w * 2.0f, h * 2.0f, 1.0f, 500.0f);
         // xxx: for w-buffering
         device.Transform.Projection = Transform_Projection;
         effect.SetValue("proj", Transform_Projection);
@@ -1025,15 +1056,28 @@ public class Viewer : IDisposable
     void AssignDepthProjection()
     {
         float aspect = (float)device.Viewport.Width / (float)device.Viewport.Height;
-        float d = camera.Translation.Z;
+        float d;
+        if (projection_mode == ProjectionMode.Ortho)
+            d = camera.Translation.Z;
+        else
+            d = DepthMapConfig.ZnearPlane;
         float h = d * (float)Math.Tan(fieldOfViewY / 2.0f);
         float w = h * aspect;
-        Matrix depth_projection = Matrix.OrthoRH(w * 2.0f, h * 2.0f, DepthMapConfig.ZnearPlane, DepthMapConfig.ZfarPlane);
+        Matrix depth_projection;
+        if (projection_mode == ProjectionMode.Ortho)
+            depth_projection = Matrix.OrthoRH(w * 2.0f, h * 2.0f, DepthMapConfig.ZnearPlane, DepthMapConfig.ZfarPlane);
+        else
+            depth_projection = Matrix.PerspectiveRH(w * 2.0f, h * 2.0f, DepthMapConfig.ZnearPlane, DepthMapConfig.ZfarPlane);
         Vector4 vp = new Vector4(device.Viewport.Width, device.Viewport.Height, 0, 0);
 
         effect_dnmap.SetValue("depthproj", depth_projection); // in
         effect_ao.SetValue("depthproj", depth_projection); // in
         effect_ao.SetValue("vp", vp); // in
+
+        if (projection_mode == ProjectionMode.Ortho)
+            effect_ao.Technique = "AO_ortho";
+        else
+            effect_ao.Technique = "AO";
     }
 
     private void OnDeviceLost(object sender, EventArgs e)
@@ -1458,7 +1502,13 @@ public class Viewer : IDisposable
         normalmap_format = (Format)Enum.Parse(typeof(Format), name);
     }
 
-    /// config: rendermode name
+    /// config: projection mode name
+    public void SetProjectionMode(string name)
+    {
+        projection_mode = (ProjectionMode)Enum.Parse(typeof(ProjectionMode), name);
+    }
+
+    /// config: render mode name
     public void SetRenderMode(string name)
     {
         render_mode = (RenderMode)Enum.Parse(typeof(RenderMode), name);

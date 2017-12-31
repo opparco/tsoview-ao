@@ -27,6 +27,7 @@ public class TSOConfig
     public bool ScreenDof { get; set; }
     public string DepthMapFormat { get; set; }
     public string NormalMapFormat { get; set; }
+    public string ProjectionMode { get; set; }
     public string RenderMode { get; set; }
     public bool PseudoFullScreen { get; set; }
     public bool Keying { get; set; }
@@ -43,6 +44,7 @@ public class TSOConfig
         this.XRGBDepth = true;
         this.DepthMapFormat = "X8R8G8B8";
         this.NormalMapFormat = "X8R8G8B8";
+        this.ProjectionMode = "Perspective";
         this.RenderMode = "Main";
         this.MainGel = false;
         this.ScreenDof = false;

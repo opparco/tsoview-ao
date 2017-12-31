@@ -20,6 +20,7 @@ namespace TSOView
 
         internal int keySave = (int)Keys.Return;
         internal int keyMotion = (int)Keys.Space;
+        internal int keyProjection = (int)Keys.P;
         internal int keyMain = (int)Keys.C;
         internal int keyAmbient = (int)Keys.C;
         internal int keyDepthMap = (int)Keys.Z;
@@ -70,6 +71,7 @@ namespace TSOView
             viewer.XRGBDepth = tso_config.XRGBDepth;
             viewer.SetDepthMapFormat(tso_config.DepthMapFormat);
             viewer.SetNormalMapFormat(tso_config.NormalMapFormat);
+            viewer.SetProjectionMode(tso_config.ProjectionMode);
             viewer.SetRenderMode(tso_config.RenderMode);
             viewer.MainGel = tso_config.MainGel;
             viewer.ScreenDof = tso_config.ScreenDof;
@@ -177,6 +179,14 @@ namespace TSOView
             viewer.SaveToPng(GetSaveFileName(type));
         }
 
+        void SwitchProjectionMode()
+        {
+            if (viewer.ProjectionMode == ProjectionMode.Ortho)
+                viewer.ProjectionMode = ProjectionMode.Perspective;
+            else
+                viewer.ProjectionMode = ProjectionMode.Ortho;
+        }
+
         void SwitchRenderMode(RenderMode mode)
         {
             if (viewer.RenderMode == mode)
@@ -199,6 +209,11 @@ namespace TSOView
             {
                 keysEnabled[keyMotion] = false;
                 viewer.MotionEnabled = !viewer.MotionEnabled;
+            }
+            if (keysEnabled[keyProjection] && keys[keyProjection])
+            {
+                keysEnabled[keyProjection] = false;
+                SwitchProjectionMode();
             }
             if (keysEnabled[keyAmbient] && keys[keyAmbient])
             {
