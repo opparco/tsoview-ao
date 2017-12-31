@@ -16,7 +16,9 @@ namespace TDCG
     /// 射影 mode
     public enum ProjectionMode
     {
+        /// 正射影
         Ortho,
+        /// 透視射影
         Perspective
     };
 
@@ -1019,6 +1021,7 @@ public class Viewer : IDisposable
 
     ProjectionMode projection_mode = ProjectionMode.Perspective;
 
+    /// 射影 mode
     public ProjectionMode ProjectionMode
     {
         get { return projection_mode; }
