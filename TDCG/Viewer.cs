@@ -1025,7 +1025,6 @@ public class Viewer : IDisposable
         set
         {
             projection_mode = value;
-            Console.WriteLine("projection_mode:{0}", projection_mode);
 
             AssignProjection();
             AssignDepthProjection();
