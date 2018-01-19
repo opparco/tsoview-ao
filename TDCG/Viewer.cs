@@ -129,6 +129,11 @@ namespace TDCG
                     ChangeZfarPlane(this, EventArgs.Empty);
             }
         }
+
+        public float Zdistance
+        {
+            get { return zf - zn; }
+        }
     }
 
     /// occlusion 設定
@@ -1057,23 +1062,25 @@ public class Viewer : IDisposable
 
     void AssignDepthProjection()
     {
+        float zn = DepthMapConfig.ZnearPlane;
+        float zd = DepthMapConfig.Zdistance;
         float aspect = (float)device.Viewport.Width / (float)device.Viewport.Height;
         float d;
         if (projection_mode == ProjectionMode.Ortho)
             d = camera.Translation.Z;
         else
-            d = DepthMapConfig.ZnearPlane;
+            d = zn;
         float h = d * (float)Math.Tan(fieldOfViewY / 2.0f);
         float w = h * aspect;
-        Matrix depth_projection;
+        Vector4 zp;
         if (projection_mode == ProjectionMode.Ortho)
-            depth_projection = Matrix.OrthoRH(w * 2.0f, h * 2.0f, DepthMapConfig.ZnearPlane, DepthMapConfig.ZfarPlane);
+            zp = new Vector4(1/w, 1/h, zn, zd);
         else
-            depth_projection = Matrix.PerspectiveRH(w * 2.0f, h * 2.0f, DepthMapConfig.ZnearPlane, DepthMapConfig.ZfarPlane);
+            zp = new Vector4(zn/w, zn/h, zn, zd);
         Vector4 vp = new Vector4(device.Viewport.Width, device.Viewport.Height, 0, 0);
 
-        effect_dnmap.SetValue("depthproj", depth_projection); // in
-        effect_ao.SetValue("depthproj", depth_projection); // in
+        effect_dnmap.SetValue("zp", zp); // in
+        effect_ao.SetValue("zp", zp); // in
         effect_ao.SetValue("vp", vp); // in
 
         if (projection_mode == ProjectionMode.Ortho)
