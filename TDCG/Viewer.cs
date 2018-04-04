@@ -347,15 +347,15 @@ public class Viewer : IDisposable
     public DiffusionConfig DiffusionConfig = null;
 
     Texture amb_texture;
-    Texture depthmap_texture;
-    Texture normalmap_texture;
+    Texture dmap_texture;
+    Texture nmap_texture;
     Texture randommap_texture;
     Texture occ_texture;
     Texture tmp_texture;
 
     Surface amb_surface;
-    Surface depthmap_surface;
-    Surface normalmap_surface;
+    Surface dmap_surface;
+    Surface nmap_surface;
     Surface occ_surface;
     Surface tmp_surface;
 
@@ -1098,10 +1098,10 @@ public class Viewer : IDisposable
 
         if (amb_surface != null)
             amb_surface.Dispose();
-        if (depthmap_surface != null)
-            depthmap_surface.Dispose();
-        if (normalmap_surface != null)
-            normalmap_surface.Dispose();
+        if (dmap_surface != null)
+            dmap_surface.Dispose();
+        if (nmap_surface != null)
+            nmap_surface.Dispose();
         if (occ_surface != null)
             occ_surface.Dispose();
         if (tmp_surface != null)
@@ -1109,10 +1109,10 @@ public class Viewer : IDisposable
 
         if (amb_texture != null)
             amb_texture.Dispose();
-        if (depthmap_texture != null)
-            depthmap_texture.Dispose();
-        if (normalmap_texture != null)
-            normalmap_texture.Dispose();
+        if (dmap_texture != null)
+            dmap_texture.Dispose();
+        if (nmap_texture != null)
+            nmap_texture.Dispose();
         if (randommap_texture != null)
             randommap_texture.Dispose();
         if (occ_texture != null)
@@ -1158,11 +1158,11 @@ public class Viewer : IDisposable
         amb_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
         amb_surface = amb_texture.GetSurfaceLevel(0);
 
-        depthmap_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, depthmap_format, Pool.Default);
-        depthmap_surface = depthmap_texture.GetSurfaceLevel(0);
+        dmap_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, dmap_format, Pool.Default);
+        dmap_surface = dmap_texture.GetSurfaceLevel(0);
 
-        normalmap_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, normalmap_format, Pool.Default);
-        normalmap_surface = normalmap_texture.GetSurfaceLevel(0);
+        nmap_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, nmap_format, Pool.Default);
+        nmap_surface = nmap_texture.GetSurfaceLevel(0);
 
         randommap_texture = TextureLoader.FromFile(device, GetRandomTexturePath());
 
@@ -1172,16 +1172,16 @@ public class Viewer : IDisposable
         tmp_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
         tmp_surface = tmp_texture.GetSurfaceLevel(0);
 
-        effect_depth.SetValue("DepthMap_texture", depthmap_texture); // in
+        effect_depth.SetValue("DepthMap_texture", dmap_texture); // in
 
-        effect_ao.SetValue("DepthMap_texture", depthmap_texture); // in
-        effect_ao.SetValue("NormalMap_texture", normalmap_texture); // in
+        effect_ao.SetValue("DepthMap_texture", dmap_texture); // in
+        effect_ao.SetValue("NormalMap_texture", nmap_texture); // in
         effect_ao.SetValue("RandomMap_texture", randommap_texture); // in
 
         effect_main.SetValue("Ambient_texture", amb_texture); // in
         effect_main.SetValue("Occlusion_texture", occ_texture); // in
 
-        effect_screen.SetValue("DepthMap_texture", depthmap_texture); // in
+        effect_screen.SetValue("DepthMap_texture", dmap_texture); // in
         effect_screen.SetValue("Ambient_texture", amb_texture); // in
         effect_screen.SetValue("Occlusion_texture", occ_texture); // in
 
@@ -1418,7 +1418,7 @@ public class Viewer : IDisposable
             break;
         case RenderMode.NormalMap:
             DrawDepthNormalMap();
-            DrawSprite(normalmap_texture);
+            DrawSprite(nmap_texture);
             break;
         case RenderMode.Occlusion:
             DrawDepthNormalMap();
@@ -1496,19 +1496,19 @@ public class Viewer : IDisposable
     /// config: enhance depth precision on Format.X8A8G8B8
     public bool XRGBDepth { get; set; }
 
-    Format depthmap_format = Format.X8R8G8B8;
-    Format normalmap_format = Format.X8R8G8B8;
+    Format dmap_format = Format.X8R8G8B8;
+    Format nmap_format = Format.X8R8G8B8;
 
     /// config: depthmap format name
     public void SetDepthMapFormat(string name)
     {
-        depthmap_format = (Format)Enum.Parse(typeof(Format), name);
+        dmap_format = (Format)Enum.Parse(typeof(Format), name);
     }
 
     /// config: normalmap format name
     public void SetNormalMapFormat(string name)
     {
-        normalmap_format = (Format)Enum.Parse(typeof(Format), name);
+        nmap_format = (Format)Enum.Parse(typeof(Format), name);
     }
 
     /// config: projection mode name
@@ -1652,16 +1652,16 @@ public class Viewer : IDisposable
     }
 
     // draw depthmap and normalmap
-    // out depthmap_surface
-    // out normalmap_surface
+    // out dmap_surface
+    // out nmap_surface
     void DrawDepthNormalMap()
     {
         Debug.WriteLine("DrawDepthNormalMap");
 
         device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
-        device.SetRenderTarget(0, depthmap_surface);
-        device.SetRenderTarget(1, normalmap_surface);
+        device.SetRenderTarget(0, dmap_surface);
+        device.SetRenderTarget(1, nmap_surface);
 
         device.DepthStencilSurface = tex_zbuf;
         device.Clear(ClearFlags.ZBuffer, Color.White, 1.0f, 0);
@@ -1779,8 +1779,8 @@ public class Viewer : IDisposable
     }
 
     // draw Ambient Occlusion
-    // in depthmap_texture
-    // in normalmap_texture
+    // in dmap_texture
+    // in nmap_texture
     // out occ_surface
     void DrawOcclusion()
     {
@@ -1795,7 +1795,7 @@ public class Viewer : IDisposable
     }
 
     // draw depth
-    // in depthmap_texture
+    // in dmap_texture
     // out dev_surface
     void DrawDepth()
     {
@@ -1885,10 +1885,10 @@ public class Viewer : IDisposable
 
         if (amb_surface != null)
             amb_surface.Dispose();
-        if (depthmap_surface != null)
-            depthmap_surface.Dispose();
-        if (normalmap_surface != null)
-            normalmap_surface.Dispose();
+        if (dmap_surface != null)
+            dmap_surface.Dispose();
+        if (nmap_surface != null)
+            nmap_surface.Dispose();
         if (occ_surface != null)
             occ_surface.Dispose();
         if (tmp_surface != null)
@@ -1896,10 +1896,10 @@ public class Viewer : IDisposable
 
         if (amb_texture != null)
             amb_texture.Dispose();
-        if (depthmap_texture != null)
-            depthmap_texture.Dispose();
-        if (normalmap_texture != null)
-            normalmap_texture.Dispose();
+        if (dmap_texture != null)
+            dmap_texture.Dispose();
+        if (nmap_texture != null)
+            nmap_texture.Dispose();
         if (occ_texture != null)
             occ_texture.Dispose();
         if (tmp_texture != null)
