@@ -2125,37 +2125,6 @@ public class Viewer : IDisposable
     }
 
     /// <summary>
-    /// 球とレイの衝突を見つけます。
-    /// </summary>
-    /// <param name="sphereRadius">球の半径</param>
-    /// <param name="sphereCenter">球の中心位置</param>
-    /// <param name="rayStart">光線の発射位置</param>
-    /// <param name="rayOrientation">光線の方向</param>
-    /// <param name="collisionPoint">衝突位置</param>
-    /// <param name="collisionTime">衝突時刻</param>
-    /// <returns>衝突したか</returns>
-    public static bool DetectSphereRayCollision(float sphereRadius, ref Vector3 sphereCenter, ref Vector3 rayStart, ref Vector3 rayOrientation, out Vector3 collisionPoint, out float collisionTime)
-    {
-        collisionTime = 0.0f;
-        collisionPoint = Vector3.Empty;
-
-        Vector3 u = rayStart - sphereCenter;
-        float a = Vector3.Dot(rayOrientation, rayOrientation);
-        float b = Vector3.Dot(rayOrientation, u);
-        float c = Vector3.Dot(u, u) - sphereRadius * sphereRadius;
-        if (a <= float.Epsilon)
-            //誤差
-            return false;
-        float d = b * b - a * c;
-        if (d < 0.0f)
-            //衝突しない
-            return false;
-        collisionTime = (-b - (float)Math.Sqrt(d)) / a;
-        collisionPoint = rayStart + rayOrientation * collisionTime;
-        return true;
-    }
-
-    /// <summary>
     /// viewport行列を作成します。
     /// </summary>
     /// <param name="viewport">viewport</param>
