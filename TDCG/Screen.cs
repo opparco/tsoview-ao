@@ -10,15 +10,17 @@ public class Screen
 {
     Device device;
 
+    // 描画面は4頂点で作成
+    VertexBuffer vb;
+    CustomVertex.PositionTextured[] vertices;
+
+    Matrix world_view_projection;
+
     /// constructor
     public Screen(Device device)
     {
         this.device = device;
     }
-
-    // 描画面は4頂点で作成
-    VertexBuffer vb;
-    CustomVertex.PositionTextured[] vertices;
 
     void CreateVertices(Rectangle rect)
     {
@@ -53,8 +55,6 @@ public class Screen
             vb.Unlock();
         }
     }
-
-    Matrix world_view_projection;
 
     /// 作成する
     public void Create(Rectangle rect)

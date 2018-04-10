@@ -40,10 +40,12 @@
   -->
   <ItemGroup>
     <Compile Include="BMPSaveData.cs" />
+    <Compile Include="Circle.cs" />
     <Compile Include="Figure.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="PNGFile.cs" />
     <Compile Include="PNGWriter.cs" />
+    <Compile Include="Pole.cs" />
     <Compile Include="Record.cs" />
     <Compile Include="Screen.cs" />
     <Compile Include="Shader.cs" />

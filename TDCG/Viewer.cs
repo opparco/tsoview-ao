@@ -257,6 +257,8 @@ public class Viewer : IDisposable
     Effect effect_ao;
     Effect effect_gb;
     Effect effect_main;
+    Effect effect_circle;
+    Effect effect_pole;
     Effect effect_screen;
 
     /// <summary>
@@ -300,6 +302,8 @@ public class Viewer : IDisposable
     /// </summary>
     public bool ShadowMapEnabled { get { return shadow_map_enabled; } }
 
+    Circle circle = null;
+    Pole pole = null;
     Screen screen = null;
     Sprite sprite = null;
 
@@ -927,6 +931,12 @@ public class Viewer : IDisposable
         if (!LoadEffect(@"main.fx", out effect_main, macros))
             return false;
 
+        if (!LoadEffect(@"circle.fx", out effect_circle, macros))
+            return false;
+
+        if (!LoadEffect(@"pole.fx", out effect_pole, macros))
+            return false;
+
         if (!LoadEffect(@"screen.fx", out effect_screen, macros))
             return false;
 
@@ -936,6 +946,8 @@ public class Viewer : IDisposable
         handle_HohoAlpha = effect.GetParameter(null, "HohoAlpha");
         handle_UVSCR = effect.GetParameter(null, "UVSCR");
 
+        circle = new Circle(device);
+        pole = new Pole(device);
         screen = new Screen(device);
         sprite = new Sprite(device);
         camera.Update();
@@ -1093,8 +1105,14 @@ public class Viewer : IDisposable
     {
         Console.WriteLine("OnDeviceLost");
 
+        if (sprite != null)
+            sprite.Dispose();
         if (screen != null)
             screen.Dispose();
+        if (pole != null)
+            pole.Dispose();
+        if (circle != null)
+            circle.Dispose();
 
         if (amb_surface != null)
             amb_surface.Dispose();
@@ -1185,6 +1203,8 @@ public class Viewer : IDisposable
         effect_screen.SetValue("Ambient_texture", amb_texture); // in
         effect_screen.SetValue("Occlusion_texture", occ_texture); // in
 
+        circle.Create();
+        pole.Create();
         screen.Create(dev_rect);
 
         AssignProjection();
@@ -1386,6 +1406,106 @@ public class Viewer : IDisposable
     /// </summary>
     public RenderingHandler Rendering;
 
+    public void AssignWorldViewProjection()
+    {
+        Matrix world_view_matrix = world_matrix * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect.SetValue("wld", world_matrix);
+        effect.SetValue("wv", world_view_matrix);
+        effect.SetValue("wvp", world_view_projection_matrix);
+    }
+
+    public void DrawPoleZ()
+    {
+        Matrix world_matrix = Matrix.Identity;
+        Matrix world_view_matrix = world_matrix * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_pole.SetValue("wvp", world_view_projection_matrix);
+        effect_pole.SetValue("col", new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+
+        pole.Draw(effect_pole);
+    }
+
+    public void DrawPoleY()
+    {
+        Matrix world_matrix = Matrix.RotationX((float)(-Math.PI/2.0));
+        Matrix world_view_matrix = world_matrix * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_pole.SetValue("wvp", world_view_projection_matrix);
+        effect_pole.SetValue("col", new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+
+        pole.Draw(effect_pole);
+    }
+
+    public void DrawPoleX()
+    {
+        Matrix world_matrix = Matrix.RotationY((float)(+Math.PI/2.0));
+        Matrix world_view_matrix = world_matrix * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_pole.SetValue("wvp", world_view_projection_matrix);
+        effect_pole.SetValue("col", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+
+        pole.Draw(effect_pole);
+    }
+
+    public void DrawCircleZ()
+    {
+        Matrix world_matrix = Matrix.Identity;
+        Matrix world_view_matrix = world_matrix * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_circle.SetValue("wvp", world_view_projection_matrix);
+        effect_circle.SetValue("col", new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+
+        circle.Draw(effect_circle);
+    }
+
+    public void DrawCircleY()
+    {
+        Matrix world_matrix = Matrix.RotationX((float)(-Math.PI/2.0));
+        Matrix world_view_matrix = world_matrix * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_circle.SetValue("wvp", world_view_projection_matrix);
+        effect_circle.SetValue("col", new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+
+        circle.Draw(effect_circle);
+    }
+
+    public void DrawCircleX()
+    {
+        Matrix world_matrix = Matrix.RotationY((float)(+Math.PI/2.0));
+        Matrix world_view_matrix = world_matrix * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_circle.SetValue("wvp", world_view_projection_matrix);
+        effect_circle.SetValue("col", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+
+        circle.Draw(effect_circle);
+    }
+
+    public void DrawCircleW()
+    {
+        float scale = 0.5f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale);
+        Matrix world_view_matrix = world_matrix;
+
+        world_view_matrix.M41 += Transform_View.M41;
+        world_view_matrix.M42 += Transform_View.M42;
+        world_view_matrix.M43 += Transform_View.M43;
+
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_circle.SetValue("wvp", world_view_projection_matrix);
+        effect_circle.SetValue("col", new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+
+        circle.Draw(effect_circle);
+    }
+
     /// <summary>
     /// シーンをレンダリングします。
     /// </summary>
@@ -1399,18 +1519,19 @@ public class Viewer : IDisposable
         Debug.WriteLine("-- device BeginScene --");
         device.BeginScene();
 
-        {
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-            effect.SetValue("wld", world_matrix);
-            effect.SetValue("wv", world_view_matrix);
-            effect.SetValue("wvp", world_view_projection_matrix);
-        }
+        AssignWorldViewProjection();
 
         switch (RenderMode)
         {
         case RenderMode.Ambient:
             DrawFigure();
+            DrawPoleZ();
+            DrawPoleY();
+            DrawPoleX();
+            DrawCircleZ();
+            DrawCircleY();
+            DrawCircleX();
+            DrawCircleW();
             break;
         case RenderMode.DepthMap:
             DrawDepthNormalMap();
@@ -1877,11 +1998,15 @@ public class Viewer : IDisposable
     {
         foreach (Figure fig in FigureList)
             fig.Dispose();
+
         if (sprite != null)
             sprite.Dispose();
-
         if (screen != null)
             screen.Dispose();
+        if (pole != null)
+            pole.Dispose();
+        if (circle != null)
+            circle.Dispose();
 
         if (amb_surface != null)
             amb_surface.Dispose();
@@ -1917,6 +2042,10 @@ public class Viewer : IDisposable
 
         if (effect_screen != null)
             effect_screen.Dispose();
+        if (effect_pole != null)
+            effect_pole.Dispose();
+        if (effect_circle != null)
+            effect_circle.Dispose();
         if (effect_main != null)
             effect_main.Dispose();
         if (effect_gb != null)
