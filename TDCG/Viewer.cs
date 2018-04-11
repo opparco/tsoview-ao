@@ -1418,7 +1418,8 @@ public class Viewer : IDisposable
 
     public void DrawPoleZ()
     {
-        Matrix world_matrix = Matrix.Identity;
+        float scale = 5.0f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale);
         Matrix world_view_matrix = world_matrix * Transform_View;
         Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
 
@@ -1430,7 +1431,8 @@ public class Viewer : IDisposable
 
     public void DrawPoleY()
     {
-        Matrix world_matrix = Matrix.RotationX((float)(-Math.PI/2.0));
+        float scale = 5.0f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI/2.0));
         Matrix world_view_matrix = world_matrix * Transform_View;
         Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
 
@@ -1442,7 +1444,8 @@ public class Viewer : IDisposable
 
     public void DrawPoleX()
     {
-        Matrix world_matrix = Matrix.RotationY((float)(+Math.PI/2.0));
+        float scale = 5.0f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI/2.0));
         Matrix world_view_matrix = world_matrix * Transform_View;
         Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
 
@@ -1454,7 +1457,8 @@ public class Viewer : IDisposable
 
     public void DrawCircleZ()
     {
-        Matrix world_matrix = Matrix.Identity;
+        float scale = 2.5f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale);
         Matrix world_view_matrix = world_matrix * Transform_View;
         Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
 
@@ -1466,7 +1470,8 @@ public class Viewer : IDisposable
 
     public void DrawCircleY()
     {
-        Matrix world_matrix = Matrix.RotationX((float)(-Math.PI/2.0));
+        float scale = 2.5f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI/2.0));
         Matrix world_view_matrix = world_matrix * Transform_View;
         Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
 
@@ -1478,7 +1483,8 @@ public class Viewer : IDisposable
 
     public void DrawCircleX()
     {
-        Matrix world_matrix = Matrix.RotationY((float)(+Math.PI/2.0));
+        float scale = 2.5f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI/2.0));
         Matrix world_view_matrix = world_matrix * Transform_View;
         Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
 
@@ -1490,7 +1496,7 @@ public class Viewer : IDisposable
 
     public void DrawCircleW()
     {
-        float scale = 0.5f;
+        float scale = 1.25f;
         Matrix world_matrix = Matrix.Scaling(scale, scale, scale);
         Matrix world_view_matrix = world_matrix;
 
@@ -1506,13 +1512,50 @@ public class Viewer : IDisposable
         circle.Draw(effect_circle);
     }
 
-    public void DrawNode(TMONode node, ref Matrix world)
+    public void DrawNodePoleY(ref Vector3 world_position, ref Matrix world)
     {
-        float scale = 0.05f;
-        Vector3 world_position = node.GetWorldPosition();
+        float scale = 0.25f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI/2.0)) * camera.RotationMatrix;
 
+        // translation
+        world_matrix.M41 = world_position.X;
+        world_matrix.M42 = world_position.Y;
+        world_matrix.M43 = world_position.Z;
+
+        Matrix world_view_matrix = world_matrix * world * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_pole.SetValue("wvp", world_view_projection_matrix);
+        effect_pole.SetValue("col", new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+
+        pole.Draw(effect_pole);
+    }
+
+    public void DrawNodePoleX(ref Vector3 world_position, ref Matrix world)
+    {
+        float scale = 0.25f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI/2.0)) * camera.RotationMatrix;
+
+        // translation
+        world_matrix.M41 = world_position.X;
+        world_matrix.M42 = world_position.Y;
+        world_matrix.M43 = world_position.Z;
+
+        Matrix world_view_matrix = world_matrix * world * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_pole.SetValue("wvp", world_view_projection_matrix);
+        effect_pole.SetValue("col", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+
+        pole.Draw(effect_pole);
+    }
+
+    public void DrawNodeCircleW(ref Vector3 world_position, ref Matrix world)
+    {
+        float scale = 0.125f;
         Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * camera.RotationMatrix;
 
+        // translation
         world_matrix.M41 = world_position.X;
         world_matrix.M42 = world_position.Y;
         world_matrix.M43 = world_position.Z;
@@ -1524,6 +1567,14 @@ public class Viewer : IDisposable
         effect_circle.SetValue("col", new Vector4(0.5f, 0.5f, 0.5f, 1.0f));
 
         circle.Draw(effect_circle);
+    }
+
+    public void DrawNode(TMONode node, ref Matrix world)
+    {
+        Vector3 world_position = node.GetWorldPosition();
+        DrawNodePoleX(ref world_position, ref world);
+        DrawNodePoleY(ref world_position, ref world);
+        DrawNodeCircleW(ref world_position, ref world);
     }
 
     /// <summary>
@@ -1555,18 +1606,8 @@ public class Viewer : IDisposable
             Figure fig;
             if (TryGetFigure(out fig))
             {
-                Matrix world = Matrix.Identity;
-
-                if (fig.slider_matrix != null)
-                {
-                    //姉妹スライダによる変形
-                    world = Matrix.Scaling(fig.slider_matrix.Local);
-                }
-
-                //移動変位を設定
-                world.M41 = fig.Translation.X;
-                world.M42 = fig.Translation.Y;
-                world.M43 = fig.Translation.Z;
+                Matrix world;
+                fig.GetWorldMatrix(out world);
 
                 foreach (TMONode node in fig.Tmo.nodes)
                 {
@@ -1835,18 +1876,8 @@ public class Viewer : IDisposable
         foreach (Figure fig in FigureList)
         {
             {
-                Matrix world = Matrix.Identity;
-
-                if (fig.slider_matrix != null)
-                {
-                    //姉妹スライダによる変形
-                    world = Matrix.Scaling(fig.slider_matrix.Local);
-                }
-
-                //移動変位を設定
-                world.M41 = fig.Translation.X;
-                world.M42 = fig.Translation.Y;
-                world.M43 = fig.Translation.Z;
+                Matrix world;
+                fig.GetWorldMatrix(out world);
 
                 Matrix world_view_matrix = world * Transform_View;
                 Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;

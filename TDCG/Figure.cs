@@ -92,9 +92,9 @@ public class Figure : IDisposable
     /// tso nodeからtmo nodeを導出する辞書
     public Dictionary<TSONode, TMONode> nodemap;
 
-    private MatrixStack matrixStack = null;
-    private int frame_index = 0;
-    private int current_frame_index = 0;
+    MatrixStack matrixStack = null;
+    int frame_index = 0;
+    int current_frame_index = 0;
 
     /// <summary>
     /// フィギュアを生成します。
@@ -483,6 +483,22 @@ public class Figure : IDisposable
     public Vector4 LightDirForced()
     {
         return new Vector4(LightDirection.X, LightDirection.Y, LightDirection.Z, 0.0f);
+    }
+
+    public void GetWorldMatrix(out Matrix m)
+    {
+        m = Matrix.Identity;
+
+        if (slider_matrix != null)
+        {
+            //姉妹スライダによる変形
+            m = Matrix.Scaling(slider_matrix.Local);
+        }
+
+        //移動変位を設定
+        m.M41 = translation.X;
+        m.M42 = translation.Y;
+        m.M43 = translation.Z;
     }
 
     /// <summary>

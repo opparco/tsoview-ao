@@ -21,7 +21,7 @@ public class Pole
         vertices = new CustomVertex.PositionOnly[2];
 
         vertices[0] = new CustomVertex.PositionOnly(0, 0, 0);
-        vertices[1] = new CustomVertex.PositionOnly(0, 0, 5.0f);
+        vertices[1] = new CustomVertex.PositionOnly(0, 0, 1.0f);
     }
 
     void vb_Created(object sender, EventArgs e)

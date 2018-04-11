@@ -22,7 +22,7 @@ public class Circle
     {
         vertices = new CustomVertex.PositionOnly[VERTICES];
 
-        const float radius = 2.5f;
+        const float radius = 1.0f;
 
         for (int i = 0; i < VERTICES; i++)
         {
