@@ -855,16 +855,16 @@ namespace TDCG
     /// </summary>
     public class TMONode
     {
-        private int id;
-        private string path;
-        private string name;
+        int id;
+        string path;
+        string name;
 
-        private Vector3 scaling;
-        private Quaternion rotation;
-        private Vector3 translation;
+        Vector3 scaling;
+        Quaternion rotation;
+        Vector3 translation;
 
-        private Matrix transformation_matrix;
-        private bool need_update_transformation;
+        Matrix transformation_matrix;
+        bool need_update_transformation;
 
         /// <summary>
         /// TMONodeを生成します。

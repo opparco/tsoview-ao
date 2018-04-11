@@ -65,6 +65,8 @@ namespace TDCG
         /// </summary>
         public Matrix ViewMatrix { get { return view; } }
 
+        public Matrix RotationMatrix { get { return Matrix.RotationYawPitchRoll(angle.Y, angle.X, angle.Z); } }
+
         /// <summary>
         /// カメラを生成します。
         /// </summary>

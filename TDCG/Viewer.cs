@@ -1506,6 +1506,26 @@ public class Viewer : IDisposable
         circle.Draw(effect_circle);
     }
 
+    public void DrawNode(TMONode node, ref Matrix world)
+    {
+        float scale = 0.05f;
+        Vector3 world_position = node.GetWorldPosition();
+
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * camera.RotationMatrix;
+
+        world_matrix.M41 = world_position.X;
+        world_matrix.M42 = world_position.Y;
+        world_matrix.M43 = world_position.Z;
+
+        Matrix world_view_matrix = world_matrix * world * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_circle.SetValue("wvp", world_view_projection_matrix);
+        effect_circle.SetValue("col", new Vector4(0.5f, 0.5f, 0.5f, 1.0f));
+
+        circle.Draw(effect_circle);
+    }
+
     /// <summary>
     /// シーンをレンダリングします。
     /// </summary>
@@ -1532,6 +1552,27 @@ public class Viewer : IDisposable
             DrawCircleY();
             DrawCircleX();
             DrawCircleW();
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                Matrix world = Matrix.Identity;
+
+                if (fig.slider_matrix != null)
+                {
+                    //姉妹スライダによる変形
+                    world = Matrix.Scaling(fig.slider_matrix.Local);
+                }
+
+                //移動変位を設定
+                world.M41 = fig.Translation.X;
+                world.M42 = fig.Translation.Y;
+                world.M43 = fig.Translation.Z;
+
+                foreach (TMONode node in fig.Tmo.nodes)
+                {
+                    DrawNode(node, ref world);
+                }
+            }
             break;
         case RenderMode.DepthMap:
             DrawDepthNormalMap();
