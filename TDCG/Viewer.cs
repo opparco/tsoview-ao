@@ -1512,6 +1512,44 @@ public class Viewer : IDisposable
         circle.Draw(effect_circle);
     }
 
+    public void DrawNodePoleY(ref Vector3 world_position, ref Quaternion world_rotation, ref Matrix world)
+    {
+        float scale = 0.25f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI/2.0)) * Matrix.RotationQuaternion(world_rotation);
+
+        // translation
+        world_matrix.M41 = world_position.X;
+        world_matrix.M42 = world_position.Y;
+        world_matrix.M43 = world_position.Z;
+
+        Matrix world_view_matrix = world_matrix * world * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_pole.SetValue("wvp", world_view_projection_matrix);
+        effect_pole.SetValue("col", new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+
+        pole.Draw(effect_pole);
+    }
+
+    public void DrawNodePoleX(ref Vector3 world_position, ref Quaternion world_rotation, ref Matrix world)
+    {
+        float scale = 0.25f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI/2.0)) * Matrix.RotationQuaternion(world_rotation);
+
+        // translation
+        world_matrix.M41 = world_position.X;
+        world_matrix.M42 = world_position.Y;
+        world_matrix.M43 = world_position.Z;
+
+        Matrix world_view_matrix = world_matrix * world * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_pole.SetValue("wvp", world_view_projection_matrix);
+        effect_pole.SetValue("col", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+
+        pole.Draw(effect_pole);
+    }
+
     public void DrawNodePoleY(ref Vector3 world_position, ref Matrix world)
     {
         float scale = 0.25f;
@@ -1572,8 +1610,10 @@ public class Viewer : IDisposable
     public void DrawNode(TMONode node, ref Matrix world)
     {
         Vector3 world_position = node.GetWorldPosition();
-        DrawNodePoleX(ref world_position, ref world);
-        DrawNodePoleY(ref world_position, ref world);
+        Quaternion world_rotation = node.GetWorldRotation();
+
+        DrawNodePoleX(ref world_position, ref world_rotation, ref world);
+        DrawNodePoleY(ref world_position, ref world_rotation, ref world);
         DrawNodeCircleW(ref world_position, ref world);
     }
 
@@ -2345,14 +2385,12 @@ public class Viewer : IDisposable
     /// スクリーン位置をワールド座標へ変換します。
     public static Vector3 ScreenToWorld(float screenX, float screenY, float z, Viewport viewport, Matrix view, Matrix proj)
     {
-        //スクリーン位置
         Vector3 v = new Vector3(screenX, screenY, z);
 
         Matrix inv_m = Matrix.Invert(CreateViewportMatrix(viewport));
         Matrix inv_proj = Matrix.Invert(proj);
         Matrix inv_view = Matrix.Invert(view);
 
-        //スクリーン位置をワールド座標へ変換
         return Vector3.TransformCoordinate(v, inv_m * inv_proj * inv_view);
     }
 

@@ -1171,6 +1171,18 @@ namespace TDCG
             return v;
         }
 
+        public Quaternion GetWorldRotation()
+        {
+            TMONode node = this;
+            Quaternion q = Quaternion.Identity;
+            while (node != null)
+            {
+                q.Multiply(node.Rotation);
+                node = node.parent;
+            }
+            return q;
+        }
+
         /// <summary>
         /// ワールド座標系での位置と向きを得ます。
         /// </summary>
