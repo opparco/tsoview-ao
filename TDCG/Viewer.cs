@@ -403,14 +403,52 @@ public class Viewer : IDisposable
         need_render = true;
     }
 
+    Quaternion start_rotation;
+    Point start_location;
+
+    void StartToRotateNode(Point location)
+    {
+        Figure fig;
+        if (TryGetFigure(out fig))
+        {
+            TMONode node = fig.Tmo.nodes[0]; // W_Hips
+
+            start_rotation = node.Rotation;
+            start_location = location;
+        }
+    }
+
+    void WhileRotateNode(Point location)
+    {
+        Figure fig;
+        if (TryGetFigure(out fig))
+        {
+            TMONode node = fig.Tmo.nodes[0]; // W_Hips
+
+            const float delta_scale = 0.0125f;
+
+            int dx = location.X - start_location.X;
+            int dy = location.Y - start_location.Y;
+
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx*delta_scale, dy*delta_scale, 0.0f);
+
+            Quaternion q = camera.RotationQuaternion;
+            Quaternion q_1 = Quaternion.Conjugate(q);
+
+            node.Rotation = start_rotation * q_1 * rotation * q;
+            need_render = true;
+        }
+    }
+
     /// マウスボタンを押したときに実行するハンドラ
     protected virtual void form_OnMouseDown(object sender, MouseEventArgs e)
     {
         switch (e.Button)
         {
         case MouseButtons.Left:
-            if (Control.ModifierKeys == Keys.Control)
-                SetLightDirection(ScreenToOrientation(e.X, e.Y));
+            StartToRotateNode(e.Location);
+            //if (Control.ModifierKeys == Keys.Control)
+            //    SetLightDirection(ScreenToOrientation(e.X, e.Y));
             break;
         }
 
@@ -421,22 +459,25 @@ public class Viewer : IDisposable
     /// マウスを移動したときに実行するハンドラ
     protected virtual void form_OnMouseMove(object sender, MouseEventArgs e)
     {
+        const float delta_scale = 0.125f;
+
         int dx = e.X - lastScreenPoint.X;
         int dy = e.Y - lastScreenPoint.Y;
 
         switch (e.Button)
         {
         case MouseButtons.Left:
-            if (Control.ModifierKeys == Keys.Control)
-                SetLightDirection(ScreenToOrientation(e.X, e.Y));
-            else
-                Camera.Move(dx, -dy, 0.0f);
+            WhileRotateNode(e.Location);
+            //if (Control.ModifierKeys == Keys.Control)
+            //    SetLightDirection(ScreenToOrientation(e.X, e.Y));
+            //else
+            //    Camera.Move(dx, -dy, 0.0f);
             break;
         case MouseButtons.Middle:
-            Camera.MoveView(-dx*0.125f, dy*0.125f);
+            Camera.MoveView(-dx*delta_scale, dy*delta_scale);
             break;
         case MouseButtons.Right:
-            Camera.Move(0.0f, 0.0f, -dy*0.125f);
+            Camera.Move(0.0f, 0.0f, -dy*delta_scale);
             break;
         }
 

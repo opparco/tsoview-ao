@@ -67,6 +67,8 @@ namespace TDCG
 
         public Matrix RotationMatrix { get { return Matrix.RotationYawPitchRoll(angle.Y, angle.X, angle.Z); } }
 
+        public Quaternion RotationQuaternion { get { return Quaternion.RotationYawPitchRoll(angle.Y, angle.X, angle.Z); } }
+
         /// <summary>
         /// カメラを生成します。
         /// </summary>
