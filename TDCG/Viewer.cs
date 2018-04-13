@@ -406,13 +406,16 @@ public class Viewer : IDisposable
     bool rotate_node = false;
     bool rotate_camera = false;
 
+    TMONode selected_node = null;
+
     void WhileRotateNode(int dx, int dy)
     {
+        if (selected_node == null)
+            return;
+
         Figure fig;
         if (TryGetFigure(out fig))
         {
-            TMONode node = fig.Tmo.nodes[0]; // W_Hips
-
             const float delta_scale = 0.0125f;
 
             Quaternion rotation = Quaternion.RotationYawPitchRoll(dx*delta_scale, dy*delta_scale, 0.0f);
@@ -420,7 +423,7 @@ public class Viewer : IDisposable
             Quaternion q = camera.RotationQuaternion;
             Quaternion q_1 = Quaternion.Conjugate(q);
 
-            node.Rotation *= q_1 * rotation * q;
+            selected_node.Rotation *= q_1 * rotation * q;
 
             //fig.Tmo.SaveTransformationMatrixToFrame(0);
             //fig.UpdateBoneMatrices(true);
@@ -435,11 +438,67 @@ public class Viewer : IDisposable
 
     bool CloseToSelectedNode(Point location)
     {
-        return true;
+        if (selected_node == null)
+            return false;
+
+        Figure fig;
+        if (TryGetFigure(out fig))
+        {
+            Matrix world;
+            fig.GetWorldMatrix(out world);
+
+            Vector3 screen_position = WorldToScreen(Vector3.TransformCoordinate(selected_node.GetWorldPosition(), world));
+
+            int dx = location.X - (int)screen_position.X;
+            int dy = location.Y - (int)screen_position.Y;
+
+            return (dx*dx + dy*dy < 50);
+        }
+        return false;
     }
 
     bool SelectNode(Point location)
     {
+        Figure fig;
+        if (TryGetFigure(out fig))
+        {
+            Matrix world;
+            fig.GetWorldMatrix(out world);
+
+            Dictionary<TMONode, float> close_nodes = new Dictionary<TMONode, float>();
+
+            foreach (TMONode node in fig.Tmo.nodes)
+            {
+                Vector3 screen_position = WorldToScreen(Vector3.TransformCoordinate(node.GetWorldPosition(), world));
+
+                int dx = location.X - (int)screen_position.X;
+                int dy = location.Y - (int)screen_position.Y;
+
+                if (dx*dx + dy*dy < 50)
+                {
+                    //近傍なら候補に入れる
+                    close_nodes[node] = screen_position.Z;
+                }
+            }
+
+            if (close_nodes.Count == 0)
+            {
+                return false;
+            }
+
+            //近傍のうち最小z値を持つnodeを選択する
+            float min_z = 1.0f;
+
+            foreach (var pair in close_nodes)
+            {
+                if (pair.Value < min_z)
+                {
+                    min_z = pair.Value;
+                    selected_node = pair.Key;
+                }
+            }
+            return true;
+        }
         return false;
     }
 
@@ -456,6 +515,8 @@ public class Viewer : IDisposable
                 rotate_node = true;
             else if (! SelectNode(e.Location))
                 rotate_camera = true;
+            else
+                need_render = true; // select node
             //if (Control.ModifierKeys == Keys.Control)
             //    SetLightDirection(ScreenToOrientation(e.X, e.Y));
             break;
@@ -1658,14 +1719,44 @@ public class Viewer : IDisposable
         circle.Draw(effect_circle);
     }
 
+    public void DrawSelectedNodeCircleW(ref Vector3 world_position, ref Matrix world)
+    {
+        float scale = 0.25f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * camera.RotationMatrix;
+
+        // translation
+        world_matrix.M41 = world_position.X;
+        world_matrix.M42 = world_position.Y;
+        world_matrix.M43 = world_position.Z;
+
+        Matrix world_view_matrix = world_matrix * world * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_circle.SetValue("wvp", world_view_projection_matrix);
+        effect_circle.SetValue("col", new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+
+        circle.Draw(effect_circle);
+    }
+
     public void DrawNode(TMONode node, ref Matrix world)
     {
         Vector3 world_position = node.GetWorldPosition();
         Quaternion world_rotation = node.GetWorldRotation();
 
+        DrawNodeCircleW(ref world_position, ref world);
+    }
+
+    public void DrawSelectedNode(ref Matrix world)
+    {
+        if (selected_node == null)
+            return;
+
+        Vector3 world_position = selected_node.GetWorldPosition();
+        Quaternion world_rotation = selected_node.GetWorldRotation();
+
         DrawNodePoleX(ref world_position, ref world_rotation, ref world);
         DrawNodePoleY(ref world_position, ref world_rotation, ref world);
-        DrawNodeCircleW(ref world_position, ref world);
+        DrawSelectedNodeCircleW(ref world_position, ref world);
     }
 
     /// <summary>
@@ -1704,6 +1795,7 @@ public class Viewer : IDisposable
                 {
                     DrawNode(node, ref world);
                 }
+                DrawSelectedNode(ref world);
             }
             break;
         case RenderMode.DepthMap:
