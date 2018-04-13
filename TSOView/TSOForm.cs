@@ -35,8 +35,6 @@ namespace TSOView
         internal int keyFigureForm = (int)Keys.G;
         internal int keyConfigForm = (int)Keys.H;
 
-        Record record;
-
         internal Viewer viewer = null;
         internal FigureForm figureForm = null;
         internal ConfigForm configForm = null;
@@ -94,8 +92,6 @@ namespace TSOView
             configForm.OcclusionConfig = occlusion_config;
             configForm.DiffusionConfig = diffusion_config;
             configForm.ConfigConnect();
-
-            this.record = new Record(viewer, tso_config.RecordStep);
 
             if (viewer.InitializeApplication(this, true))
             {
@@ -200,10 +196,7 @@ namespace TSOView
             if (keysEnabled[keySave] && keys[keySave])
             {
                 keysEnabled[keySave] = false;
-                if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
-                    record.Start();
-                else
-                    SaveToPng();
+                SaveToPng();
             }
             if (keysEnabled[keyMotion] && keys[keyMotion])
             {
@@ -344,16 +337,9 @@ namespace TSOView
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (record.Enabled)
-            {
-                record.Next();
-            }
-            else
-            {
-                this.FrameMove();
-                viewer.FrameMove();
-                viewer.Render();
-            }
+            this.FrameMove();
+            viewer.FrameMove();
+            viewer.Render();
         }
 
         protected override void OnKeyPress(System.Windows.Forms.KeyPressEventArgs e)

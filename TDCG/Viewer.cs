@@ -1403,9 +1403,6 @@ public class Viewer : IDisposable
     [Obsolete("use RenderMode")]
     public bool SpriteShown = false;
 
-    long start_ticks = 0;
-    int start_frame_idx = 0;
-
     bool motionEnabled = false;
 
     /// <summary>
@@ -1417,21 +1414,8 @@ public class Viewer : IDisposable
         set
         {
             motionEnabled = value;
-
-            if (motionEnabled)
-            {
-                start_ticks = DateTime.Now.Ticks;
-                start_frame_idx = frame_idx;
-            }
         }
     }
-
-    int frame_idx = 0;
-
-    /// <summary>
-    /// フレーム番号
-    /// </summary>
-    public int FrameIndex { get { return frame_idx; } set { frame_idx = value; } }
 
     /// <summary>
     /// フレームを進めるのに用いるデリゲート型
@@ -1448,19 +1432,7 @@ public class Viewer : IDisposable
     /// </summary>
     public void FrameMove()
     {
-        if (motionEnabled)
-        {
-            int frame_len = GetMaxFrameLength();
-            if (frame_len > 0)
-            {
-                long ticks = DateTime.Now.Ticks - start_ticks;
-                long current_frame_idx = (long)(start_frame_idx + ticks * 0.000006);
-                frame_idx = (int)(current_frame_idx % frame_len);
-                Debug.Assert(frame_idx >= 0);
-                Debug.Assert(frame_idx < frame_len);
-            }
-        }
-        FrameMove(frame_idx);
+        FrameMove(0);
 
         if (FrameMoving != null)
             FrameMoving();
@@ -1469,7 +1441,7 @@ public class Viewer : IDisposable
     /// <summary>
     /// 指定シーンフレームに進みます。
     /// </summary>
-    /// <param name="frame_idx">フレーム番号</param>
+    /// <param name="frame_idx">obsolete</param>
     public void FrameMove(int frame_idx)
     {
         if (camera.NeedUpdate)
@@ -1488,29 +1460,12 @@ public class Viewer : IDisposable
 
         if (motionEnabled)
         {
-            //フレーム番号を通知する。
-            foreach (Figure fig in FigureList)
-                fig.SetFrameIndex(frame_idx);
-
             //device.Transform.World = world_matrix;
             foreach (Figure fig in FigureList)
                 fig.UpdateBoneMatrices();
 
             need_render = true;
         }
-    }
-
-    /// <summary>
-    /// tmo file中で最大のフレーム長さを得ます。
-    /// </summary>
-    /// <returns>フレーム長さ</returns>
-    public int GetMaxFrameLength()
-    {
-        int max = 0;
-        foreach (Figure fig in FigureList)
-            if (fig.Tmo.frames != null && max < fig.Tmo.frames.Length)
-                max = fig.Tmo.frames.Length;
-        return max;
     }
 
     bool need_render = true;
