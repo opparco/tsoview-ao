@@ -403,22 +403,10 @@ public class Viewer : IDisposable
         need_render = true;
     }
 
-    Quaternion start_rotation;
-    Point start_location;
+    bool rotate_node = false;
+    bool rotate_camera = false;
 
-    void StartToRotateNode(Point location)
-    {
-        Figure fig;
-        if (TryGetFigure(out fig))
-        {
-            TMONode node = fig.Tmo.nodes[0]; // W_Hips
-
-            start_rotation = node.Rotation;
-            start_location = location;
-        }
-    }
-
-    void WhileRotateNode(Point location)
+    void WhileRotateNode(int dx, int dy)
     {
         Figure fig;
         if (TryGetFigure(out fig))
@@ -427,17 +415,32 @@ public class Viewer : IDisposable
 
             const float delta_scale = 0.0125f;
 
-            int dx = location.X - start_location.X;
-            int dy = location.Y - start_location.Y;
-
             Quaternion rotation = Quaternion.RotationYawPitchRoll(dx*delta_scale, dy*delta_scale, 0.0f);
 
             Quaternion q = camera.RotationQuaternion;
             Quaternion q_1 = Quaternion.Conjugate(q);
 
-            node.Rotation = start_rotation * q_1 * rotation * q;
+            node.Rotation *= q_1 * rotation * q;
+
+            //fig.Tmo.SaveTransformationMatrixToFrame(0);
+            //fig.UpdateBoneMatrices(true);
             need_render = true;
         }
+    }
+
+    void WhileRotateCamera(int dx, int dy)
+    {
+        Camera.Move(dx, -dy, 0.0f);
+    }
+
+    bool CloseToSelectedNode(Point location)
+    {
+        return true;
+    }
+
+    bool SelectNode(Point location)
+    {
+        return false;
     }
 
     /// マウスボタンを押したときに実行するハンドラ
@@ -446,7 +449,13 @@ public class Viewer : IDisposable
         switch (e.Button)
         {
         case MouseButtons.Left:
-            StartToRotateNode(e.Location);
+            rotate_node = false;
+            rotate_camera = false;
+
+            if (CloseToSelectedNode(e.Location))
+                rotate_node = true;
+            else if (! SelectNode(e.Location))
+                rotate_camera = true;
             //if (Control.ModifierKeys == Keys.Control)
             //    SetLightDirection(ScreenToOrientation(e.X, e.Y));
             break;
@@ -467,11 +476,12 @@ public class Viewer : IDisposable
         switch (e.Button)
         {
         case MouseButtons.Left:
-            WhileRotateNode(e.Location);
+            if (rotate_node)
+                WhileRotateNode(dx, dy);
+            if (rotate_camera)
+                WhileRotateCamera(dx, dy);
             //if (Control.ModifierKeys == Keys.Control)
             //    SetLightDirection(ScreenToOrientation(e.X, e.Y));
-            //else
-            //    Camera.Move(dx, -dy, 0.0f);
             break;
         case MouseButtons.Middle:
             Camera.MoveView(-dx*delta_scale, dy*delta_scale);
