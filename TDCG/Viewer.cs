@@ -447,12 +447,18 @@ public class Viewer : IDisposable
             Matrix world;
             fig.GetWorldMatrix(out world);
 
-            Vector3 screen_position = WorldToScreen(Vector3.TransformCoordinate(selected_node.GetWorldPosition(), world));
+            Vector3 position = Vector3.TransformCoordinate(selected_node.GetWorldPosition(), world);
+            Vector3 screen_position = WorldToScreen(position);
 
             int dx = location.X - (int)screen_position.X;
             int dy = location.Y - (int)screen_position.Y;
 
-            return (dx*dx + dy*dy < 50);
+            Vector3 view_position = Vector3.TransformCoordinate(position, Transform_View);
+            Vector3 view_p = new Vector3(0, 0.25f, view_position.Z);
+            Vector3 screen_p = ViewToScreen(view_p);
+            float radius = screenCenterY - screen_p.Y;
+
+            return (dx*dx + dy*dy < radius*radius);
         }
         return false;
     }
@@ -469,12 +475,18 @@ public class Viewer : IDisposable
 
             foreach (TMONode node in fig.Tmo.nodes)
             {
-                Vector3 screen_position = WorldToScreen(Vector3.TransformCoordinate(node.GetWorldPosition(), world));
+                Vector3 position = Vector3.TransformCoordinate(node.GetWorldPosition(), world);
+                Vector3 screen_position = WorldToScreen(position);
 
                 int dx = location.X - (int)screen_position.X;
                 int dy = location.Y - (int)screen_position.Y;
 
-                if (dx*dx + dy*dy < 50)
+                Vector3 view_position = Vector3.TransformCoordinate(position, Transform_View);
+                Vector3 view_p = new Vector3(0, 0.125f, view_position.Z);
+                Vector3 screen_p = ViewToScreen(view_p);
+                float radius = screenCenterY - screen_p.Y;
+
+                if (dx*dx + dy*dy < radius*radius)
                 {
                     //近傍なら候補に入れる
                     close_nodes[node] = screen_position.Z;
@@ -1733,7 +1745,7 @@ public class Viewer : IDisposable
         Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
 
         effect_circle.SetValue("wvp", world_view_projection_matrix);
-        effect_circle.SetValue("col", new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+        effect_circle.SetValue("col", new Vector4(0.0f, 1.0f, 1.0f, 1.0f));
 
         circle.Draw(effect_circle);
     }
@@ -2553,6 +2565,16 @@ public class Viewer : IDisposable
     public Vector3 WorldToScreen(Vector3 v)
     {
         return WorldToScreen(v, device.Viewport, Transform_View, Transform_Projection);
+    }
+
+    public static Vector3 ViewToScreen(Vector3 v, Viewport viewport, Matrix proj)
+    {
+        return Vector3.TransformCoordinate(v, proj * CreateViewportMatrix(viewport));
+    }
+
+    public Vector3 ViewToScreen(Vector3 v)
+    {
+        return ViewToScreen(v, device.Viewport, Transform_Projection);
     }
 }
 }
