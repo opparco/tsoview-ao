@@ -418,12 +418,17 @@ public class Viewer : IDisposable
         {
             const float delta_scale = 0.0125f;
 
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx*delta_scale, dy*delta_scale, 0.0f);
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * delta_scale, dy * delta_scale, 0.0f);
 
-            Quaternion q = camera.RotationQuaternion;
+            Quaternion world_rotation = Quaternion.Identity;
+            TMONode parent_node = selected_node.parent;
+            if (parent_node != null)
+                world_rotation = parent_node.GetWorldRotation();
+
+            Quaternion q = camera.RotationQuaternion * Quaternion.Conjugate(world_rotation);
             Quaternion q_1 = Quaternion.Conjugate(q);
 
-            selected_node.Rotation *= q_1 * rotation * q;
+            selected_node.Rotation = Quaternion.Normalize(selected_node.Rotation * q_1 * rotation * q);
 
             //TODO: UpdateSelectedBoneMatrices
             fig.UpdateBoneMatrices(true);
@@ -577,10 +582,10 @@ public class Viewer : IDisposable
             //    SetLightDirection(ScreenToOrientation(e.X, e.Y));
             break;
         case MouseButtons.Middle:
-            Camera.MoveView(-dx*delta_scale, dy*delta_scale);
+            Camera.MoveView(-dx * delta_scale, dy * delta_scale);
             break;
         case MouseButtons.Right:
-            Camera.Move(0.0f, 0.0f, -dy*delta_scale);
+            Camera.Move(0.0f, 0.0f, -dy * delta_scale);
             break;
         }
 
