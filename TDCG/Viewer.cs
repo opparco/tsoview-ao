@@ -425,9 +425,8 @@ public class Viewer : IDisposable
 
             selected_node.Rotation *= q_1 * rotation * q;
 
-            //fig.Tmo.SaveTransformationMatrixToFrame(0);
-            //fig.UpdateBoneMatrices(true);
-            need_render = true;
+            //TODO: UpdateSelectedBoneMatrices
+            fig.UpdateBoneMatrices(true);
         }
     }
 
