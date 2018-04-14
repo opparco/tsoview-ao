@@ -403,10 +403,38 @@ public class Viewer : IDisposable
         need_render = true;
     }
 
+    bool grab_node = false;
+    bool grab_camera = false;
     bool rotate_node = false;
     bool rotate_camera = false;
 
     TMONode selected_node = null;
+
+    void WhileGrabNode(int dx, int dy)
+    {
+        if (selected_node == null)
+            return;
+
+        Figure fig;
+        if (TryGetFigure(out fig))
+        {
+            const float delta_scale = 0.0125f;
+
+            Vector3 translation = new Vector3(dx * delta_scale, -dy * delta_scale, 0.0f);
+
+            Quaternion world_rotation = Quaternion.Identity;
+            TMONode parent_node = selected_node.parent;
+            if (parent_node != null)
+                world_rotation = parent_node.GetWorldRotation();
+
+            Quaternion q = camera.RotationQuaternion * Quaternion.Conjugate(world_rotation);
+
+            selected_node.Translation += Vector3.TransformCoordinate(translation, Matrix.RotationQuaternion(q));
+
+            //TODO: UpdateSelectedBoneMatrices
+            fig.UpdateBoneMatrices(true);
+        }
+    }
 
     void WhileRotateNode(int dx, int dy)
     {
@@ -433,6 +461,13 @@ public class Viewer : IDisposable
             //TODO: UpdateSelectedBoneMatrices
             fig.UpdateBoneMatrices(true);
         }
+    }
+
+    void WhileGrabCamera(int dx, int dy)
+    {
+        const float delta_scale = 0.125f;
+
+        Camera.Move(0.0f, 0.0f, -dy * delta_scale);
     }
 
     void WhileRotateCamera(int dx, int dy)
@@ -557,6 +592,15 @@ public class Viewer : IDisposable
             //if (Control.ModifierKeys == Keys.Control)
             //    SetLightDirection(ScreenToOrientation(e.X, e.Y));
             break;
+        case MouseButtons.Right:
+            grab_node = false;
+            grab_camera = false;
+
+            if (CloseToSelectedNode(e.Location))
+                grab_node = true;
+            else
+                grab_camera = true;
+            break;
         }
 
         lastScreenPoint.X = e.X;
@@ -585,7 +629,10 @@ public class Viewer : IDisposable
             Camera.MoveView(-dx * delta_scale, dy * delta_scale);
             break;
         case MouseButtons.Right:
-            Camera.Move(0.0f, 0.0f, -dy * delta_scale);
+            if (grab_node)
+                WhileGrabNode(dx, dy);
+            if (grab_camera)
+                WhileGrabCamera(dx, dy);
             break;
         }
 
