@@ -1611,10 +1611,29 @@ public class Viewer : IDisposable
         circle.Draw(effect_circle);
     }
 
-    public void DrawNodePoleY(ref Vector3 world_position, ref Quaternion world_rotation, ref Matrix world)
+    public void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
     {
         float scale = 0.25f;
-        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI/2.0)) * Matrix.RotationQuaternion(world_rotation);
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * world_rotation;
+
+        // translation
+        world_matrix.M41 = world_position.X;
+        world_matrix.M42 = world_position.Y;
+        world_matrix.M43 = world_position.Z;
+
+        Matrix world_view_matrix = world_matrix * world * Transform_View;
+        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+        effect_pole.SetValue("wvp", world_view_projection_matrix);
+        effect_pole.SetValue("col", new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+
+        pole.Draw(effect_pole);
+    }
+
+    public void DrawNodePoleY(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
+    {
+        float scale = 0.25f;
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI/2.0)) * world_rotation;
 
         // translation
         world_matrix.M41 = world_position.X;
@@ -1630,10 +1649,10 @@ public class Viewer : IDisposable
         pole.Draw(effect_pole);
     }
 
-    public void DrawNodePoleX(ref Vector3 world_position, ref Quaternion world_rotation, ref Matrix world)
+    public void DrawNodePoleX(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
     {
         float scale = 0.25f;
-        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI/2.0)) * Matrix.RotationQuaternion(world_rotation);
+        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI/2.0)) * world_rotation;
 
         // translation
         world_matrix.M41 = world_position.X;
@@ -1647,44 +1666,24 @@ public class Viewer : IDisposable
         effect_pole.SetValue("col", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 
         pole.Draw(effect_pole);
+    }
+
+    public void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world)
+    {
+        Matrix world_rotation = camera.RotationMatrix;
+        DrawNodePoleZ(ref world_position, ref world_rotation, ref world);
     }
 
     public void DrawNodePoleY(ref Vector3 world_position, ref Matrix world)
     {
-        float scale = 0.25f;
-        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI/2.0)) * camera.RotationMatrix;
-
-        // translation
-        world_matrix.M41 = world_position.X;
-        world_matrix.M42 = world_position.Y;
-        world_matrix.M43 = world_position.Z;
-
-        Matrix world_view_matrix = world_matrix * world * Transform_View;
-        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-        effect_pole.SetValue("wvp", world_view_projection_matrix);
-        effect_pole.SetValue("col", new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
-
-        pole.Draw(effect_pole);
+        Matrix world_rotation = camera.RotationMatrix;
+        DrawNodePoleY(ref world_position, ref world_rotation, ref world);
     }
 
     public void DrawNodePoleX(ref Vector3 world_position, ref Matrix world)
     {
-        float scale = 0.25f;
-        Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI/2.0)) * camera.RotationMatrix;
-
-        // translation
-        world_matrix.M41 = world_position.X;
-        world_matrix.M42 = world_position.Y;
-        world_matrix.M43 = world_position.Z;
-
-        Matrix world_view_matrix = world_matrix * world * Transform_View;
-        Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-        effect_pole.SetValue("wvp", world_view_projection_matrix);
-        effect_pole.SetValue("col", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-        pole.Draw(effect_pole);
+        Matrix world_rotation = camera.RotationMatrix;
+        DrawNodePoleX(ref world_position, ref world_rotation, ref world);
     }
 
     public void DrawNodeCircleW(ref Vector3 world_position, ref Matrix world)
@@ -1728,7 +1727,6 @@ public class Viewer : IDisposable
     public void DrawNode(TMONode node, ref Matrix world)
     {
         Vector3 world_position = node.GetWorldPosition();
-        Quaternion world_rotation = node.GetWorldRotation();
 
         DrawNodeCircleW(ref world_position, ref world);
     }
@@ -1739,10 +1737,11 @@ public class Viewer : IDisposable
             return;
 
         Vector3 world_position = selected_node.GetWorldPosition();
-        Quaternion world_rotation = selected_node.GetWorldRotation();
+        Matrix world_rotation = Matrix.RotationQuaternion(selected_node.GetWorldRotation());
 
         DrawNodePoleX(ref world_position, ref world_rotation, ref world);
         DrawNodePoleY(ref world_position, ref world_rotation, ref world);
+        DrawNodePoleZ(ref world_position, ref world_rotation, ref world);
         DrawSelectedNodeCircleW(ref world_position, ref world);
     }
 
