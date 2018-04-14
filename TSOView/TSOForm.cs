@@ -269,7 +269,7 @@ namespace TSOView
             if (keysEnabled[keyCenter] && keys[keyCenter])
             {
                 keysEnabled[keyCenter] = false;
-                viewer.SetCameraToSelectedNode();
+                viewer.SetCenterToSelectedNode();
             }
             if (keysEnabled[keyFigureForm] && keys[keyFigureForm])
             {

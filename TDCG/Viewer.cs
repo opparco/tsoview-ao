@@ -435,7 +435,7 @@ public class Viewer : IDisposable
         Camera.Move(dx, -dy, 0.0f);
     }
 
-    public void SetCameraToSelectedNode()
+    public void SetCenterToSelectedNode()
     {
         camera.ResetTranslation();
 
