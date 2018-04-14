@@ -272,7 +272,7 @@ namespace TSOView
                 viewer.Camera.ResetTranslation();
                 Figure fig;
                 if (viewer.TryGetFigure(out fig))
-                    viewer.Camera.SetCenter(fig.Center + fig.Translation);
+                    viewer.Camera.SetCenter(fig.Center);
             }
             if (keysEnabled[keyFigureForm] && keys[keyFigureForm])
             {
@@ -303,16 +303,7 @@ namespace TSOView
             if (keys[(int)Keys.Down])
                 keyPull = 1.0f;
 
-            if (Control.ModifierKeys == Keys.Shift)
-            {
-                Figure fig;
-                if (viewer.TryGetFigure(out fig))
-                    fig.Move(keyR - keyL, keyU - keyD, keyPull - keyPush);
-            }
-            else
-            {
-                viewer.Camera.Move(keyR - keyL, keyU - keyD, keyPull - keyPush);
-            }
+            viewer.Camera.Move(keyR - keyL, keyU - keyD, keyPull - keyPush);
         }
 
         private void form_OnDragOver(object sender, DragEventArgs e)

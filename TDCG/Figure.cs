@@ -65,15 +65,6 @@ public class Figure : IDisposable
         get { return center; }
     }
 
-    Vector3 translation = Vector3.Empty;
-    /// <summary>
-    /// 移動変位
-    /// </summary>
-    public Vector3 Translation
-    {
-        get { return translation; }
-    }
-
     TMOFile tmo = null;
     /// <summary>
     /// tmo
@@ -105,27 +96,6 @@ public class Figure : IDisposable
         matrixStack = new MatrixStack();
 
         LightDirection = new Vector3(0.0f, 0.0f, -1.0f);
-    }
-
-    /// <summary>
-    /// フィギュアを移動します（相対座標）。
-    /// </summary>
-    /// <param name="dx">X軸変位</param>
-    /// <param name="dy">Y軸変位</param>
-    /// <param name="dz">Z軸変位</param>
-    public void Move(float dx, float dy, float dz)
-    {
-        Move(new Vector3(dx, dy, dz));
-    }
-
-    /// <summary>
-    /// フィギュアを移動します（相対座標）。
-    /// </summary>
-    /// <param name="delta">変位</param>
-    public void Move(Vector3 delta)
-    {
-        translation += delta;
-        UpdateBoneMatrices(true);
     }
 
     /// <summary>
@@ -395,11 +365,6 @@ public class Figure : IDisposable
             //姉妹スライダによる変形
             m = Matrix.Scaling(slider_matrix.Local);
         }
-
-        //移動変位を設定
-        m.M41 = translation.X;
-        m.M42 = translation.Y;
-        m.M43 = translation.Z;
     }
 
     /// <summary>

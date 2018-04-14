@@ -1919,11 +1919,6 @@ public class Viewer : IDisposable
                     world = Matrix.Scaling(fig.slider_matrix.Local);
                 }
 
-                //移動変位を設定
-                world.M41 = fig.Translation.X;
-                world.M42 = fig.Translation.Y;
-                world.M43 = fig.Translation.Z;
-
                 Matrix world_view_matrix = world * Transform_View;
                 Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
                 effect.SetValue("wld", world);
