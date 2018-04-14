@@ -435,6 +435,27 @@ public class Viewer : IDisposable
         Camera.Move(dx, -dy, 0.0f);
     }
 
+    public void SetCameraToSelectedNode()
+    {
+        camera.ResetTranslation();
+
+        Figure fig;
+        if (TryGetFigure(out fig))
+        {
+            Matrix world;
+            fig.GetWorldMatrix(out world);
+
+            TMONode node = selected_node;
+
+            //TODO: selected_node should not be null
+            if (node == null)
+                node = fig.Tmo.nodes[0]; // W_Hips
+
+            Vector3 position = Vector3.TransformCoordinate(node.GetWorldPosition(), world);
+            camera.SetCenter(position);
+        }
+    }
+
     bool CloseToSelectedNode(Point location)
     {
         if (selected_node == null)
@@ -1911,13 +1932,8 @@ public class Viewer : IDisposable
         foreach (Figure fig in FigureList)
         {
             {
-                Matrix world = Matrix.Identity;
-
-                if (fig.slider_matrix != null)
-                {
-                    //姉妹スライダによる変形
-                    world = Matrix.Scaling(fig.slider_matrix.Local);
-                }
+                Matrix world;
+                fig.GetWorldMatrix(out world);
 
                 Matrix world_view_matrix = world * Transform_View;
                 Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;

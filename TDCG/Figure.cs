@@ -56,15 +56,6 @@ public class Figure : IDisposable
         }
     }
 
-    Vector3 center = Vector3.Empty;
-    /// <summary>
-    /// 中心座標
-    /// </summary>
-    public Vector3 Center
-    {
-        get { return center; }
-    }
-
     TMOFile tmo = null;
     /// <summary>
     /// tmo
@@ -75,7 +66,6 @@ public class Figure : IDisposable
         set
         {
             tmo = value;
-            SetCenterToHips();
         }
     }
 
@@ -160,19 +150,6 @@ public class Figure : IDisposable
             TMONode tmo_node;
             if (tmo.nodemap.TryGetValue(tso_node.Path, out tmo_node))
                 nodemap.Add(tso_node, tmo_node);
-        }
-    }
-
-    /// <summary>
-    /// 中心点を腰boneの位置に設定します。
-    /// </summary>
-    protected void SetCenterToHips()
-    {
-        TMONode tmo_node;
-        if (tmo.nodemap.TryGetValue("|W_Hips", out tmo_node))
-        {
-            Matrix m = tmo_node.TransformationMatrix;
-            center = new Vector3(m.M41, m.M42, m.M43);
         }
     }
 

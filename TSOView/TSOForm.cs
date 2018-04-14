@@ -269,10 +269,7 @@ namespace TSOView
             if (keysEnabled[keyCenter] && keys[keyCenter])
             {
                 keysEnabled[keyCenter] = false;
-                viewer.Camera.ResetTranslation();
-                Figure fig;
-                if (viewer.TryGetFigure(out fig))
-                    viewer.Camera.SetCenter(fig.Center);
+                viewer.SetCameraToSelectedNode();
             }
             if (keysEnabled[keyFigureForm] && keys[keyFigureForm])
             {
