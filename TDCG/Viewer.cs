@@ -574,6 +574,8 @@ public class Viewer : IDisposable
         return false;
     }
 
+    int phase_tab = 1;
+
     /// マウスボタンを押したときに実行するハンドラ
     protected virtual void form_OnMouseDown(object sender, MouseEventArgs e)
     {
@@ -583,7 +585,26 @@ public class Viewer : IDisposable
             rotate_node = false;
             rotate_camera = false;
 
-            if (CloseToSelectedNode(e.Location))
+            int y16 = e.Y/16;
+            int x16 = e.X/16;
+
+            if (y16 >= 1 && y16 < 3)
+            {
+                if (x16 >= 11 && x16 < 24)
+                {
+                    phase_tab = 0; // MODEL
+                }
+                else if (x16 >= 25 && x16 < 38)
+                {
+                    phase_tab = 1; // POSE
+                }
+                else if (x16 >= 39 && x16 < 52)
+                {
+                    phase_tab = 2; // SCENE
+                }
+                need_render = true;
+            }
+            else if (CloseToSelectedNode(e.Location))
                 rotate_node = true;
             else if (! SelectNode(e.Location))
                 rotate_camera = true;
@@ -1297,6 +1318,8 @@ public class Viewer : IDisposable
             effect_ao.Technique = "AO";
     }
 
+    Texture[] phase_textures = new Texture[3];
+
     private void OnDeviceLost(object sender, EventArgs e)
     {
         Console.WriteLine("OnDeviceLost");
@@ -1309,6 +1332,9 @@ public class Viewer : IDisposable
             pole.Dispose();
         if (circle != null)
             circle.Dispose();
+
+        for (int i = 0; i < phase_textures.Length; i++)
+            phase_textures[i].Dispose();
 
         if (amb_surface != null)
             amb_surface.Dispose();
@@ -1343,6 +1369,13 @@ public class Viewer : IDisposable
     }
 
     Rectangle dev_rect;
+
+    static string[] phase_filenames = { "0-model.png", "1-pose.png", "2-scene.png" };
+    static string GetPhaseTexturePath(int i)
+    {
+        string relative_path = Path.Combine(@"resources\phases", phase_filenames[i]);
+        return Path.Combine(Application.StartupPath, relative_path);
+    }
 
     private void OnDeviceReset(object sender, EventArgs e)
     {
@@ -1385,6 +1418,9 @@ public class Viewer : IDisposable
 
         tmp_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
         tmp_surface = tmp_texture.GetSurfaceLevel(0);
+
+        for (int i = 0; i < phase_textures.Length; i++)
+            phase_textures[i] = TextureLoader.FromFile(device, GetPhaseTexturePath(i), dev_rect.Width, dev_rect.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
 
         effect_depth.SetValue("DepthMap_texture", dmap_texture); // in
 
@@ -1835,6 +1871,7 @@ public class Viewer : IDisposable
                 }
                 DrawSelectedNode(ref world);
             }
+            DrawPhaseSprite();
             break;
         case RenderMode.DepthMap:
             DrawDepthNormalMap();
@@ -2143,6 +2180,23 @@ public class Viewer : IDisposable
 
         sprite.Begin(0);
         sprite.Draw(src_texture, dev_rect, new Vector3(0, 0, 0), new Vector3(0, 0, 0), Color.White);
+        sprite.End();
+    }
+
+    void DrawPhaseSprite()
+    {
+        Debug.WriteLine("DrawPhaseSprite");
+
+        device.SetRenderState(RenderStates.AlphaBlendEnable, true);
+
+        device.SetRenderTarget(0, dev_surface);
+        device.DepthStencilSurface = dev_zbuf;
+        //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
+
+        sprite.Transform = Matrix.Identity;
+
+        sprite.Begin(0);
+        sprite.Draw(phase_textures[phase_tab], dev_rect, new Vector3(0, 0, 0), new Vector3(0, 0, 0), Color.FromArgb(0xCC, Color.White));
         sprite.End();
     }
 
@@ -2496,9 +2550,8 @@ public class Viewer : IDisposable
                     fig.slider_matrix.EyeRatio = data.GetSliderValue(8);
                 }
 
-                for (int i = 0; i < fig.TsoList.Count; i++)
+                foreach (TSOFile tso in fig.TsoList)
                 {
-                    TSOFile tso = fig.TsoList[i];
                     string file = data.GetFileName(tso.Row);
                     if (file != "")
                         tso.FileName = Path.GetFileName(file);
