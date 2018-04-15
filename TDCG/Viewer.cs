@@ -501,6 +501,8 @@ public class Viewer : IDisposable
         if (selected_node == null)
             return false;
 
+        int screen_center_y = dev_rect.Height / 2;
+
         Figure fig;
         if (TryGetFigure(out fig))
         {
@@ -516,7 +518,7 @@ public class Viewer : IDisposable
             Vector3 view_position = Vector3.TransformCoordinate(position, Transform_View);
             Vector3 view_p = new Vector3(0, 0.25f, view_position.Z);
             Vector3 screen_p = ViewToScreen(view_p);
-            float radius = screenCenterY - screen_p.Y;
+            float radius = screen_center_y - screen_p.Y;
 
             return (dx*dx + dy*dy < radius*radius);
         }
@@ -525,6 +527,8 @@ public class Viewer : IDisposable
 
     bool SelectNode(Point location)
     {
+        int screen_center_y = dev_rect.Height / 2;
+
         Figure fig;
         if (TryGetFigure(out fig))
         {
@@ -544,7 +548,7 @@ public class Viewer : IDisposable
                 Vector3 view_position = Vector3.TransformCoordinate(position, Transform_View);
                 Vector3 view_p = new Vector3(0, 0.125f, view_position.Z);
                 Vector3 screen_p = ViewToScreen(view_p);
-                float radius = screenCenterY - screen_p.Y;
+                float radius = screen_center_y - screen_p.Y;
 
                 if (dx*dx + dy*dy < radius*radius)
                 {
@@ -664,45 +668,13 @@ public class Viewer : IDisposable
     // 選択フィギュアindex
     int fig_idx = 0;
 
-    // スクリーンの中心座標
-    private float screenCenterX = 800 / 2.0f;
-    private float screenCenterY = 600 / 2.0f;
-
     /// <summary>
-    /// controlを保持します。スクリーンの中心座標を更新します。
+    /// controlを保持します。
     /// </summary>
     /// <param name="control">control</param>
     protected void SetControl(Control control)
     {
         this.control = control;
-        screenCenterX = control.ClientSize.Width / 2.0f;
-        screenCenterY = control.ClientSize.Height / 2.0f;
-    }
-
-    /// <summary>
-    /// 指定スクリーン座標からスクリーン中心へ向かうベクトルを得ます。
-    /// </summary>
-    /// <param name="screenPointX">スクリーンX座標</param>
-    /// <param name="screenPointY">スクリーンY座標</param>
-    /// <returns>方向ベクトル</returns>
-    public Vector3 ScreenToOrientation(float screenPointX, float screenPointY)
-    {
-        float radius = 1.0f;
-        float x = -(screenPointX - screenCenterX) / (radius * screenCenterX);
-        float y = +(screenPointY - screenCenterY) / (radius * screenCenterY);
-        float z = 0.0f;
-        float mag = (x*x) + (y*y);
-
-        if (mag > 1.0f)
-        {
-            float scale = 1.0f / (float)Math.Sqrt(mag);
-            x *= scale;
-            y *= scale;
-        }
-        else
-            z = (float)-Math.Sqrt(1.0f - mag);
-
-        return new Vector3(x, y, z);
     }
 
     /// <summary>
