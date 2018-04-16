@@ -515,19 +515,6 @@ namespace TDCG
         public string Name { get { return name; } }
 
         /// <summary>
-        /// 指定名称（短い形式）を持つ子nodeを検索します。
-        /// </summary>
-        /// <param name="name">名称（短い形式）</param>
-        /// <returns></returns>
-        public TMONode FindChildByName(string name)
-        {
-            foreach (TMONode child_node in children)
-                if (child_node.name == name)
-                    return child_node;
-            return null;
-        }
-
-        /// <summary>
         /// ワールド座標系での位置を得ます。
         /// </summary>
         /// <returns></returns>
