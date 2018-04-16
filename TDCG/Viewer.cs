@@ -584,6 +584,7 @@ namespace TDCG
         }
 
         int phase_tab = 1;
+        Rectangle img_rect = new Rectangle(0, 0, 1024, 768);
 
         /// マウスボタンを押したときに実行するハンドラ
         protected virtual void form_OnMouseDown(object sender, MouseEventArgs e)
@@ -592,6 +593,9 @@ namespace TDCG
             Size client_size = control.ClientSize;
             int screen_x = e.X * dev_rect.Width / client_size.Width;
             int screen_y = e.Y * dev_rect.Height / client_size.Height;
+
+            int sprite_x = e.X * img_rect.Width / client_size.Width;
+            int sprite_y = e.Y * img_rect.Height / client_size.Height;
 
             int dx = screen_x - lastScreenPoint.X;
             int dy = screen_y - lastScreenPoint.Y;
@@ -602,8 +606,8 @@ namespace TDCG
                     rotate_node = false;
                     rotate_camera = false;
 
-                    int y16 = screen_y / 16;
-                    int x16 = screen_x / 16;
+                    int y16 = sprite_y / 16;
+                    int x16 = sprite_x / 16;
 
                     if (y16 >= 1 && y16 < 3)
                     {
