@@ -1510,20 +1510,6 @@ namespace TDCG
         [Obsolete("use RenderMode")]
         public bool SpriteShown = false;
 
-        bool motionEnabled = false;
-
-        /// <summary>
-        /// モーションの有無
-        /// </summary>
-        public bool MotionEnabled
-        {
-            get { return motionEnabled; }
-            set
-            {
-                motionEnabled = value;
-            }
-        }
-
         /// <summary>
         /// フレームを進めるのに用いるデリゲート型
         /// </summary>
@@ -1561,15 +1547,6 @@ namespace TDCG
 
                 AssignProjection();
                 AssignDepthProjection();
-
-                need_render = true;
-            }
-
-            if (motionEnabled)
-            {
-                //device.Transform.World = world_matrix;
-                foreach (Figure fig in FigureList)
-                    fig.UpdateBoneMatrices();
 
                 need_render = true;
             }

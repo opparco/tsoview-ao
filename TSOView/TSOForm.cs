@@ -19,7 +19,6 @@ namespace TSOView
         internal bool[] keysEnabled = new bool[256];
 
         internal int keySave = (int)Keys.Return;
-        internal int keyMotion = (int)Keys.Space;
         internal int keyProjection = (int)Keys.P;
         internal int keyMain = (int)Keys.C;
         internal int keyAmbient = (int)Keys.C;
@@ -197,11 +196,6 @@ namespace TSOView
             {
                 keysEnabled[keySave] = false;
                 SaveToPng();
-            }
-            if (keysEnabled[keyMotion] && keys[keyMotion])
-            {
-                keysEnabled[keyMotion] = false;
-                viewer.MotionEnabled = !viewer.MotionEnabled;
             }
             if (keysEnabled[keyProjection] && keys[keyProjection])
             {
