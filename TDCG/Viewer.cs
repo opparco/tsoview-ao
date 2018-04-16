@@ -1337,6 +1337,7 @@ namespace TDCG
         }
 
         Texture[] phase_textures = new Texture[3];
+        Texture node_sprite_texture;
 
         private void OnDeviceLost(object sender, EventArgs e)
         {
@@ -1350,6 +1351,9 @@ namespace TDCG
                 pole.Dispose();
             if (circle != null)
                 circle.Dispose();
+
+            if (node_sprite_texture != null)
+                node_sprite_texture.Dispose();
 
             for (int i = 0; i < phase_textures.Length; i++)
                 phase_textures[i].Dispose();
@@ -1393,6 +1397,11 @@ namespace TDCG
         {
             string relative_path = Path.Combine(@"resources\phases", phase_filenames[i]);
             return Path.Combine(Application.StartupPath, relative_path);
+        }
+
+        static string GetNodeSpriteTexturePath()
+        {
+            return Path.Combine(Application.StartupPath, @"node-sprite.png");
         }
 
         private void OnDeviceReset(object sender, EventArgs e)
@@ -1439,6 +1448,8 @@ namespace TDCG
 
             for (int i = 0; i < phase_textures.Length; i++)
                 phase_textures[i] = TextureLoader.FromFile(device, GetPhaseTexturePath(i), dev_rect.Width, dev_rect.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+
+            node_sprite_texture = TextureLoader.FromFile(device, GetNodeSpriteTexturePath());
 
             effect_depth.SetValue("DepthMap_texture", dmap_texture); // in
 
@@ -1867,6 +1878,7 @@ namespace TDCG
                         DrawSelectedNode(ref world);
                     }
                     DrawPhaseSprite();
+                    DrawSelectedNodeSprite();
                     break;
                 case RenderMode.DepthMap:
                     DrawDepthNormalMap();
@@ -2192,6 +2204,23 @@ namespace TDCG
 
             sprite.Begin(0);
             sprite.Draw(phase_textures[phase_tab], dev_rect, new Vector3(0, 0, 0), new Vector3(0, 0, 0), Color.FromArgb(0xCC, Color.White));
+            sprite.End();
+        }
+
+        void DrawSelectedNodeSprite()
+        {
+            Debug.WriteLine("DrawSelectedNodeSprite");
+
+            device.SetRenderState(RenderStates.AlphaBlendEnable, true);
+
+            device.SetRenderTarget(0, dev_surface);
+            device.DepthStencilSurface = dev_zbuf;
+            //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
+
+            sprite.Transform = Matrix.Identity;
+
+            sprite.Begin(0);
+            sprite.Draw(node_sprite_texture, new Rectangle(0, 0, 16, 16), new Vector3(0, 0, 0), new Vector3(16*14, 16*25, 0), Color.FromArgb(0xCC, Color.Cyan));
             sprite.End();
         }
 
