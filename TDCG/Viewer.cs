@@ -611,6 +611,7 @@ namespace TDCG
 
                     if (y16 >= 1 && y16 < 3)
                     {
+                        // phase tab
                         if (x16 >= 11 && x16 < 24)
                         {
                             phase_tab = 0; // MODEL
@@ -624,6 +625,24 @@ namespace TDCG
                             phase_tab = 2; // SCENE
                         }
                         need_render = true;
+                    }
+                    else if (y16 >= 5 && y16 < 40 && x16 >= 5 && x16 < 24)
+                    {
+                        Figure fig;
+                        if (TryGetFigure(out fig))
+                        {
+                            // nodes palette
+                            if (y16 == 25 && x16 == 14) // W_Hips
+                            {
+                                selected_node = fig.Tmo.nodes[0];
+                                need_render = true;
+                            }
+                            else if (y16 == 23 && x16 == 14) // W_SpineDummy
+                            {
+                                selected_node = fig.Tmo.FindNodeByName("W_Spine_Dummy");
+                                need_render = true;
+                            }
+                        }
                     }
                     else if (CloseToSelectedNode(new Point(screen_x, screen_y)))
                         rotate_node = true;
