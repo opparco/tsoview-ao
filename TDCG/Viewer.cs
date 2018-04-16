@@ -496,6 +496,8 @@ namespace TDCG
             }
         }
 
+        // 指定位置の近傍に selected_node があるか
+        // location 座標系: device 生成時の screen 座標系
         bool CloseToSelectedNode(Point location)
         {
             if (selected_node == null)
@@ -525,6 +527,9 @@ namespace TDCG
             return false;
         }
 
+        // 指定位置の node を selected_node に設定する
+        // なければ false を返す
+        // location 座標系: device 生成時の screen 座標系
         bool SelectNode(Point location)
         {
             int screen_center_y = dev_rect.Height / 2;
@@ -583,14 +588,22 @@ namespace TDCG
         /// マウスボタンを押したときに実行するハンドラ
         protected virtual void form_OnMouseDown(object sender, MouseEventArgs e)
         {
+            //device 生成時の screen 座標系に変換する
+            Size client_size = control.ClientSize;
+            int screen_x = e.X * dev_rect.Width / client_size.Width;
+            int screen_y = e.Y * dev_rect.Height / client_size.Height;
+
+            int dx = screen_x - lastScreenPoint.X;
+            int dy = screen_y - lastScreenPoint.Y;
+
             switch (e.Button)
             {
                 case MouseButtons.Left:
                     rotate_node = false;
                     rotate_camera = false;
 
-                    int y16 = e.Y / 16;
-                    int x16 = e.X / 16;
+                    int y16 = screen_y / 16;
+                    int x16 = screen_x / 16;
 
                     if (y16 >= 1 && y16 < 3)
                     {
@@ -608,28 +621,26 @@ namespace TDCG
                         }
                         need_render = true;
                     }
-                    else if (CloseToSelectedNode(e.Location))
+                    else if (CloseToSelectedNode(new Point(screen_x, screen_y)))
                         rotate_node = true;
-                    else if (!SelectNode(e.Location))
+                    else if (!SelectNode(new Point(screen_x, screen_y)))
                         rotate_camera = true;
                     else
                         need_render = true; // select node
-                                            //if (Control.ModifierKeys == Keys.Control)
-                                            //    SetLightDirection(ScreenToOrientation(e.X, e.Y));
                     break;
                 case MouseButtons.Right:
                     grab_node = false;
                     grab_camera = false;
 
-                    if (CloseToSelectedNode(e.Location))
+                    if (CloseToSelectedNode(new Point(screen_x, screen_y)))
                         grab_node = true;
                     else
                         grab_camera = true;
                     break;
             }
 
-            lastScreenPoint.X = e.X;
-            lastScreenPoint.Y = e.Y;
+            lastScreenPoint.X = screen_x;
+            lastScreenPoint.Y = screen_y;
         }
 
         /// マウスを移動したときに実行するハンドラ
@@ -637,8 +648,13 @@ namespace TDCG
         {
             const float delta_scale = 0.125f;
 
-            int dx = e.X - lastScreenPoint.X;
-            int dy = e.Y - lastScreenPoint.Y;
+            //device 生成時の screen 座標系に変換する
+            Size client_size = control.ClientSize;
+            int screen_x = e.X * dev_rect.Width / client_size.Width;
+            int screen_y = e.Y * dev_rect.Height / client_size.Height;
+
+            int dx = screen_x - lastScreenPoint.X;
+            int dy = screen_y - lastScreenPoint.Y;
 
             switch (e.Button)
             {
@@ -647,8 +663,6 @@ namespace TDCG
                         WhileRotateNode(dx, dy);
                     if (rotate_camera)
                         WhileRotateCamera(dx, dy);
-                    //if (Control.ModifierKeys == Keys.Control)
-                    //    SetLightDirection(ScreenToOrientation(e.X, e.Y));
                     break;
                 case MouseButtons.Middle:
                     Camera.MoveView(-dx * delta_scale, dy * delta_scale);
@@ -661,8 +675,14 @@ namespace TDCG
                     break;
             }
 
-            lastScreenPoint.X = e.X;
-            lastScreenPoint.Y = e.Y;
+            lastScreenPoint.X = screen_x;
+            lastScreenPoint.Y = screen_y;
+        }
+
+        // コントロールのサイズを変更したときに実行するハンドラ
+        protected virtual void form_OnResize(object sender, EventArgs e)
+        {
+            need_render = true;
         }
 
         // 選択フィギュアindex
@@ -1024,6 +1044,7 @@ namespace TDCG
 
             control.MouseDown += new MouseEventHandler(form_OnMouseDown);
             control.MouseMove += new MouseEventHandler(form_OnMouseMove);
+            control.Resize += new EventHandler(form_OnResize);
 
             PresentParameters pp = new PresentParameters();
             try
