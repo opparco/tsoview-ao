@@ -2207,9 +2207,20 @@ namespace TDCG
             sprite.End();
         }
 
+        void GetNodeLocation(TMONode node, out Point location)
+        {
+            if (node.Name == "W_Spine_Dummy")
+                location = new Point(16*14, 16*23);
+            else // W_Hips
+                location = new Point(16*14, 16*25);
+        }
+
         void DrawSelectedNodeSprite()
         {
             Debug.WriteLine("DrawSelectedNodeSprite");
+
+            if (selected_node == null)
+                return;
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, true);
 
@@ -2219,8 +2230,11 @@ namespace TDCG
 
             sprite.Transform = Matrix.Identity;
 
+            Point location;
+            GetNodeLocation(selected_node, out location);
+
             sprite.Begin(0);
-            sprite.Draw(node_sprite_texture, new Rectangle(0, 0, 16, 16), new Vector3(0, 0, 0), new Vector3(16*14, 16*25, 0), Color.FromArgb(0xCC, Color.Cyan));
+            sprite.Draw(node_sprite_texture, new Rectangle(0, 0, 16, 16), new Vector3(0, 0, 0), new Vector3(location.X, location.Y, 0), Color.FromArgb(0xCC, Color.Cyan));
             sprite.End();
         }
 
