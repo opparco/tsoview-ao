@@ -129,12 +129,12 @@ namespace TDCG
             sprite.End();
         }
 
-        void GetNodeLocation(string nodename, out Point location)
+        bool GetNodeLocation(string nodename, out Point location)
         {
             if (nodename != null && name_locationmap.TryGetValue(nodename, out location))
-                ;
-            else
-                location = new Point(16*14, 16*25);
+                return true;
+            location = Point.Empty;
+            return false;
         }
 
         void DrawSelectedNodeSprite(Sprite sprite, string nodename)
@@ -142,12 +142,14 @@ namespace TDCG
             sprite.Transform = Matrix.Identity;
 
             Point location;
-            GetNodeLocation(nodename, out location);
-            ScaleByClient(ref location);
+            if (GetNodeLocation(nodename, out location))
+            {
+                ScaleByClient(ref location);
 
-            sprite.Begin(0);
-            sprite.Draw(node_sprite_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(location.X, location.Y, 0), Color.FromArgb(0xCC, Color.Cyan));
-            sprite.End();
+                sprite.Begin(0);
+                sprite.Draw(node_sprite_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(location.X, location.Y, 0), Color.FromArgb(0xCC, Color.Cyan));
+                sprite.End();
+            }
         }
 
         public void Render(Sprite sprite, string nodename)
