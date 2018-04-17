@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -25,19 +26,45 @@ namespace TDCG
             return Path.Combine(Application.StartupPath, @"node-sprite.png");
         }
 
+        static string GetNodeLocationsPath()
+        {
+            return Path.Combine(Application.StartupPath, @"nodelocations.txt");
+        }
+
+        static int GetLocationKey(int x16, int y16)
+        {
+            return x16 + 64*y16;
+        }
+
         Device device;
-        Dictionary<int, string> location_namemap = new Dictionary<int, string>();
-        Dictionary<string, Point> name_locationmap = new Dictionary<string, Point>();
+        Dictionary<int, string> location_namemap;
+        Dictionary<string, Point> name_locationmap;
+
+        void LoadNameLocationMap()
+        {
+            char[] delim = { ' ' };
+            using (StreamReader source = new StreamReader(File.OpenRead(GetNodeLocationsPath())))
+            {
+                string line;
+                while ((line = source.ReadLine()) != null)
+                {
+                    string[] tokens = line.Split(delim);
+                    Debug.Assert(tokens.Length == 3, "tokens length should be 3");
+                    string nodename = tokens[0];
+                    int x16 = int.Parse(tokens[1]);
+                    int y16 = int.Parse(tokens[2]);
+                    location_namemap.Add(GetLocationKey(x16, y16), nodename);
+                    name_locationmap.Add(nodename, new Point(16*x16, 16*y16));
+                }
+            }
+        }
 
         public SpriteRenderer(Device device)
         {
             this.device = device;
-
-            location_namemap.Add(GetLocationKey(14, 25), "W_Hips");
-            location_namemap.Add(GetLocationKey(14, 23), "W_Spine_Dummy");
-
-            name_locationmap.Add("W_Hips", new Point(16*14, 16*25));
-            name_locationmap.Add("W_Spine_Dummy", new Point(16*14, 16*23));
+            location_namemap = new Dictionary<int, string>();
+            name_locationmap = new Dictionary<string, Point>();
+            LoadNameLocationMap();
         }
 
         // on device lost
@@ -62,11 +89,6 @@ namespace TDCG
         {
             size.Width = size.Width * rect.Width / 1024;
             size.Height = size.Height * rect.Height / 768;
-        }
-
-        static int GetLocationKey(int x16, int y16)
-        {
-            return x16 + 64*y16;
         }
 
         // on device reset
