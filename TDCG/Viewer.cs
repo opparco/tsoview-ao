@@ -306,6 +306,7 @@ namespace TDCG
         Pole pole = null;
         Screen screen = null;
         Sprite sprite = null;
+        SpriteRenderer sprite_renderer = null;
 
         /// surface of device
         protected Surface dev_surface = null;
@@ -583,7 +584,6 @@ namespace TDCG
             return false;
         }
 
-        int phase_tab = 1;
         Rectangle img_rect = new Rectangle(0, 0, 1024, 768);
 
         /// マウスボタンを押したときに実行するハンドラ
@@ -594,8 +594,7 @@ namespace TDCG
             int screen_x = e.X * dev_rect.Width / client_size.Width;
             int screen_y = e.Y * dev_rect.Height / client_size.Height;
 
-            int sprite_x = e.X * img_rect.Width / client_size.Width;
-            int sprite_y = e.Y * img_rect.Height / client_size.Height;
+            Point sprite_p = new Point(e.X * img_rect.Width / client_size.Width, e.Y * img_rect.Height / client_size.Height);
 
             int dx = screen_x - lastScreenPoint.X;
             int dy = screen_y - lastScreenPoint.Y;
@@ -606,44 +605,10 @@ namespace TDCG
                     rotate_node = false;
                     rotate_camera = false;
 
-                    int y16 = sprite_y / 16;
-                    int x16 = sprite_x / 16;
+                    Figure fig = GetSelectedFigure();
 
-                    if (y16 >= 1 && y16 < 3)
-                    {
-                        // phase tab
-                        if (x16 >= 11 && x16 < 24)
-                        {
-                            phase_tab = 0; // MODEL
-                        }
-                        else if (x16 >= 25 && x16 < 38)
-                        {
-                            phase_tab = 1; // POSE
-                        }
-                        else if (x16 >= 39 && x16 < 52)
-                        {
-                            phase_tab = 2; // SCENE
-                        }
+                    if (fig != null && sprite_renderer.Update(sprite_p, fig.Tmo, ref selected_node))
                         need_render = true;
-                    }
-                    else if (y16 >= 5 && y16 < 40 && x16 >= 5 && x16 < 24)
-                    {
-                        Figure fig;
-                        if (TryGetFigure(out fig))
-                        {
-                            // nodes palette
-                            if (y16 == 25 && x16 == 14) // W_Hips
-                            {
-                                selected_node = fig.Tmo.nodes[0];
-                                need_render = true;
-                            }
-                            else if (y16 == 23 && x16 == 14) // W_SpineDummy
-                            {
-                                selected_node = fig.Tmo.FindNodeByName("W_Spine_Dummy");
-                                need_render = true;
-                            }
-                        }
-                    }
                     else if (CloseToSelectedNode(new Point(screen_x, screen_y)))
                         rotate_node = true;
                     else if (!SelectNode(new Point(screen_x, screen_y)))
@@ -831,10 +796,10 @@ namespace TDCG
         public Figure GetSelectedFigure()
         {
             Figure fig;
-            if (FigureList.Count == 0)
-                fig = null;
-            else
+            if (fig_idx < FigureList.Count)
                 fig = FigureList[fig_idx];
+            else
+                fig = null;
             return fig;
         }
 
@@ -1185,6 +1150,7 @@ namespace TDCG
             pole = new Pole(device);
             screen = new Screen(device);
             sprite = new Sprite(device);
+            sprite_renderer = new SpriteRenderer(device);
             camera.Update();
             OnDeviceReset(device, null);
 
@@ -1336,10 +1302,7 @@ namespace TDCG
                 effect_ao.Technique = "AO";
         }
 
-        Texture[] phase_textures = new Texture[3];
-        Texture node_sprite_texture;
-
-        private void OnDeviceLost(object sender, EventArgs e)
+        void OnDeviceLost(object sender, EventArgs e)
         {
             Console.WriteLine("OnDeviceLost");
 
@@ -1352,11 +1315,7 @@ namespace TDCG
             if (circle != null)
                 circle.Dispose();
 
-            if (node_sprite_texture != null)
-                node_sprite_texture.Dispose();
-
-            for (int i = 0; i < phase_textures.Length; i++)
-                phase_textures[i].Dispose();
+            sprite_renderer.Dispose();
 
             if (amb_surface != null)
                 amb_surface.Dispose();
@@ -1392,19 +1351,7 @@ namespace TDCG
 
         Rectangle dev_rect;
 
-        static string[] phase_filenames = { "0-model.png", "1-pose.png", "2-scene.png" };
-        static string GetPhaseTexturePath(int i)
-        {
-            string relative_path = Path.Combine(@"resources\phases", phase_filenames[i]);
-            return Path.Combine(Application.StartupPath, relative_path);
-        }
-
-        static string GetNodeSpriteTexturePath()
-        {
-            return Path.Combine(Application.StartupPath, @"node-sprite.png");
-        }
-
-        private void OnDeviceReset(object sender, EventArgs e)
+        void OnDeviceReset(object sender, EventArgs e)
         {
             Console.WriteLine("OnDeviceReset");
             int devw = 0;
@@ -1446,10 +1393,7 @@ namespace TDCG
             tmp_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             tmp_surface = tmp_texture.GetSurfaceLevel(0);
 
-            for (int i = 0; i < phase_textures.Length; i++)
-                phase_textures[i] = TextureLoader.FromFile(device, GetPhaseTexturePath(i), dev_rect.Width, dev_rect.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
-
-            node_sprite_texture = TextureLoader.FromFile(device, GetNodeSpriteTexturePath());
+            sprite_renderer.Create(dev_rect);
 
             effect_depth.SetValue("DepthMap_texture", dmap_texture); // in
 
@@ -1877,8 +1821,13 @@ namespace TDCG
                         }
                         DrawSelectedNode(ref world);
                     }
-                    DrawPhaseSprite();
-                    DrawSelectedNodeSprite();
+                    device.SetRenderState(RenderStates.AlphaBlendEnable, true);
+
+                    device.SetRenderTarget(0, dev_surface);
+                    device.DepthStencilSurface = dev_zbuf;
+                    //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
+
+                    sprite_renderer.Render(sprite, selected_node);
                     break;
                 case RenderMode.DepthMap:
                     DrawDepthNormalMap();
@@ -2190,54 +2139,6 @@ namespace TDCG
             sprite.End();
         }
 
-        void DrawPhaseSprite()
-        {
-            Debug.WriteLine("DrawPhaseSprite");
-
-            device.SetRenderState(RenderStates.AlphaBlendEnable, true);
-
-            device.SetRenderTarget(0, dev_surface);
-            device.DepthStencilSurface = dev_zbuf;
-            //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
-
-            sprite.Transform = Matrix.Identity;
-
-            sprite.Begin(0);
-            sprite.Draw(phase_textures[phase_tab], dev_rect, new Vector3(0, 0, 0), new Vector3(0, 0, 0), Color.FromArgb(0xCC, Color.White));
-            sprite.End();
-        }
-
-        void GetNodeLocation(TMONode node, out Point location)
-        {
-            if (node.Name == "W_Spine_Dummy")
-                location = new Point(16*14, 16*23);
-            else // W_Hips
-                location = new Point(16*14, 16*25);
-        }
-
-        void DrawSelectedNodeSprite()
-        {
-            Debug.WriteLine("DrawSelectedNodeSprite");
-
-            if (selected_node == null)
-                return;
-
-            device.SetRenderState(RenderStates.AlphaBlendEnable, true);
-
-            device.SetRenderTarget(0, dev_surface);
-            device.DepthStencilSurface = dev_zbuf;
-            //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
-
-            sprite.Transform = Matrix.Identity;
-
-            Point location;
-            GetNodeLocation(selected_node, out location);
-
-            sprite.Begin(0);
-            sprite.Draw(node_sprite_texture, new Rectangle(0, 0, 16, 16), new Vector3(0, 0, 0), new Vector3(location.X, location.Y, 0), Color.FromArgb(0xCC, Color.Cyan));
-            sprite.End();
-        }
-
         // blit
         void Blit(Surface source, Surface dest)
         {
@@ -2382,6 +2283,8 @@ namespace TDCG
                 pole.Dispose();
             if (circle != null)
                 circle.Dispose();
+
+            sprite_renderer.Dispose();
 
             if (amb_surface != null)
                 amb_surface.Dispose();
