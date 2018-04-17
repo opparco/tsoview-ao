@@ -605,10 +605,17 @@ namespace TDCG
                     rotate_node = false;
                     rotate_camera = false;
 
-                    Figure fig = GetSelectedFigure();
-
-                    if (fig != null && sprite_renderer.Update(sprite_p, fig.Tmo, ref selected_node))
+                    string node_name;
+                    if (sprite_renderer.Update(sprite_p, out node_name))
+                    {
+                        if (node_name != null)
+                        {
+                            Figure fig;
+                            if (TryGetFigure(out fig))
+                                selected_node = fig.Tmo.FindNodeByName(node_name);
+                        }
                         need_render = true;
+                    }
                     else if (CloseToSelectedNode(new Point(screen_x, screen_y)))
                         rotate_node = true;
                     else if (!SelectNode(new Point(screen_x, screen_y)))

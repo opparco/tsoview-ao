@@ -52,10 +52,12 @@ namespace TDCG
 
         int phase_tab = 1;
 
-        public bool Update(Point sprite_p, TMOFile tmo, ref TMONode selected_node)
+        public bool Update(Point sprite_p, out string node_name)
         {
             int y16 = sprite_p.Y / 16;
             int x16 = sprite_p.X / 16;
+
+            node_name = null;
 
             if (y16 >= 1 && y16 < 3)
             {
@@ -78,13 +80,13 @@ namespace TDCG
             {
                 // nodes palette
                 {
-                    if (y16 == 25 && x16 == 14) // W_Hips
+                    if (y16 == 25 && x16 == 14)
                     {
-                        selected_node = tmo.nodes[0];
+                        node_name = "W_Hips";
                     }
-                    else if (y16 == 23 && x16 == 14) // W_SpineDummy
+                    else if (y16 == 23 && x16 == 14)
                     {
-                        selected_node = tmo.FindNodeByName("W_Spine_Dummy");
+                        node_name = "W_Spine_Dummy";
                     }
                 }
                 return true;
