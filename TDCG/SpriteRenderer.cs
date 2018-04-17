@@ -84,6 +84,16 @@ namespace TDCG
 
         int phase_tab = 1;
 
+        void UpdatePhaseTabByLocation(int x16, int y16)
+        {
+            if (x16 >= 11 && x16 < 24)
+                phase_tab = 0; // MODEL
+            else if (x16 >= 25 && x16 < 38)
+                phase_tab = 1; // POSE
+            else if (x16 >= 39 && x16 < 52)
+                phase_tab = 2; // SCENE
+        }
+
         string FindNodeNameByLocation(int x16, int y16)
         {
             string name;
@@ -103,12 +113,7 @@ namespace TDCG
             if (y16 >= 1 && y16 < 3)
             {
                 // phase tab
-                if (x16 >= 11 && x16 < 24)
-                    phase_tab = 0; // MODEL
-                else if (x16 >= 25 && x16 < 38)
-                    phase_tab = 1; // POSE
-                else if (x16 >= 39 && x16 < 52)
-                    phase_tab = 2; // SCENE
+                UpdatePhaseTabByLocation(x16, y16);
                 return true;
             }
             else if (y16 >= 5 && y16 < 40 && x16 >= 5 && x16 < 24)
