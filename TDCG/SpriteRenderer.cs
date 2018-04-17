@@ -27,6 +27,7 @@ namespace TDCG
 
         Device device;
         Dictionary<int, string> location_namemap = new Dictionary<int, string>();
+        Dictionary<string, Point> name_locationmap = new Dictionary<string, Point>();
 
         public SpriteRenderer(Device device)
         {
@@ -34,6 +35,9 @@ namespace TDCG
 
             location_namemap.Add(GetLocationKey(14, 25), "W_Hips");
             location_namemap.Add(GetLocationKey(14, 23), "W_Spine_Dummy");
+
+            name_locationmap.Add("W_Hips", new Point(16*14, 16*25));
+            name_locationmap.Add("W_Spine_Dummy", new Point(16*14, 16*23));
         }
 
         // on device lost
@@ -127,9 +131,9 @@ namespace TDCG
 
         void GetNodeLocation(string nodename, out Point location)
         {
-            if (nodename == "W_Spine_Dummy")
-                location = new Point(16*14, 16*23);
-            else // W_Hips
+            if (nodename != null && name_locationmap.TryGetValue(nodename, out location))
+                ;
+            else
                 location = new Point(16*14, 16*25);
         }
 
