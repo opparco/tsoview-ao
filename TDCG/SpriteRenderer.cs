@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -25,10 +26,14 @@ namespace TDCG
         }
 
         Device device;
+        Dictionary<int, string> location_namemap = new Dictionary<int, string>();
 
         public SpriteRenderer(Device device)
         {
             this.device = device;
+
+            location_namemap.Add(GetLocationKey(14, 25), "W_Hips");
+            location_namemap.Add(GetLocationKey(14, 23), "W_Spine_Dummy");
         }
 
         // on device lost
@@ -55,6 +60,11 @@ namespace TDCG
             size.Height = size.Height * rect.Height / 768;
         }
 
+        static int GetLocationKey(int x16, int y16)
+        {
+            return x16 + 64*y16;
+        }
+
         // on device reset
         public void Create(Rectangle rect)
         {
@@ -72,10 +82,9 @@ namespace TDCG
 
         string FindNodeNameByLocation(int x16, int y16)
         {
-            if (y16 == 25 && x16 == 14)
-                return "W_Hips";
-            else if (y16 == 23 && x16 == 14)
-                return "W_Spine_Dummy";
+            string name;
+            if (location_namemap.TryGetValue(GetLocationKey(x16, y16), out name))
+                return name;
             else
                 return null;
         }
