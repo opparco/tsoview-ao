@@ -1834,7 +1834,7 @@ namespace TDCG
                     device.DepthStencilSurface = dev_zbuf;
                     //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
-                    sprite_renderer.Render(sprite, selected_node);
+                    sprite_renderer.Render(sprite, selected_node != null ? selected_node.Name : null);
                     break;
                 case RenderMode.DepthMap:
                     DrawDepthNormalMap();

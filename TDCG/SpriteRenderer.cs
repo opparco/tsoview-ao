@@ -41,54 +41,67 @@ namespace TDCG
                 phase_textures[i].Dispose();
         }
 
+        Rectangle rect; // client size
+
+        void ScaleByClient(ref Point location)
+        {
+            location.X = location.X * rect.Width / 1024;
+            location.Y = location.Y * rect.Height / 768;
+        }
+
+        void ScaleByClient(ref Size size)
+        {
+            size.Width = size.Width * rect.Width / 1024;
+            size.Height = size.Height * rect.Height / 768;
+        }
+
         // on device reset
         public void Create(Rectangle rect)
         {
+            this.rect = rect;
+
             for (int i = 0; i < phase_textures.Length; i++)
                 phase_textures[i] = TextureLoader.FromFile(device, GetPhaseTexturePath(i), rect.Width, rect.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
 
-            node_sprite_texture = TextureLoader.FromFile(device, GetNodeSpriteTexturePath());
+            Size size = new Size(16, 16);
+            ScaleByClient(ref size);
+            node_sprite_texture = TextureLoader.FromFile(device, GetNodeSpriteTexturePath(), size.Width, size.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
         }
 
         int phase_tab = 1;
 
-        public bool Update(Point sprite_p, out string node_name)
+        string FindNodeNameByLocation(int x16, int y16)
+        {
+            if (y16 == 25 && x16 == 14)
+                return "W_Hips";
+            else if (y16 == 23 && x16 == 14)
+                return "W_Spine_Dummy";
+            else
+                return null;
+        }
+
+        public bool Update(Point sprite_p, out string nodename)
         {
             int y16 = sprite_p.Y / 16;
             int x16 = sprite_p.X / 16;
 
-            node_name = null;
+            nodename = null;
 
             if (y16 >= 1 && y16 < 3)
             {
                 // phase tab
                 if (x16 >= 11 && x16 < 24)
-                {
                     phase_tab = 0; // MODEL
-                }
                 else if (x16 >= 25 && x16 < 38)
-                {
                     phase_tab = 1; // POSE
-                }
                 else if (x16 >= 39 && x16 < 52)
-                {
                     phase_tab = 2; // SCENE
-                }
                 return true;
             }
             else if (y16 >= 5 && y16 < 40 && x16 >= 5 && x16 < 24)
             {
                 // nodes palette
-                {
-                    if (y16 == 25 && x16 == 14)
-                    {
-                        node_name = "W_Hips";
-                    }
-                    else if (y16 == 23 && x16 == 14)
-                    {
-                        node_name = "W_Spine_Dummy";
-                    }
-                }
+                nodename = FindNodeNameByLocation(x16, y16);
                 return true;
             }
             return false;
@@ -103,33 +116,31 @@ namespace TDCG
             sprite.End();
         }
 
-        void GetNodeLocation(TMONode node, out Point location)
+        void GetNodeLocation(string nodename, out Point location)
         {
-            if (node.Name == "W_Spine_Dummy")
+            if (nodename == "W_Spine_Dummy")
                 location = new Point(16*14, 16*23);
             else // W_Hips
                 location = new Point(16*14, 16*25);
         }
 
-        void DrawSelectedNodeSprite(Sprite sprite, TMONode node)
+        void DrawSelectedNodeSprite(Sprite sprite, string nodename)
         {
-            if (node == null)
-                return;
-
             sprite.Transform = Matrix.Identity;
 
             Point location;
-            GetNodeLocation(node, out location);
+            GetNodeLocation(nodename, out location);
+            ScaleByClient(ref location);
 
             sprite.Begin(0);
-            sprite.Draw(node_sprite_texture, new Rectangle(0, 0, 16, 16), new Vector3(0, 0, 0), new Vector3(location.X, location.Y, 0), Color.FromArgb(0xCC, Color.Cyan));
+            sprite.Draw(node_sprite_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(location.X, location.Y, 0), Color.FromArgb(0xCC, Color.Cyan));
             sprite.End();
         }
 
-        public void Render(Sprite sprite, TMONode node)
+        public void Render(Sprite sprite, string nodename)
         {
             DrawPhaseSprite(sprite);
-            DrawSelectedNodeSprite(sprite, node);
+            DrawSelectedNodeSprite(sprite, nodename);
         }
     }
 }
