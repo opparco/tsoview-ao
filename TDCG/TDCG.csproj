@@ -43,9 +43,13 @@
     <Compile Include="Circle.cs" />
     <Compile Include="Figure.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="ModelMode.cs" />
+    <Compile Include="Mode.cs" />
     <Compile Include="PNGFile.cs" />
     <Compile Include="PNGWriter.cs" />
     <Compile Include="Pole.cs" />
+    <Compile Include="PoseMode.cs" />
+    <Compile Include="SceneMode.cs" />
     <Compile Include="Screen.cs" />
     <Compile Include="Shader.cs" />
     <Compile Include="SimpleCamera.cs" />

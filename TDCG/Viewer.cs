@@ -605,23 +605,34 @@ namespace TDCG
                     rotate_node = false;
                     rotate_camera = false;
 
-                    string node_name;
-                    if (sprite_renderer.Update(sprite_p, out node_name))
+                    if (sprite_renderer.Update(sprite_p))
                     {
-                        if (node_name != null)
+                        string modename = sprite_renderer.CurrentModeName;
+                        if (modename == "POSE")
                         {
-                            Figure fig;
-                            if (TryGetFigure(out fig))
-                                selected_node = fig.Tmo.FindNodeByName(node_name);
+                            string nodename = sprite_renderer.SelectedNodeName;
+                            if (nodename != null)
+                            {
+                                Figure fig;
+                                if (TryGetFigure(out fig))
+                                    selected_node = fig.Tmo.FindNodeByName(nodename);
+                            }
                         }
                         need_render = true;
                     }
                     else if (CloseToSelectedNode(new Point(screen_x, screen_y)))
                         rotate_node = true;
-                    else if (!SelectNode(new Point(screen_x, screen_y)))
-                        rotate_camera = true;
+                    else if (SelectNode(new Point(screen_x, screen_y)))
+                    {
+                        string modename = sprite_renderer.CurrentModeName;
+                        if (modename == "POSE")
+                        {
+                            sprite_renderer.SelectedNodeName = selected_node.Name;
+                        }
+                        need_render = true;
+                    }
                     else
-                        need_render = true; // select node
+                        rotate_camera = true;
                     break;
                 case MouseButtons.Right:
                     grab_node = false;
@@ -1157,7 +1168,7 @@ namespace TDCG
             pole = new Pole(device);
             screen = new Screen(device);
             sprite = new Sprite(device);
-            sprite_renderer = new SpriteRenderer(device);
+            sprite_renderer = new SpriteRenderer(device, sprite);
             camera.Update();
             OnDeviceReset(device, null);
 
@@ -1834,7 +1845,7 @@ namespace TDCG
                     device.DepthStencilSurface = dev_zbuf;
                     //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
-                    sprite_renderer.Render(sprite, selected_node != null ? selected_node.Name : null);
+                    sprite_renderer.Render();
                     break;
                 case RenderMode.DepthMap:
                     DrawDepthNormalMap();
