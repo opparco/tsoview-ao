@@ -11,12 +11,14 @@ namespace TDCG
 {
     public class NodeLocationCollection
     {
+        Device device;
         int number;
         Dictionary<int, string> location_namemap;
         Dictionary<string, Point> name_locationmap;
 
-        public NodeLocationCollection(int number)
+        public NodeLocationCollection(Device device, int number)
         {
+            this.device = device;
             this.number = number;
             location_namemap = new Dictionary<int, string>();
             name_locationmap = new Dictionary<string, Point>();
@@ -68,6 +70,27 @@ namespace TDCG
             location = Point.Empty;
             return false;
         }
+
+        public Texture node_location_texture;
+
+        // on device lost
+        public void Dispose()
+        {
+            if (node_location_texture != null)
+                node_location_texture.Dispose();
+        }
+
+        string GetNodeLocationTexturePath()
+        {
+            string relative_path = Path.Combine(@"resources\node-locations", string.Format("{0}.png", this.number));
+            return Path.Combine(Application.StartupPath, relative_path);
+        }
+
+        // on device reset
+        public void Create(Rectangle client_rect)
+        {
+            node_location_texture = TextureLoader.FromFile(device, GetNodeLocationTexturePath(), client_rect.Width, client_rect.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+        }
     }
 
     public class PoseMode : Mode
@@ -82,8 +105,40 @@ namespace TDCG
         {
             node_location_collections = new NodeLocationCollection[2];
             for (int i = 0; i < node_location_collections.Length; i++)
-                node_location_collections[i] = new NodeLocationCollection(i);
+                node_location_collections[i] = new NodeLocationCollection(device, i);
             current_node_location_collection = node_location_collections[0];
+        }
+
+        // on device lost
+        public override void Dispose()
+        {
+            if (node_sprite_texture != null)
+                node_sprite_texture.Dispose();
+
+            for (int i = 0; i < node_location_collections.Length; i++)
+                node_location_collections[i].Dispose();
+
+            base.Dispose();
+        }
+
+        static string GetNodeSpriteTexturePath()
+        {
+            return Path.Combine(Application.StartupPath, @"node-sprite.png");
+        }
+
+        Texture node_sprite_texture;
+
+        // on device reset
+        public override void Create(Rectangle client_rect)
+        {
+            base.Create(client_rect);
+
+            Size size = new Size(16, 16);
+            ScaleByClient(ref size);
+            node_sprite_texture = TextureLoader.FromFile(device, GetNodeSpriteTexturePath(), size.Width, size.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+
+            for (int i = 0; i < node_location_collections.Length; i++)
+                node_location_collections[i].Create(client_rect);
         }
 
         public override bool Update(Point sprite_p)
@@ -114,32 +169,6 @@ namespace TDCG
                 return false;
         }
 
-        static string GetNodeSpriteTexturePath()
-        {
-            return Path.Combine(Application.StartupPath, @"node-sprite.png");
-        }
-
-        Texture node_sprite_texture;
-
-        // on device lost
-        public override void Dispose()
-        {
-            if (node_sprite_texture != null)
-                node_sprite_texture.Dispose();
-
-            base.Dispose();
-        }
-
-        // on device reset
-        public override void Create(Rectangle client_rect)
-        {
-            base.Create(client_rect);
-
-            Size size = new Size(16, 16);
-            ScaleByClient(ref size);
-            node_sprite_texture = TextureLoader.FromFile(device, GetNodeSpriteTexturePath(), size.Width, size.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
-        }
-
         void DrawSelectedNodeSprite()
         {
             sprite.Transform = Matrix.Identity;
@@ -157,7 +186,8 @@ namespace TDCG
 
         public override void Render()
         {
-            DrawSprite();
+            DrawSprite(mode_texture);
+            DrawSprite(current_node_location_collection.node_location_texture);
             DrawSelectedNodeSprite();
         }
     }

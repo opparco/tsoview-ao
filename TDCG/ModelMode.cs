@@ -20,7 +20,7 @@ namespace TDCG
         }
         public override void Render()
         {
-            DrawSprite();
+            DrawSprite(mode_texture);
         }
     }
 }

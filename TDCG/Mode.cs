@@ -17,23 +17,23 @@ namespace TDCG
         string name;
         public string Name { get { return name; } }
         //filename of the mode picture
-        string filename;
+        string mode_filename;
 
-        public Mode(Device device, Sprite sprite, string name, string filename)
+        public Mode(Device device, Sprite sprite, string name, string mode_filename)
         {
             this.device = device;
             this.sprite = sprite;
             this.name = name;
-            this.filename = filename;
+            this.mode_filename = mode_filename;
         }
 
-        Texture texture;
+        protected Texture mode_texture;
 
         // on device lost
         public virtual void Dispose()
         {
-            if (texture != null)
-                texture.Dispose();
+            if (mode_texture != null)
+                mode_texture.Dispose();
         }
 
         Rectangle client_rect;
@@ -50,9 +50,9 @@ namespace TDCG
             size.Height = size.Height * client_rect.Height / 768;
         }
 
-        string GetTexturePath()
+        string GetModeTexturePath()
         {
-            string relative_path = Path.Combine(@"resources\modes", filename);
+            string relative_path = Path.Combine(@"resources\modes", mode_filename);
             return Path.Combine(Application.StartupPath, relative_path);
         }
 
@@ -60,12 +60,12 @@ namespace TDCG
         public virtual void Create(Rectangle client_rect)
         {
             this.client_rect = client_rect;
-            texture = TextureLoader.FromFile(device, GetTexturePath(), client_rect.Width, client_rect.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            mode_texture = TextureLoader.FromFile(device, GetModeTexturePath(), client_rect.Width, client_rect.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
         }
 
         public abstract bool Update(Point sprite_p);
 
-        protected void DrawSprite()
+        protected void DrawSprite(Texture texture)
         {
             sprite.Transform = Matrix.Identity;
 
