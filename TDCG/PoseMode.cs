@@ -25,9 +25,10 @@ namespace TDCG
             LoadNameLocationMap();
         }
 
-        static string GetNodeLocationsPath(int number)
+        string GetNodeLocationsPath()
         {
-            return Path.Combine(Application.StartupPath, string.Format(@"node-loc{0}.txt", number));
+            string relative_path = Path.Combine(@"resources\node-locations", string.Format("{0}.txt", this.number));
+            return Path.Combine(Application.StartupPath, relative_path);
         }
 
         static int GetLocationKey(int x16, int y16)
@@ -38,7 +39,7 @@ namespace TDCG
         void LoadNameLocationMap()
         {
             char[] delim = { ' ' };
-            using (StreamReader source = new StreamReader(File.OpenRead(GetNodeLocationsPath(this.number))))
+            using (StreamReader source = new StreamReader(File.OpenRead(GetNodeLocationsPath())))
             {
                 string line;
                 while ((line = source.ReadLine()) != null)
@@ -103,7 +104,7 @@ namespace TDCG
 
         public PoseMode(Device device, Sprite sprite) : base(device, sprite, "POSE", "1-pose.png")
         {
-            node_location_collections = new NodeLocationCollection[2];
+            node_location_collections = new NodeLocationCollection[5];
             for (int i = 0; i < node_location_collections.Length; i++)
                 node_location_collections[i] = new NodeLocationCollection(device, i);
             current_node_location_collection = node_location_collections[0];
@@ -159,8 +160,14 @@ namespace TDCG
                 int number = -1;
                 if (x16 >= 5 && x16 < 8)
                     number = 0;
-                if (x16 >= 9 && x16 < 12)
+                else if (x16 >= 9 && x16 < 12)
                     number = 1;
+                else if (x16 >= 13 && x16 < 16)
+                    number = 2;
+                else if (x16 >= 17 && x16 < 20)
+                    number = 3;
+                else if (x16 >= 21 && x16 < 24)
+                    number = 4;
                 if (number != -1)
                     current_node_location_collection = node_location_collections[number];
                 return true;
