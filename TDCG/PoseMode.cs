@@ -9,91 +9,6 @@ using Microsoft.DirectX.Direct3D;
 
 namespace TDCG
 {
-    public class NodeLocationCollection
-    {
-        Device device;
-        int number;
-        Dictionary<int, string> location_namemap;
-        Dictionary<string, Point> name_locationmap;
-
-        public NodeLocationCollection(Device device, int number)
-        {
-            this.device = device;
-            this.number = number;
-            location_namemap = new Dictionary<int, string>();
-            name_locationmap = new Dictionary<string, Point>();
-            LoadNameLocationMap();
-        }
-
-        string GetNodeLocationsPath()
-        {
-            string relative_path = Path.Combine(@"resources\node-locations", string.Format("{0}.txt", this.number));
-            return Path.Combine(Application.StartupPath, relative_path);
-        }
-
-        static int GetLocationKey(int x16, int y16)
-        {
-            return x16 + 64*y16;
-        }
-
-        void LoadNameLocationMap()
-        {
-            char[] delim = { ' ' };
-            using (StreamReader source = new StreamReader(File.OpenRead(GetNodeLocationsPath())))
-            {
-                string line;
-                while ((line = source.ReadLine()) != null)
-                {
-                    string[] tokens = line.Split(delim);
-                    Debug.Assert(tokens.Length == 3, "tokens length should be 3");
-                    string nodename = tokens[0];
-                    int x16 = int.Parse(tokens[1]);
-                    int y16 = int.Parse(tokens[2]);
-                    location_namemap.Add(GetLocationKey(x16, y16), nodename);
-                    name_locationmap.Add(nodename, new Point(16*x16, 16*y16));
-                }
-            }
-        }
-
-        public string FindNodeNameByLocation(int x16, int y16)
-        {
-            string name;
-            if (location_namemap.TryGetValue(GetLocationKey(x16, y16), out name))
-                return name;
-            else
-                return null;
-        }
-
-        public bool GetNodeLocation(string nodename, out Point location)
-        {
-            if (nodename != null && name_locationmap.TryGetValue(nodename, out location))
-                return true;
-            location = Point.Empty;
-            return false;
-        }
-
-        public Texture node_location_texture;
-
-        // on device lost
-        public void Dispose()
-        {
-            if (node_location_texture != null)
-                node_location_texture.Dispose();
-        }
-
-        string GetNodeLocationTexturePath()
-        {
-            string relative_path = Path.Combine(@"resources\node-locations", string.Format("{0}.png", this.number));
-            return Path.Combine(Application.StartupPath, relative_path);
-        }
-
-        // on device reset
-        public void Create(Rectangle client_rect)
-        {
-            node_location_texture = TextureLoader.FromFile(device, GetNodeLocationTexturePath(), client_rect.Width, client_rect.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
-        }
-    }
-
     public class PoseMode : Mode
     {
         NodeLocationCollection[] node_location_collections;
@@ -142,6 +57,22 @@ namespace TDCG
                 node_location_collections[i].Create(client_rect);
         }
 
+        static int FindNodeNumberByLocation(int x16)
+        {
+            int number = -1;
+            if (x16 >= 5 && x16 < 8)
+                number = 0;
+            else if (x16 >= 9 && x16 < 12)
+                number = 1;
+            else if (x16 >= 13 && x16 < 16)
+                number = 2;
+            else if (x16 >= 17 && x16 < 20)
+                number = 3;
+            else if (x16 >= 21 && x16 < 24)
+                number = 4;
+            return number;
+        }
+
         public override bool Update(Point sprite_p)
         {
             int y16 = sprite_p.Y / 16;
@@ -151,23 +82,14 @@ namespace TDCG
 
             if (y16 >= 5 && y16 < 40 && x16 >= 5 && x16 < 24)
             {
-                // nodes palette
+                // node location collection
                 selected_nodename = current_node_location_collection.FindNodeNameByLocation(x16, y16);
                 return true;
             }
             else if (y16 >= 41 && y16 < 44 && x16 >= 5 && x16 < 24)
             {
-                int number = -1;
-                if (x16 >= 5 && x16 < 8)
-                    number = 0;
-                else if (x16 >= 9 && x16 < 12)
-                    number = 1;
-                else if (x16 >= 13 && x16 < 16)
-                    number = 2;
-                else if (x16 >= 17 && x16 < 20)
-                    number = 3;
-                else if (x16 >= 21 && x16 < 24)
-                    number = 4;
+                // node location collection tab
+                int number = FindNodeNumberByLocation(x16);
                 if (number != -1)
                     current_node_location_collection = node_location_collections[number];
                 return true;
