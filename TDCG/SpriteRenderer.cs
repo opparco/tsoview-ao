@@ -29,6 +29,8 @@ namespace TDCG
             }
         }
 
+        public string[] NodeNames { get { return pose_mode.NodeNames; } }
+
         public SpriteRenderer(Device device, Sprite sprite)
         {
             modes = new Mode[3];

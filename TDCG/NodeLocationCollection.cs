@@ -7,12 +7,28 @@ using Microsoft.DirectX.Direct3D;
 
 namespace TDCG
 {
+    /// ボーンを選択するためのパネルを扱う
     public class NodeLocationCollection
     {
         Device device;
+
+        //パネル No.
         int number;
+
+        //パネル上のボーン位置からボーン名称を得るための辞書
         Dictionary<int, string> location_namemap;
+
+        //ボーン名称からパネル上のボーン位置を得るための辞書
         Dictionary<string, Point> name_locationmap;
+
+        //パネル上にあるボーン名称の短い形式配列を得る
+        public string[] GetNodeNames()
+        {
+            string[] names = new string[name_locationmap.Keys.Count];
+            name_locationmap.Keys.CopyTo(names, 0);
+
+            return names;
+        }
 
         public NodeLocationCollection(Device device, int number)
         {

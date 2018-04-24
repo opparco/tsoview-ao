@@ -65,8 +65,10 @@ namespace TDCG
         /// </summary>
         public Matrix ViewMatrix { get { return view; } }
 
+        /// 回転行列
         public Matrix RotationMatrix { get { return Matrix.RotationYawPitchRoll(angle.Y, angle.X, angle.Z); } }
 
+        /// 回転quaternion
         public Quaternion RotationQuaternion { get { return Quaternion.RotationYawPitchRoll(angle.Y, angle.X, angle.Z); } }
 
         /// <summary>

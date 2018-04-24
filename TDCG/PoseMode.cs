@@ -17,6 +17,14 @@ namespace TDCG
         string selected_nodename = null;
         public string SelectedNodeName { get { return selected_nodename; } set { selected_nodename = value; } }
 
+        public string[] NodeNames
+        {
+            get
+            {
+                return current_node_location_collection.GetNodeNames();
+            }
+        }
+
         public PoseMode(Device device, Sprite sprite) : base(device, sprite, "POSE", "1-pose.png")
         {
             node_location_collections = new NodeLocationCollection[5];
@@ -77,8 +85,6 @@ namespace TDCG
         {
             int y16 = sprite_p.Y / 16;
             int x16 = sprite_p.X / 16;
-
-            selected_nodename = null;
 
             if (y16 >= 5 && y16 < 40 && x16 >= 5 && x16 < 24)
             {

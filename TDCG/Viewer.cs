@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Threading;
 using System.ComponentModel;
 using System.Windows.Forms;
-using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
@@ -257,8 +257,6 @@ namespace TDCG
         Effect effect_ao;
         Effect effect_gb;
         Effect effect_main;
-        Effect effect_circle;
-        Effect effect_pole;
         Effect effect_screen;
 
         /// <summary>
@@ -302,10 +300,9 @@ namespace TDCG
         /// </summary>
         public bool ShadowMapEnabled { get { return shadow_map_enabled; } }
 
-        Circle circle = null;
-        Pole pole = null;
         Screen screen = null;
         Sprite sprite = null;
+        NodeRenderer node_renderer = null;
         SpriteRenderer sprite_renderer = null;
 
         /// surface of device
@@ -409,6 +406,7 @@ namespace TDCG
         bool rotate_node = false;
         bool rotate_camera = false;
 
+        // 選択ボーン
         TMONode selected_node = null;
 
         void WhileGrabNode(int dx, int dy)
@@ -1012,17 +1010,7 @@ namespace TDCG
         /// <summary>
         /// カメラ
         /// </summary>
-        public SimpleCamera Camera
-        {
-            get
-            {
-                return camera;
-            }
-            set
-            {
-                camera = value;
-            }
-        }
+        public SimpleCamera Camera { get { return camera; } set { camera = value; } }
 
         /// <summary>
         /// world行列
@@ -1149,13 +1137,15 @@ namespace TDCG
             if (!LoadEffect(@"main.fx", out effect_main, macros))
                 return false;
 
-            if (!LoadEffect(@"circle.fx", out effect_circle, macros))
-                return false;
-
-            if (!LoadEffect(@"pole.fx", out effect_pole, macros))
-                return false;
-
             if (!LoadEffect(@"screen.fx", out effect_screen, macros))
+                return false;
+
+            node_renderer = new NodeRenderer(device, sprite);
+
+            if (!LoadEffect(@"circle.fx", out node_renderer.effect_circle, macros))
+                return false;
+
+            if (!LoadEffect(@"pole.fx", out node_renderer.effect_pole, macros))
                 return false;
 
             handle_LocalBoneMats = effect.GetParameter(null, "LocalBoneMats");
@@ -1164,8 +1154,6 @@ namespace TDCG
             handle_HohoAlpha = effect.GetParameter(null, "HohoAlpha");
             handle_UVSCR = effect.GetParameter(null, "UVSCR");
 
-            circle = new Circle(device);
-            pole = new Pole(device);
             screen = new Screen(device);
             sprite = new Sprite(device);
             sprite_renderer = new SpriteRenderer(device, sprite);
@@ -1328,11 +1316,8 @@ namespace TDCG
                 sprite.Dispose();
             if (screen != null)
                 screen.Dispose();
-            if (pole != null)
-                pole.Dispose();
-            if (circle != null)
-                circle.Dispose();
 
+            node_renderer.Dispose();
             sprite_renderer.Dispose();
 
             if (amb_surface != null)
@@ -1411,6 +1396,7 @@ namespace TDCG
             tmp_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             tmp_surface = tmp_texture.GetSurfaceLevel(0);
 
+            node_renderer.Create(dev_rect);
             sprite_renderer.Create(dev_rect);
 
             effect_depth.SetValue("DepthMap_texture", dmap_texture); // in
@@ -1426,8 +1412,6 @@ namespace TDCG
             effect_screen.SetValue("Ambient_texture", amb_texture); // in
             effect_screen.SetValue("Occlusion_texture", occ_texture); // in
 
-            circle.Create();
-            pole.Create();
             screen.Create(dev_rect);
 
             AssignProjection();
@@ -1540,6 +1524,10 @@ namespace TDCG
                 AssignProjection();
                 AssignDepthProjection();
 
+                node_renderer.Rotation_Camera = camera.RotationMatrix;
+                node_renderer.Transform_View = Transform_View;
+                node_renderer.Transform_Projection = Transform_Projection;
+
                 need_render = true;
             }
         }
@@ -1571,234 +1559,17 @@ namespace TDCG
             effect.SetValue("wvp", world_view_projection_matrix);
         }
 
-        public void DrawPoleZ()
+        //選択中のパネル上にあるボーン配列を得る
+        TMONode[] GetDrawableNodes(TMOFile tmo)
         {
-            float scale = 5.0f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale);
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+            string[] nodenames = sprite_renderer.NodeNames;
 
-            effect_pole.SetValue("wvp", world_view_projection_matrix);
-            effect_pole.SetValue("col", new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            pole.Draw(effect_pole);
-        }
-
-        public void DrawPoleY()
-        {
-            float scale = 5.0f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI / 2.0));
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_pole.SetValue("wvp", world_view_projection_matrix);
-            effect_pole.SetValue("col", new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
-
-            pole.Draw(effect_pole);
-        }
-
-        public void DrawPoleX()
-        {
-            float scale = 5.0f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI / 2.0));
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_pole.SetValue("wvp", world_view_projection_matrix);
-            effect_pole.SetValue("col", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-            pole.Draw(effect_pole);
-        }
-
-        public void DrawCircleZ()
-        {
-            float scale = 2.5f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale);
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_circle.SetValue("wvp", world_view_projection_matrix);
-            effect_circle.SetValue("col", new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            circle.Draw(effect_circle);
-        }
-
-        public void DrawCircleY()
-        {
-            float scale = 2.5f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI / 2.0));
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_circle.SetValue("wvp", world_view_projection_matrix);
-            effect_circle.SetValue("col", new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
-
-            circle.Draw(effect_circle);
-        }
-
-        public void DrawCircleX()
-        {
-            float scale = 2.5f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI / 2.0));
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_circle.SetValue("wvp", world_view_projection_matrix);
-            effect_circle.SetValue("col", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-            circle.Draw(effect_circle);
-        }
-
-        public void DrawCircleW()
-        {
-            float scale = 1.25f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale);
-            Matrix world_view_matrix = world_matrix;
-
-            world_view_matrix.M41 += Transform_View.M41;
-            world_view_matrix.M42 += Transform_View.M42;
-            world_view_matrix.M43 += Transform_View.M43;
-
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_circle.SetValue("wvp", world_view_projection_matrix);
-            effect_circle.SetValue("col", new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-
-            circle.Draw(effect_circle);
-        }
-
-        public void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
-        {
-            float scale = 0.25f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * world_rotation;
-
-            // translation
-            world_matrix.M41 = world_position.X;
-            world_matrix.M42 = world_position.Y;
-            world_matrix.M43 = world_position.Z;
-
-            Matrix world_view_matrix = world_matrix * world * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_pole.SetValue("wvp", world_view_projection_matrix);
-            effect_pole.SetValue("col", new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            pole.Draw(effect_pole);
-        }
-
-        public void DrawNodePoleY(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
-        {
-            float scale = 0.25f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI / 2.0)) * world_rotation;
-
-            // translation
-            world_matrix.M41 = world_position.X;
-            world_matrix.M42 = world_position.Y;
-            world_matrix.M43 = world_position.Z;
-
-            Matrix world_view_matrix = world_matrix * world * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_pole.SetValue("wvp", world_view_projection_matrix);
-            effect_pole.SetValue("col", new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
-
-            pole.Draw(effect_pole);
-        }
-
-        public void DrawNodePoleX(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
-        {
-            float scale = 0.25f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI / 2.0)) * world_rotation;
-
-            // translation
-            world_matrix.M41 = world_position.X;
-            world_matrix.M42 = world_position.Y;
-            world_matrix.M43 = world_position.Z;
-
-            Matrix world_view_matrix = world_matrix * world * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_pole.SetValue("wvp", world_view_projection_matrix);
-            effect_pole.SetValue("col", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-            pole.Draw(effect_pole);
-        }
-
-        public void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world)
-        {
-            Matrix world_rotation = camera.RotationMatrix;
-            DrawNodePoleZ(ref world_position, ref world_rotation, ref world);
-        }
-
-        public void DrawNodePoleY(ref Vector3 world_position, ref Matrix world)
-        {
-            Matrix world_rotation = camera.RotationMatrix;
-            DrawNodePoleY(ref world_position, ref world_rotation, ref world);
-        }
-
-        public void DrawNodePoleX(ref Vector3 world_position, ref Matrix world)
-        {
-            Matrix world_rotation = camera.RotationMatrix;
-            DrawNodePoleX(ref world_position, ref world_rotation, ref world);
-        }
-
-        public void DrawNodeCircleW(ref Vector3 world_position, ref Matrix world)
-        {
-            float scale = 0.125f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * camera.RotationMatrix;
-
-            // translation
-            world_matrix.M41 = world_position.X;
-            world_matrix.M42 = world_position.Y;
-            world_matrix.M43 = world_position.Z;
-
-            Matrix world_view_matrix = world_matrix * world * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_circle.SetValue("wvp", world_view_projection_matrix);
-            effect_circle.SetValue("col", new Vector4(0.5f, 0.5f, 0.5f, 1.0f));
-
-            circle.Draw(effect_circle);
-        }
-
-        public void DrawSelectedNodeCircleW(ref Vector3 world_position, ref Matrix world)
-        {
-            float scale = 0.25f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * camera.RotationMatrix;
-
-            // translation
-            world_matrix.M41 = world_position.X;
-            world_matrix.M42 = world_position.Y;
-            world_matrix.M43 = world_position.Z;
-
-            Matrix world_view_matrix = world_matrix * world * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_circle.SetValue("wvp", world_view_projection_matrix);
-            effect_circle.SetValue("col", new Vector4(0.0f, 1.0f, 1.0f, 1.0f));
-
-            circle.Draw(effect_circle);
-        }
-
-        public void DrawNode(TMONode node, ref Matrix world)
-        {
-            Vector3 world_position = node.GetWorldPosition();
-
-            DrawNodeCircleW(ref world_position, ref world);
-        }
-
-        public void DrawSelectedNode(ref Matrix world)
-        {
-            if (selected_node == null)
-                return;
-
-            Vector3 world_position = selected_node.GetWorldPosition();
-            Matrix world_rotation = Matrix.RotationQuaternion(selected_node.GetWorldRotation());
-
-            DrawNodePoleX(ref world_position, ref world_rotation, ref world);
-            DrawNodePoleY(ref world_position, ref world_rotation, ref world);
-            DrawNodePoleZ(ref world_position, ref world_rotation, ref world);
-            DrawSelectedNodeCircleW(ref world_position, ref world);
+            TMONode[] nodes = new TMONode[nodenames.Length];
+            for (int i = 0; i < nodenames.Length; i++)
+            {
+                nodes[i] = tmo.FindNodeByName(nodenames[i]);
+            }
+            return nodes;
         }
 
         /// <summary>
@@ -1820,32 +1591,29 @@ namespace TDCG
             {
                 case RenderMode.Ambient:
                     DrawFigure();
-                    DrawPoleZ();
-                    DrawPoleY();
-                    DrawPoleX();
-                    DrawCircleZ();
-                    DrawCircleY();
-                    DrawCircleX();
-                    DrawCircleW();
+
+                    //TODO: ボーン描画はポーズ画面のみで行う
                     Figure fig;
                     if (TryGetFigure(out fig))
                     {
-                        Matrix world;
-                        fig.GetWorldMatrix(out world);
+                        device.SetRenderState(RenderStates.AlphaBlendEnable, true);
 
-                        foreach (TMONode node in fig.Tmo.nodes)
-                        {
-                            DrawNode(node, ref world);
-                        }
-                        DrawSelectedNode(ref world);
+                        device.SetRenderTarget(0, dev_surface);
+                        device.DepthStencilSurface = dev_zbuf;
+                        //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
+
+                        node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
                     }
-                    device.SetRenderState(RenderStates.AlphaBlendEnable, true);
 
-                    device.SetRenderTarget(0, dev_surface);
-                    device.DepthStencilSurface = dev_zbuf;
-                    //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
+                    {
+                        device.SetRenderState(RenderStates.AlphaBlendEnable, true);
 
-                    sprite_renderer.Render();
+                        device.SetRenderTarget(0, dev_surface);
+                        device.DepthStencilSurface = dev_zbuf;
+                        //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
+
+                        sprite_renderer.Render();
+                    }
                     break;
                 case RenderMode.DepthMap:
                     DrawDepthNormalMap();
@@ -1974,6 +1742,49 @@ namespace TDCG
             return new Vector4(x, 0.0f, 0.0f, 0.0f);
         }
 
+        protected virtual void DrawFigure(Figure fig, TSOFile tso)
+        {
+            tso.BeginRender();
+
+            foreach (TSOMesh mesh in tso.meshes)
+                foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
+                {
+                    //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
+                    device.SetStreamSource(0, sub_mesh.vb, 0, 52);
+
+                    tso.SwitchShader(sub_mesh);
+                    effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh));
+
+                    int npass = effect.Begin(0);
+                    for (int ipass = 0; ipass < npass; ipass++)
+                    {
+                        effect.BeginPass(ipass);
+                        device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, sub_mesh.vertices.Length - 2);
+                        effect.EndPass();
+                    }
+                    effect.End();
+                }
+            tso.EndRender();
+        }
+
+        protected virtual void DrawFigure(Figure fig)
+        {
+            {
+                Matrix world;
+                fig.GetWorldMatrix(out world);
+
+                Matrix world_view_matrix = world * Transform_View;
+                Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+                effect.SetValue("wld", world);
+                effect.SetValue("wv", world_view_matrix);
+                effect.SetValue("wvp", world_view_projection_matrix);
+            }
+            effect.SetValue(handle_LightDirForced, fig.LightDirForced());
+
+            foreach (TSOFile tso in fig.TsoList)
+                DrawFigure(fig, tso);
+        }
+
         /// <summary>
         /// フィギュアを描画します。
         /// </summary>
@@ -1991,44 +1802,9 @@ namespace TDCG
             effect.SetValue(handle_Ambient, Ambient);
             effect.SetValue(handle_HohoAlpha, HohoAlpha);
             effect.SetValue(handle_UVSCR, UVSCR());
+
             foreach (Figure fig in FigureList)
-            {
-                {
-                    Matrix world;
-                    fig.GetWorldMatrix(out world);
-
-                    Matrix world_view_matrix = world * Transform_View;
-                    Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-                    effect.SetValue("wld", world);
-                    effect.SetValue("wv", world_view_matrix);
-                    effect.SetValue("wvp", world_view_projection_matrix);
-                }
-                effect.SetValue(handle_LightDirForced, fig.LightDirForced());
-                foreach (TSOFile tso in fig.TsoList)
-                {
-                    tso.BeginRender();
-
-                    foreach (TSOMesh mesh in tso.meshes)
-                        foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
-                        {
-                            //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
-                            device.SetStreamSource(0, sub_mesh.vb, 0, 52);
-
-                            tso.SwitchShader(sub_mesh);
-                            effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh));
-
-                            int npass = effect.Begin(0);
-                            for (int ipass = 0; ipass < npass; ipass++)
-                            {
-                                effect.BeginPass(ipass);
-                                device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, sub_mesh.vertices.Length - 2);
-                                effect.EndPass();
-                            }
-                            effect.End();
-                        }
-                    tso.EndRender();
-                }
-            }
+                DrawFigure(fig);
         }
 
         void DrawShadow()
@@ -2293,55 +2069,13 @@ namespace TDCG
             foreach (Figure fig in FigureList)
                 fig.Dispose();
 
-            if (sprite != null)
-                sprite.Dispose();
-            if (screen != null)
-                screen.Dispose();
-            if (pole != null)
-                pole.Dispose();
-            if (circle != null)
-                circle.Dispose();
-
-            sprite_renderer.Dispose();
-
-            if (amb_surface != null)
-                amb_surface.Dispose();
-            if (dmap_surface != null)
-                dmap_surface.Dispose();
-            if (nmap_surface != null)
-                nmap_surface.Dispose();
-            if (occ_surface != null)
-                occ_surface.Dispose();
-            if (tmp_surface != null)
-                tmp_surface.Dispose();
-
-            if (amb_texture != null)
-                amb_texture.Dispose();
-            if (dmap_texture != null)
-                dmap_texture.Dispose();
-            if (nmap_texture != null)
-                nmap_texture.Dispose();
-            if (occ_texture != null)
-                occ_texture.Dispose();
-            if (tmp_texture != null)
-                tmp_texture.Dispose();
-
-            if (tex_zbuf != null)
-                tex_zbuf.Dispose();
-            if (dev_zbuf != null)
-                dev_zbuf.Dispose();
-            if (dev_surface != null)
-                dev_surface.Dispose();
+            OnDeviceLost(device, null);
 
             if (vd != null)
                 vd.Dispose();
 
             if (effect_screen != null)
                 effect_screen.Dispose();
-            if (effect_pole != null)
-                effect_pole.Dispose();
-            if (effect_circle != null)
-                effect_circle.Dispose();
             if (effect_main != null)
                 effect_main.Dispose();
             if (effect_gb != null)
