@@ -739,6 +739,147 @@ namespace TDCG
             }
         }
 
+        List<float> ReadFloats(string file)
+        {
+            List<float> floats = new List<float>();
+            string line;
+            using (StreamReader source = new StreamReader(File.OpenRead(file)))
+            while ((line = source.ReadLine()) != null)
+            {
+                floats.Add(Single.Parse(line));
+            }
+            return floats;
+        }
+
+        int GetFiguresCount(string path)
+        {
+            int num = 0;
+            while ( true )
+            {
+                string file = Path.Combine(path, string.Format("Figure{0}.txt", num + 1));
+                if (! File.Exists(file))
+                    break;
+                num++;
+            }
+            return num;
+        }
+
+        public void LoadScene(string path, bool append)
+        {
+            PNGSaveFile sav = new PNGSaveFile();
+            {
+                Figure fig = null;
+
+                //png.Cami
+                {
+                    List<float> factor = ReadFloats(Path.Combine(path, "Camera.txt"));
+
+                    camera.Reset();
+                    camera.Translation = new Vector3(-factor[0], -factor[1], -factor[2]);
+                    camera.Angle = new Vector3(-factor[5], -factor[4], -factor[6]);
+                }
+
+                int figures_count = GetFiguresCount(path);
+                for (int i = 0; i < figures_count; i++)
+                {
+                    //png.Lgta
+                    {
+                        List<float> factor = ReadFloats(Path.Combine(path, string.Format("LightA{0}.txt", i + 1)));
+
+                        Matrix m;
+                        m.M11 = factor[0];
+                        m.M12 = factor[1];
+                        m.M13 = factor[2];
+                        m.M14 = factor[3];
+
+                        m.M21 = factor[4];
+                        m.M22 = factor[5];
+                        m.M23 = factor[6];
+                        m.M24 = factor[7];
+
+                        m.M31 = factor[8];
+                        m.M32 = factor[9];
+                        m.M33 = factor[10];
+                        m.M34 = factor[11];
+
+                        m.M41 = factor[12];
+                        m.M42 = factor[13];
+                        m.M43 = factor[14];
+                        m.M44 = factor[15];
+
+                        sav.LightDirection = Vector3.TransformCoordinate(new Vector3(0.0f, 0.0f, -1.0f), m);
+                    }
+                    //png.Ftmo
+                    {
+                        sav.Tmo = new TMOFile();
+                        sav.Tmo.Load(Path.Combine(path, string.Format("{0}.tmo", i + 1)));
+                    }
+                    //png.Figu
+                    {
+                        fig = new Figure();
+                        fig.LightDirection = sav.LightDirection;
+                        fig.Tmo = sav.Tmo;
+                        sav.FigureList.Add(fig);
+
+                        List<float> ratios = ReadFloats(Path.Combine(path, string.Format("Figure{0}.txt", i + 1)));
+                        /*
+                        ◆FIGU
+                        スライダの位置。値は float型で 0.0 .. 1.0
+                            0: 姉妹
+                            1: うで
+                            2: あし
+                            3: 胴まわり
+                            4: おっぱい
+                            5: つり目たれ目
+                            6: やわらか
+                         */
+                        if (fig.slider_matrix != null)
+                        {
+                            fig.slider_matrix.AgeRatio = ratios[0];
+                            fig.slider_matrix.ArmRatio = ratios[1];
+                            fig.slider_matrix.LegRatio = ratios[2];
+                            fig.slider_matrix.WaistRatio = ratios[3];
+                            fig.slider_matrix.OppaiRatio = ratios[4];
+                            fig.slider_matrix.EyeRatio = ratios[5];
+                        }
+                    }
+                    //png.Ftso
+                    foreach (string file in Directory.GetFiles(Path.Combine(path, string.Format("{0}", i + 1)), "*.tso"))
+                    {
+                        TSOFile tso = new TSOFile();
+                        tso.Load(file);
+                        string code = Path.GetFileNameWithoutExtension(file);
+                        tso.Row = Convert.ToByte(code, 16);
+                        fig.TsoList.Add(tso);
+                    }
+                }
+            }
+
+            {
+                if (!append)
+                    ClearFigureList();
+
+                int idx = FigureList.Count;
+                foreach (Figure fig in sav.FigureList)
+                {
+                    fig.OpenTSOFile(device, effect);
+                    //todo: override List.Add
+                    fig.ComputeClothed();
+                    fig.UpdateNodeMapAndBoneMatrices();
+                    //todo: override List#Add
+                    FigureList.Add(fig);
+                    fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
+                    {
+                        if (GetSelectedFigure() == sender)
+                            need_render = true;
+                    };
+                }
+                SetFigureIndex(idx);
+                if (FigureUpdateEvent != null)
+                    FigureUpdateEvent(this, EventArgs.Empty);
+            }
+        }
+
         /// <summary>
         /// フィギュア選択時に呼び出されるハンドラ
         /// </summary>
@@ -773,7 +914,7 @@ namespace TDCG
             List<TSOFile> tso_list = new List<TSOFile>();
             try
             {
-                string[] files = Directory.GetFiles(source_file, "*.TSO");
+                string[] files = Directory.GetFiles(source_file, "*.tso");
                 foreach (string file in files)
                 {
                     TSOFile tso = new TSOFile();
@@ -1516,6 +1657,7 @@ namespace TDCG
             if (camera.NeedUpdate)
             {
                 camera.Update();
+
                 Transform_View = camera.ViewMatrix;
                 // xxx: for w-buffering
                 device.Transform.View = Transform_View;
@@ -2135,6 +2277,7 @@ namespace TDCG
                             float flo = BitConverter.ToSingle(buf, offset);
                             factor.Add(flo);
                         }
+
                         camera.Reset();
                         camera.Translation = new Vector3(-factor[0], -factor[1], -factor[2]);
                         camera.Angle = new Vector3(-factor[5], -factor[4], -factor[6]);

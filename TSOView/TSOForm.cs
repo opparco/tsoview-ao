@@ -38,8 +38,6 @@ namespace TSOView
         internal FigureForm figureForm = null;
         internal ConfigForm configForm = null;
 
-        string save_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\TechArts3D\TDCG";
-
         public TSOForm(TSOConfig tso_config, string[] args)
         {
             InitializeComponent();
@@ -104,11 +102,7 @@ namespace TSOView
                     else
                         figureForm.Clear();
                 };
-                viewer.Camera.SetTranslation(0.0f, +10.0f, +44.0f);
-                foreach (string arg in args)
-                    viewer.LoadAnyFile(arg, true);
-                if (viewer.FigureList.Count == 0)
-                    viewer.LoadAnyFile(Path.Combine(save_path, "system.tdcgsav.png"), true);
+                viewer.LoadScene(Path.Combine(Application.StartupPath, @"scene"), true);
 
                 this.timer1.Enabled = true;
             }
