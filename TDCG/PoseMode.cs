@@ -53,16 +53,17 @@ namespace TDCG
         Texture node_sprite_texture;
 
         // on device reset
-        public override void Create(Rectangle client_rect)
+        public override void Create(Rectangle device_rect)
         {
-            base.Create(client_rect);
+            base.Create(device_rect);
 
             Size size = new Size(16, 16);
-            ScaleByClient(ref size);
+            ScaleByDevice(ref size);
+
             node_sprite_texture = TextureLoader.FromFile(device, GetNodeSpriteTexturePath(), size.Width, size.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
 
             for (int i = 0; i < node_location_collections.Length; i++)
-                node_location_collections[i].Create(client_rect);
+                node_location_collections[i].Create(device_rect);
         }
 
         static int FindNodeNumberByLocation(int x16)
@@ -111,7 +112,7 @@ namespace TDCG
             Point location;
             if (current_node_location_collection.GetNodeLocation(selected_nodename, out location))
             {
-                ScaleByClient(ref location);
+                ScaleByDevice(ref location);
 
                 sprite.Begin(0);
                 sprite.Draw(node_sprite_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(location.X, location.Y, 0), Color.FromArgb(0xCC, Color.Cyan));

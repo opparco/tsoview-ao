@@ -36,18 +36,18 @@ namespace TDCG
                 mode_texture.Dispose();
         }
 
-        Rectangle client_rect;
+        Rectangle device_rect;
 
-        protected void ScaleByClient(ref Point location)
+        protected void ScaleByDevice(ref Point location)
         {
-            location.X = location.X * client_rect.Width / 1024;
-            location.Y = location.Y * client_rect.Height / 768;
+            location.X = location.X * device_rect.Width / 1024;
+            location.Y = location.Y * device_rect.Height / 768;
         }
 
-        protected void ScaleByClient(ref Size size)
+        protected void ScaleByDevice(ref Size size)
         {
-            size.Width = size.Width * client_rect.Width / 1024;
-            size.Height = size.Height * client_rect.Height / 768;
+            size.Width = size.Width * device_rect.Width / 1024;
+            size.Height = size.Height * device_rect.Height / 768;
         }
 
         string GetModeTexturePath()
@@ -57,10 +57,11 @@ namespace TDCG
         }
 
         // on device reset
-        public virtual void Create(Rectangle client_rect)
+        public virtual void Create(Rectangle device_rect)
         {
-            this.client_rect = client_rect;
-            mode_texture = TextureLoader.FromFile(device, GetModeTexturePath(), client_rect.Width, client_rect.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            this.device_rect = device_rect;
+
+            mode_texture = TextureLoader.FromFile(device, GetModeTexturePath(), device_rect.Width, device_rect.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
         }
 
         public abstract bool Update(Point sprite_p);

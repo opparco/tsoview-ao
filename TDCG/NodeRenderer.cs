@@ -39,7 +39,7 @@ namespace TDCG
         }
 
         // on device reset
-        public void Create(Rectangle client_rect)
+        public void Create(Rectangle device_rect)
         {
             circle.Create();
             pole.Create();
