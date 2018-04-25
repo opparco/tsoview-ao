@@ -309,8 +309,6 @@ namespace TDCG
         protected Surface dev_surface = null;
         /// zbuffer of device
         protected Surface dev_zbuf = null;
-        /// zbuffer of render target
-        protected Surface tex_zbuf = null;
 
         /// config:
         public bool Windowed { get; set; }
@@ -360,6 +358,14 @@ namespace TDCG
         Surface nmap_surface;
         Surface occ_surface;
         Surface tmp_surface;
+
+        /// zbuffer of render target
+        Surface tex_zbuf;
+
+        //snap:
+        Texture snap_texture;
+        Surface snap_surface;
+        Surface snap_zbuf;
 
         /// <summary>
         /// viewerが保持しているフィギュアリスト
@@ -584,12 +590,24 @@ namespace TDCG
 
         void ScaleByDevice(ref Point location)
         {
+            location.X = location.X * dev_rect.Width / 1024;
+            location.Y = location.Y * dev_rect.Height / 768;
+        }
+
+        void ScaleByDevice(ref Size size)
+        {
+            size.Width = size.Width * dev_rect.Width / 1024;
+            size.Height = size.Height * dev_rect.Height / 768;
+        }
+
+        void ScaleToScreen(ref Point location)
+        {
             Size client_size = control.ClientSize;
             location.X = location.X * dev_rect.Width / client_size.Width;
             location.Y = location.Y * dev_rect.Height / client_size.Height;
         }
 
-        void ScaleBySprite(ref Point location)
+        void ScaleToSprite(ref Point location)
         {
             Size client_size = control.ClientSize;
             location.X = location.X * 1024 / client_size.Width;
@@ -601,11 +619,11 @@ namespace TDCG
         {
             //device 生成時の screen 座標系に変換する
             Point screen_p = new Point(e.X, e.Y);
-            ScaleByDevice(ref screen_p);
+            ScaleToScreen(ref screen_p);
 
             //sprite 座標系に変換する
             Point sprite_p = new Point(e.X, e.Y);
-            ScaleBySprite(ref sprite_p);
+            ScaleToSprite(ref sprite_p);
 
             switch (e.Button)
             {
@@ -1468,6 +1486,17 @@ namespace TDCG
             node_renderer.Dispose();
             sprite_renderer.Dispose();
 
+            //snap:
+            if (snap_zbuf != null)
+                snap_zbuf.Dispose();
+            if (snap_surface != null)
+                snap_surface.Dispose();
+            if (snap_texture != null)
+                snap_texture.Dispose();
+
+            if (tex_zbuf != null)
+                tex_zbuf.Dispose();
+
             if (amb_surface != null)
                 amb_surface.Dispose();
             if (dmap_surface != null)
@@ -1492,8 +1521,6 @@ namespace TDCG
             if (tmp_texture != null)
                 tmp_texture.Dispose();
 
-            if (tex_zbuf != null)
-                tex_zbuf.Dispose();
             if (dev_zbuf != null)
                 dev_zbuf.Dispose();
             if (dev_surface != null)
@@ -1501,6 +1528,9 @@ namespace TDCG
         }
 
         Rectangle dev_rect;
+
+        //snap:
+        Rectangle snap_rect;
 
         void OnDeviceReset(object sender, EventArgs e)
         {
@@ -1517,15 +1547,6 @@ namespace TDCG
             dev_rect = new Rectangle(0, 0, devw, devh);
 
             dev_zbuf = device.DepthStencilSurface;
-            {
-                int dev_zbufw = 0;
-                int dev_zbufh = 0;
-                dev_zbufw = dev_surface.Description.Width;
-                dev_zbufh = dev_surface.Description.Height;
-                Console.WriteLine("dev_zbuf {0}x{1}", dev_zbufw, dev_zbufh);
-            }
-
-            tex_zbuf = device.CreateDepthStencilSurface(devw, devh, DepthFormat.D16, MultiSampleType.None, 0, false);
 
             amb_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             amb_surface = amb_texture.GetSurfaceLevel(0);
@@ -1543,6 +1564,28 @@ namespace TDCG
 
             tmp_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             tmp_surface = tmp_texture.GetSurfaceLevel(0);
+
+            tex_zbuf = device.CreateDepthStencilSurface(devw, devh, DepthFormat.D16, MultiSampleType.None, 0, false);
+
+            //snap:
+            {
+                Size size = new Size(96, 96);
+                ScaleByDevice(ref size);
+
+                snap_texture = new Texture(device, size.Width, size.Height, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
+
+                int snapw = 0;
+                int snaph = 0;
+                snap_surface = snap_texture.GetSurfaceLevel(0);
+                {
+                    snapw = snap_surface.Description.Width;
+                    snaph = snap_surface.Description.Height;
+                }
+                Console.WriteLine("snap {0}x{1}", snapw, snaph);
+
+                snap_rect = new Rectangle(0, 0, snapw, snaph);
+                snap_zbuf = device.CreateDepthStencilSurface(snapw, snaph, DepthFormat.D16, MultiSampleType.None, 0, false);
+            }
 
             node_renderer.Create(dev_rect);
             sprite_renderer.Create(dev_rect);
@@ -1741,17 +1784,10 @@ namespace TDCG
                 case RenderMode.Ambient:
                     DrawFigure();
 
-                    //TODO: ボーン描画はポーズ画面のみで行う
-                    Figure fig;
-                    if (TryGetFigure(out fig))
+                    string modename = sprite_renderer.CurrentModeName;
+                    if (modename == "SCENE")
                     {
-                        device.SetRenderState(RenderStates.AlphaBlendEnable, true);
-
-                        device.SetRenderTarget(0, dev_surface);
-                        device.DepthStencilSurface = dev_zbuf;
-                        //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
-
-                        node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
+                        SnapScene(dev_surface);
                     }
 
                     {
@@ -1762,6 +1798,26 @@ namespace TDCG
                         //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
                         sprite_renderer.Render();
+                    }
+
+                    if (modename == "POSE")
+                    {
+                        Figure fig;
+                        if (TryGetFigure(out fig))
+                        {
+                            device.SetRenderState(RenderStates.AlphaBlendEnable, true);
+
+                            device.SetRenderTarget(0, dev_surface);
+                            device.DepthStencilSurface = dev_zbuf;
+                            //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
+
+                            node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
+                        }
+                    }
+
+                    if (modename == "SCENE")
+                    {
+                        DrawSpriteSnapScene();
                     }
                     break;
                 case RenderMode.DepthMap:
@@ -2078,16 +2134,42 @@ namespace TDCG
             sprite.Transform = Matrix.Identity;
 
             sprite.Begin(0);
-            sprite.Draw(src_texture, dev_rect, new Vector3(0, 0, 0), new Vector3(0, 0, 0), Color.White);
+            sprite.Draw(src_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(0, 0, 0), Color.White);
             sprite.End();
         }
 
-        // blit
         void Blit(Surface source, Surface dest)
         {
             Debug.WriteLine("Blit");
 
             device.StretchRectangle(source, dev_rect, dest, dev_rect, TextureFilter.Point);
+        }
+
+        void DrawSpriteSnapScene()
+        {
+            Debug.WriteLine("DrawSpriteSnapScene");
+
+            device.SetRenderState(RenderStates.AlphaBlendEnable, false);
+
+            device.SetRenderTarget(0, dev_surface);
+            device.DepthStencilSurface = dev_zbuf;
+            //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
+
+            sprite.Transform = Matrix.Identity;
+
+            Point p = new Point((4) * 16, (6) * 16);
+            ScaleByDevice(ref p);
+
+            sprite.Begin(0);
+            sprite.Draw(snap_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(p.X, p.Y, 0), Color.White);
+            sprite.End();
+        }
+
+        void SnapScene(Surface source)
+        {
+            Debug.WriteLine("SnapScene");
+
+            device.StretchRectangle(source, dev_rect, snap_surface, snap_rect, TextureFilter.Point);
         }
 
         // draw Gaussian Blur

@@ -36,6 +36,8 @@ namespace TDCG
         // on device lost
         public override void Dispose()
         {
+            Debug.WriteLine("PoseMode.Dispose");
+
             if (node_sprite_texture != null)
                 node_sprite_texture.Dispose();
 
