@@ -541,7 +541,7 @@ namespace TDCG
 
                 Dictionary<TMONode, float> close_nodes = new Dictionary<TMONode, float>();
 
-                foreach (TMONode node in fig.Tmo.nodes)
+                foreach (TMONode node in GetDrawableNodes(fig.Tmo))
                 {
                     Vector3 position = Vector3.TransformCoordinate(node.GetWorldPosition(), world);
                     Vector3 screen_position = WorldToScreen(position);
