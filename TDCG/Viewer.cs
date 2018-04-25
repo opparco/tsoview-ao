@@ -365,7 +365,6 @@ namespace TDCG
         //snap:
         Texture snap_texture;
         Surface snap_surface;
-        Surface snap_zbuf;
 
         /// <summary>
         /// viewerが保持しているフィギュアリスト
@@ -681,7 +680,7 @@ namespace TDCG
 
             //device 生成時の screen 座標系に変換する
             Point screen_p = new Point(e.X, e.Y);
-            ScaleByDevice(ref screen_p);
+            ScaleToScreen(ref screen_p);
 
             int dx = screen_p.X - lastScreenPoint.X;
             int dy = screen_p.Y - lastScreenPoint.Y;
@@ -1487,8 +1486,6 @@ namespace TDCG
             sprite_renderer.Dispose();
 
             //snap:
-            if (snap_zbuf != null)
-                snap_zbuf.Dispose();
             if (snap_surface != null)
                 snap_surface.Dispose();
             if (snap_texture != null)
@@ -1584,7 +1581,6 @@ namespace TDCG
                 Console.WriteLine("snap {0}x{1}", snapw, snaph);
 
                 snap_rect = new Rectangle(0, 0, snapw, snaph);
-                snap_zbuf = device.CreateDepthStencilSurface(snapw, snaph, DepthFormat.D16, MultiSampleType.None, 0, false);
             }
 
             node_renderer.Create(dev_rect);
@@ -1782,13 +1778,29 @@ namespace TDCG
             switch (RenderMode)
             {
                 case RenderMode.Ambient:
-                    DrawFigure();
-
                     string modename = sprite_renderer.CurrentModeName;
                     if (modename == "SCENE")
                     {
-                        SnapScene(dev_surface);
+                        device.SetRenderState(RenderStates.AlphaBlendEnable, true);
+
+                        device.SetRenderTarget(0, dev_surface);
+                        device.DepthStencilSurface = dev_zbuf;
+                        device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
+
+                        device.VertexDeclaration = vd;
+                        effect.SetValue(handle_Ambient, Ambient);
+                        effect.SetValue(handle_HohoAlpha, HohoAlpha);
+                        effect.SetValue(handle_UVSCR, UVSCR());
+
+                        Figure fig;
+                        if (TryGetFigure(out fig))
+                        {
+                            DrawFigure(fig);
+                            SnapScene(dev_surface);
+                        }
                     }
+
+                    DrawFigure();
 
                     {
                         device.SetRenderState(RenderStates.AlphaBlendEnable, true);
@@ -2169,7 +2181,28 @@ namespace TDCG
         {
             Debug.WriteLine("SnapScene");
 
-            device.StretchRectangle(source, dev_rect, snap_surface, snap_rect, TextureFilter.Point);
+            Rectangle rect;
+            if (dev_rect.Width == dev_rect.Height)
+            {
+                rect = dev_rect;
+            }
+            else
+            {
+                int d = dev_rect.Width - dev_rect.Height;
+                if (d < 0)
+                {
+                    int y = -d/2;
+                    int min = dev_rect.Width;
+                    rect = new Rectangle(0, y, min, min);
+                }
+                else
+                {
+                    int x = d/2;
+                    int min = dev_rect.Height;
+                    rect = new Rectangle(x, 0, min, min);
+                }
+            }
+            device.StretchRectangle(source, rect, snap_surface, snap_rect, TextureFilter.Point);
         }
 
         // draw Gaussian Blur
