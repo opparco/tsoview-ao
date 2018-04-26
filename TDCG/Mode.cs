@@ -36,7 +36,7 @@ namespace TDCG
                 mode_texture.Dispose();
         }
 
-        Rectangle device_rect;
+        protected Rectangle device_rect;
 
         protected void ScaleByDevice(ref Point location)
         {

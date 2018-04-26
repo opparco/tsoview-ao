@@ -1774,10 +1774,11 @@ namespace TDCG
                         effect.SetValue(handle_HohoAlpha, HohoAlpha);
                         effect.SetValue(handle_UVSCR, UVSCR());
 
+                        Color col = Color.FromArgb(253, 218, 112); // SCENE
                         int idx = 0;
                         foreach (Figure fig in FigureList)
                         {
-                            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
+                            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, col, 1.0f, 0);
 
                             DrawFigure(fig);
                             SnapFigure(idx);
