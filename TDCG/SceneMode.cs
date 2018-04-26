@@ -38,10 +38,7 @@ namespace TDCG
         {
             base.Create(device_rect);
 
-            Size size = new Size(128, 128);
-            ScaleByDevice(ref size);
-
-            cell_texture = TextureLoader.FromFile(device, GetCellTexturePath(), size.Width, size.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            cell_texture = TextureLoader.FromFile(device, GetCellTexturePath(), 128, 128, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
         }
 
         public override bool Update(Point sprite_p)
