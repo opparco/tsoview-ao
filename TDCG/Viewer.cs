@@ -2154,16 +2154,16 @@ namespace TDCG
             device.DepthStencilSurface = dev_zbuf;
             //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
-            sprite.Transform = Matrix.Scaling(dev_rect.Width / 1024.0f, dev_rect.Height / 768.0f, 1.0f);
+            sprite.Transform = Matrix.Scaling(dev_rect.Width / 2048.0f, dev_rect.Height / 1536.0f, 1.0f);
 
             sprite.Begin(0);
             int idx = 0;
             foreach (Figure fig in FigureList)
             {
-                int x16 = (idx%6)*9 + 4;
-                int y16 = (idx/6)*9 + 6;
+                int x16 = (idx%6)*9 + 5;
+                int y16 = (idx/6)*9 + 5;
 
-                sprite.Draw(snap_texture, new Rectangle((idx%8)*128, (idx/8)*96, 128, 96), new Vector3(0, 0, 0), new Vector3(x16 * 16, y16 * 16, 0), Color.White);
+                sprite.Draw(snap_texture, new Rectangle((idx%4)*256, (idx/4)*192, 256, 192), new Vector3(0, 0, 0), new Vector3(x16 * 32, y16 * 32, 0), Color.White);
 
                 idx++;
             }
@@ -2174,7 +2174,7 @@ namespace TDCG
         {
             Debug.WriteLine("SnapFigure");
 
-            device.StretchRectangle(dev_surface, dev_rect, snap_surface, new Rectangle((idx%8)*128, (idx/8)*96, 128, 96), TextureFilter.Point);
+            device.StretchRectangle(dev_surface, dev_rect, snap_surface, new Rectangle((idx%4)*256, (idx/4)*192, 256, 192), TextureFilter.Point);
         }
 
         // draw Gaussian Blur

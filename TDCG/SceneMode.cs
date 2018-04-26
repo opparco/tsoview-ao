@@ -55,9 +55,9 @@ namespace TDCG
 
             sprite.Begin(0);
             for (int row = 0; row < 2; row++)
-            for (int col = 0; col < 8; col++)
+            for (int col = 0; col < 6; col++)
             {
-                sprite.Draw(cell_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 9 + 4) * 16, (row * 9 + 6) * 16, 0), Color.FromArgb(0xCC, Color.White));
+                sprite.Draw(cell_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 9 + 5) * 16, (row * 9 + 5) * 16, 0), Color.FromArgb(0xCC, Color.White));
             }
             sprite.End();
         }
