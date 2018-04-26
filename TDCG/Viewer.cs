@@ -1526,9 +1526,6 @@ namespace TDCG
 
         Rectangle dev_rect;
 
-        //snap:
-        Rectangle snap_rect;
-
         void OnDeviceReset(object sender, EventArgs e)
         {
             Console.WriteLine("OnDeviceReset");
@@ -1565,23 +1562,8 @@ namespace TDCG
             tex_zbuf = device.CreateDepthStencilSurface(devw, devh, DepthFormat.D16, MultiSampleType.None, 0, false);
 
             //snap:
-            {
-                Size size = new Size(96, 96);
-                ScaleByDevice(ref size);
-
-                snap_texture = new Texture(device, size.Width, size.Height, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
-
-                int snapw = 0;
-                int snaph = 0;
-                snap_surface = snap_texture.GetSurfaceLevel(0);
-                {
-                    snapw = snap_surface.Description.Width;
-                    snaph = snap_surface.Description.Height;
-                }
-                Console.WriteLine("snap {0}x{1}", snapw, snaph);
-
-                snap_rect = new Rectangle(0, 0, snapw, snaph);
-            }
+            snap_texture = new Texture(device, 1024, 1024, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
+            snap_surface = snap_texture.GetSurfaceLevel(0);
 
             node_renderer.Create(dev_rect);
             sprite_renderer.Create(dev_rect);
@@ -1785,18 +1767,22 @@ namespace TDCG
 
                         device.SetRenderTarget(0, dev_surface);
                         device.DepthStencilSurface = dev_zbuf;
-                        device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
+                        //device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
 
                         device.VertexDeclaration = vd;
                         effect.SetValue(handle_Ambient, Ambient);
                         effect.SetValue(handle_HohoAlpha, HohoAlpha);
                         effect.SetValue(handle_UVSCR, UVSCR());
 
-                        Figure fig;
-                        if (TryGetFigure(out fig))
+                        int idx = 0;
+                        foreach (Figure fig in FigureList)
                         {
+                            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
+
                             DrawFigure(fig);
-                            SnapScene(dev_surface);
+                            SnapFigure(idx);
+
+                            idx++;
                         }
                     }
 
@@ -1829,7 +1815,7 @@ namespace TDCG
 
                     if (modename == "SCENE")
                     {
-                        DrawSpriteSnapScene();
+                        DrawSpriteSnapFigure();
                     }
                     break;
                 case RenderMode.DepthMap:
@@ -2157,9 +2143,9 @@ namespace TDCG
             device.StretchRectangle(source, dev_rect, dest, dev_rect, TextureFilter.Point);
         }
 
-        void DrawSpriteSnapScene()
+        void DrawSpriteSnapFigure()
         {
-            Debug.WriteLine("DrawSpriteSnapScene");
+            Debug.WriteLine("DrawSpriteSnapFigure");
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
@@ -2167,42 +2153,27 @@ namespace TDCG
             device.DepthStencilSurface = dev_zbuf;
             //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
-            sprite.Transform = Matrix.Identity;
-
-            Point p = new Point((4) * 16, (6) * 16);
-            ScaleByDevice(ref p);
+            sprite.Transform = Matrix.Scaling(dev_rect.Width / 1024.0f, dev_rect.Height / 768.0f, 1.0f);
 
             sprite.Begin(0);
-            sprite.Draw(snap_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(p.X, p.Y, 0), Color.White);
+            int idx = 0;
+            foreach (Figure fig in FigureList)
+            {
+                int x16 = (idx%6)*9 + 4;
+                int y16 = (idx/6)*9 + 6;
+
+                sprite.Draw(snap_texture, new Rectangle((idx%8)*128, (idx/8)*96, 128, 96), new Vector3(0, 0, 0), new Vector3(x16 * 16, y16 * 16, 0), Color.White);
+
+                idx++;
+            }
             sprite.End();
         }
 
-        void SnapScene(Surface source)
+        void SnapFigure(int idx)
         {
-            Debug.WriteLine("SnapScene");
+            Debug.WriteLine("SnapFigure");
 
-            Rectangle rect;
-            if (dev_rect.Width == dev_rect.Height)
-            {
-                rect = dev_rect;
-            }
-            else
-            {
-                int d = dev_rect.Width - dev_rect.Height;
-                if (d < 0)
-                {
-                    int y = -d/2;
-                    int min = dev_rect.Width;
-                    rect = new Rectangle(0, y, min, min);
-                }
-                else
-                {
-                    int x = d/2;
-                    int min = dev_rect.Height;
-                    rect = new Rectangle(x, 0, min, min);
-                }
-            }
-            device.StretchRectangle(source, rect, snap_surface, snap_rect, TextureFilter.Point);
+            device.StretchRectangle(dev_surface, dev_rect, snap_surface, new Rectangle((idx%8)*128, (idx/8)*96, 128, 96), TextureFilter.Point);
         }
 
         // draw Gaussian Blur
