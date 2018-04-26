@@ -2237,7 +2237,15 @@ namespace TDCG
         {
             Debug.WriteLine("SnapTSO");
 
-            device.StretchRectangle(dev_surface, dev_rect, snap_surface, new Rectangle((idx%8)*128, (idx/8)*128, 128, 128), TextureFilter.Point);
+            int w = dev_rect.Width;
+            int h = dev_rect.Height;
+            Rectangle square_rect;
+            if (h < w)
+                square_rect = new Rectangle((w-h)/2, 0, h, h);
+            else
+                square_rect = new Rectangle(0, (h-w)/2, w, w);
+
+            device.StretchRectangle(dev_surface, square_rect, snap_surface, new Rectangle((idx%8)*128, (idx/8)*128, 128, 128), TextureFilter.Point);
         }
 
         void SnapFigure(int idx)

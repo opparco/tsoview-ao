@@ -25,7 +25,7 @@ namespace TDCG
         // on device lost
         public override void Dispose()
         {
-            Debug.WriteLine("SceneMode.Dispose");
+            Debug.WriteLine("ModelMode.Dispose");
 
             if (cell_texture != null)
                 cell_texture.Dispose();
