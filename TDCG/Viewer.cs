@@ -1761,6 +1761,35 @@ namespace TDCG
             {
                 case RenderMode.Ambient:
                     string modename = sprite_renderer.CurrentModeName;
+                    if (modename == "MODEL")
+                    {
+                        device.SetRenderState(RenderStates.AlphaBlendEnable, true);
+
+                        device.SetRenderTarget(0, dev_surface);
+                        device.DepthStencilSurface = dev_zbuf;
+                        //device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
+
+                        device.VertexDeclaration = vd;
+                        effect.SetValue(handle_Ambient, Ambient);
+                        effect.SetValue(handle_HohoAlpha, HohoAlpha);
+                        effect.SetValue(handle_UVSCR, UVSCR());
+
+                        Color col = Color.FromArgb(136, 255, 156); // MODEL
+                        Figure fig;
+                        if (TryGetFigure(out fig))
+                        {
+                            foreach (TSOFile tso in fig.TsoList)
+                            {
+                                int idx = tso.Row;
+
+                                device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, col, 1.0f, 0);
+
+                                DrawTSO(fig, tso);
+                                SnapTSO(idx);
+                            }
+                        }
+                    }
+
                     if (modename == "SCENE")
                     {
                         device.SetRenderState(RenderStates.AlphaBlendEnable, true);
@@ -1812,6 +1841,11 @@ namespace TDCG
 
                             node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
                         }
+                    }
+
+                    if (modename == "MODEL")
+                    {
+                        DrawSpriteSnapTSO();
                     }
 
                     if (modename == "SCENE")
@@ -1946,7 +1980,7 @@ namespace TDCG
             return new Vector4(x, 0.0f, 0.0f, 0.0f);
         }
 
-        protected virtual void DrawFigure(Figure fig, TSOFile tso)
+        protected virtual void DrawTSO(Figure fig, TSOFile tso)
         {
             tso.BeginRender();
 
@@ -1986,7 +2020,7 @@ namespace TDCG
             effect.SetValue(handle_LightDirForced, fig.LightDirForced());
 
             foreach (TSOFile tso in fig.TsoList)
-                DrawFigure(fig, tso);
+                DrawTSO(fig, tso);
         }
 
         /// <summary>
@@ -2144,6 +2178,35 @@ namespace TDCG
             device.StretchRectangle(source, dev_rect, dest, dev_rect, TextureFilter.Point);
         }
 
+        void DrawSpriteSnapTSO()
+        {
+            Debug.WriteLine("DrawSpriteSnapTSO");
+
+            device.SetRenderState(RenderStates.AlphaBlendEnable, false);
+
+            device.SetRenderTarget(0, dev_surface);
+            device.DepthStencilSurface = dev_zbuf;
+            //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
+
+            sprite.Transform = Matrix.Scaling(dev_rect.Width / 1024.0f * 0.75f, dev_rect.Height / 768.0f * 0.75f, 1.0f);
+
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                sprite.Begin(0);
+
+                foreach (TSOFile tso in fig.TsoList)
+                {
+                    int idx = tso.Row;
+                    int x16 = (idx%8)*7 + 4;
+                    int y16 = (idx/8)*9 + 5;
+
+                    sprite.Draw(snap_texture, new Rectangle((idx%8)*128, (idx/8)*128, 128, 128), new Vector3(0, 0, 0), new Vector3(x16 * 16 / 0.75f, y16 * 16 / 0.75f, 0), Color.White);
+                }
+                sprite.End();
+            }
+        }
+
         void DrawSpriteSnapFigure()
         {
             Debug.WriteLine("DrawSpriteSnapFigure");
@@ -2168,6 +2231,13 @@ namespace TDCG
                 idx++;
             }
             sprite.End();
+        }
+
+        void SnapTSO(int idx)
+        {
+            Debug.WriteLine("SnapTSO");
+
+            device.StretchRectangle(dev_surface, dev_rect, snap_surface, new Rectangle((idx%8)*128, (idx/8)*128, 128, 128), TextureFilter.Point);
         }
 
         void SnapFigure(int idx)
