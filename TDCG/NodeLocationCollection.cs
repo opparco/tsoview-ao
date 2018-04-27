@@ -104,7 +104,7 @@ namespace TDCG
         // on device reset
         public void Create(Rectangle client_rect)
         {
-            node_location_texture = TextureLoader.FromFile(device, GetNodeLocationTexturePath(), client_rect.Width, client_rect.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            node_location_texture = TextureLoader.FromFile(device, GetNodeLocationTexturePath(), 320, 640, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
         }
     }
 }

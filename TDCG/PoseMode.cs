@@ -104,6 +104,15 @@ namespace TDCG
                 return false;
         }
 
+        void DrawNodeCollectionSprite(Texture texture)
+        {
+            sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
+
+            sprite.Begin(0);
+            sprite.Draw(texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(72, 72, 0), Color.FromArgb(0xCC, Color.White));
+            sprite.End();
+        }
+
         void DrawSelectedNodeSprite()
         {
             sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
@@ -120,7 +129,7 @@ namespace TDCG
         public override void Render()
         {
             DrawSprite(mode_texture);
-            DrawSprite(current_node_location_collection.node_location_texture);
+            DrawNodeCollectionSprite(current_node_location_collection.node_location_texture);
             DrawSelectedNodeSprite();
         }
     }
