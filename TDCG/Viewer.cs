@@ -411,6 +411,7 @@ namespace TDCG
         bool rotate_node = false;
         bool rotate_camera = false;
 
+        int swap_row = -1;
         int swap_idx = -1;
 
         // 選択ボーン
@@ -650,6 +651,39 @@ namespace TDCG
             }
         }
 
+        void SwapFigureIdx(int aidx, int bidx)
+        {
+            Figure a = null;
+            Figure b = null;
+            int idx = 0;
+            foreach (Figure fig in FigureList)
+            {
+                if (aidx == idx)
+                    a = fig;
+                if (bidx == idx)
+                    b = fig;
+                idx++;
+            }
+            if (a != null && b != null)
+            {
+                FigureList[aidx] = b;
+                FigureList[bidx] = a;
+            }
+            else
+            {
+                if (a != null)
+                {
+                    FigureList.RemoveAt(aidx); // Remove(a)
+                    FigureList.Add(a);
+                }
+                else
+                {
+                    FigureList.RemoveAt(bidx); // Remove(b)
+                    FigureList.Add(b);
+                }
+            }
+        }
+
         /// マウスボタンを押したときに実行するハンドラ
         protected virtual void form_OnMouseDown(object sender, MouseEventArgs e)
         {
@@ -674,13 +708,12 @@ namespace TDCG
                         string modename = sprite_renderer.CurrentModeName;
                         if (modename == "MODEL")
                         {
-                            if (swap_idx != -1)
+                            if (swap_row != -1)
                             {
-                                int idx = sprite_renderer.model_mode.SelectedIdx;
-                                if (idx != swap_idx)
-                                    SwapTSOFileRow(swap_idx, idx);
-                                
-                                swap_idx = -1;
+                                int row = sprite_renderer.model_mode.SelectedIdx;
+                                if (row != swap_row)
+                                    SwapTSOFileRow(swap_row, row);
+                                swap_row = -1;
                             }
                         }
                         if (modename == "POSE")
@@ -691,6 +724,16 @@ namespace TDCG
                                 Figure fig;
                                 if (TryGetFigure(out fig))
                                     selected_node = fig.Tmo.FindNodeByName(nodename);
+                            }
+                        }
+                        if (modename == "SCENE")
+                        {
+                            if (swap_idx != -1)
+                            {
+                                int idx = sprite_renderer.scene_mode.SelectedIdx;
+                                if (idx != swap_idx)
+                                    SwapFigureIdx(swap_idx, idx);
+                                swap_idx = -1;
                             }
                         }
                         need_render = true;
@@ -720,8 +763,11 @@ namespace TDCG
                         string modename = sprite_renderer.CurrentModeName;
                         if (modename == "MODEL")
                         {
-                            swap_idx = sprite_renderer.model_mode.SelectedIdx;
-                            Console.WriteLine("swap idx:{0}", swap_idx);
+                            swap_row = sprite_renderer.model_mode.SelectedIdx;
+                        }
+                        if (modename == "SCENE")
+                        {
+                            swap_idx = sprite_renderer.scene_mode.SelectedIdx;
                         }
                         need_render = true;
                     }
@@ -1895,6 +1941,14 @@ namespace TDCG
                         sprite_renderer.Render();
                     }
 
+                    if (modename == "MODEL")
+                    {
+                        DrawSpriteSnapTSO();
+                        if (swap_row != -1)
+                            sprite_renderer.model_mode.DrawDottedSprite(sprite_renderer.model_mode.SelectedIdx);
+                        else
+                            sprite_renderer.model_mode.DrawCursorSprite(sprite_renderer.model_mode.SelectedIdx);
+                    }
                     if (modename == "POSE")
                     {
                         Figure fig;
@@ -1909,20 +1963,13 @@ namespace TDCG
                             node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
                         }
                     }
-
-                    if (modename == "MODEL")
-                    {
-                        DrawSpriteSnapTSO();
-                        if (swap_idx != -1)
-                            sprite_renderer.model_mode.DrawDottedSprite(sprite_renderer.model_mode.SelectedIdx);
-                        else
-                            sprite_renderer.model_mode.DrawCursorSprite(sprite_renderer.model_mode.SelectedIdx);
-                    }
-
                     if (modename == "SCENE")
                     {
                         DrawSpriteSnapFigure();
-                        sprite_renderer.scene_mode.DrawCursorSprite(sprite_renderer.scene_mode.SelectedIdx);
+                        if (swap_idx != -1)
+                            sprite_renderer.scene_mode.DrawDottedSprite(sprite_renderer.scene_mode.SelectedIdx);
+                        else
+                            sprite_renderer.scene_mode.DrawCursorSprite(sprite_renderer.scene_mode.SelectedIdx);
                     }
                     break;
                 case RenderMode.DepthMap:
