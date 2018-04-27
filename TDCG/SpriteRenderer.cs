@@ -15,9 +15,9 @@ namespace TDCG
         Mode current_mode;
         public string CurrentModeName { get { return current_mode.Name; } }
 
-        ModelMode model_mode { get { return modes[0] as ModelMode; } }
-        PoseMode pose_mode { get { return modes[1] as PoseMode; } }
-        SceneMode scene_mode { get { return modes[2] as SceneMode; } }
+        public ModelMode model_mode { get { return modes[0] as ModelMode; } }
+        public PoseMode pose_mode { get { return modes[1] as PoseMode; } }
+        public SceneMode scene_mode { get { return modes[2] as SceneMode; } }
 
         public string SelectedNodeName
         {

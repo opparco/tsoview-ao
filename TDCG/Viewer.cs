@@ -1851,6 +1851,7 @@ namespace TDCG
                     if (modename == "SCENE")
                     {
                         DrawSpriteSnapFigure();
+                        sprite_renderer.scene_mode.DrawCursorSprite(fig_idx);
                     }
                     break;
                 case RenderMode.DepthMap:
