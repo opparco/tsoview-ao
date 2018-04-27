@@ -38,18 +38,6 @@ namespace TDCG
 
         protected Rectangle device_rect;
 
-        protected void ScaleByDevice(ref Point location)
-        {
-            location.X = location.X * device_rect.Width / 1024;
-            location.Y = location.Y * device_rect.Height / 768;
-        }
-
-        protected void ScaleByDevice(ref Size size)
-        {
-            size.Width = size.Width * device_rect.Width / 1024;
-            size.Height = size.Height * device_rect.Height / 768;
-        }
-
         string GetModeTexturePath()
         {
             string relative_path = Path.Combine(@"resources\modes", mode_filename);

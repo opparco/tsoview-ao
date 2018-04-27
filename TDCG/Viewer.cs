@@ -590,18 +590,6 @@ namespace TDCG
             return false;
         }
 
-        void ScaleByDevice(ref Point location)
-        {
-            location.X = location.X * dev_rect.Width / 1024;
-            location.Y = location.Y * dev_rect.Height / 768;
-        }
-
-        void ScaleByDevice(ref Size size)
-        {
-            size.Width = size.Width * dev_rect.Width / 1024;
-            size.Height = size.Height * dev_rect.Height / 768;
-        }
-
         void ScaleToScreen(ref Point location)
         {
             Size client_size = control.ClientSize;
