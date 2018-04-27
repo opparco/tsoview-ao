@@ -411,6 +411,8 @@ namespace TDCG
         bool rotate_node = false;
         bool rotate_camera = false;
 
+        int swap_idx = -1;
+
         // 選択ボーン
         TMONode selected_node = null;
 
@@ -613,6 +615,41 @@ namespace TDCG
             location.Y = location.Y * 768 / client_size.Height;
         }
 
+        void SwapTSOFileRow(int arow, int brow)
+        {
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                TSOFile a = null;
+                TSOFile b = null;
+                foreach (TSOFile tso in fig.TsoList)
+                {
+                    if (arow == tso.Row)
+                        a = tso;
+                    if (brow == tso.Row)
+                        b = tso;
+                }
+                if (a != null && b != null)
+                {
+                    // swap tso.Row
+                    byte tmp = a.Row;
+                    a.Row = b.Row;
+                    b.Row = tmp;
+
+                    fig.TsoList.Sort();
+                }
+                else
+                {
+                    if (a != null)
+                        a.Row = (byte)brow;
+                    else
+                        b.Row = (byte)arow;
+
+                    fig.TsoList.Sort();
+                }
+            }
+        }
+
         /// マウスボタンを押したときに実行するハンドラ
         protected virtual void form_OnMouseDown(object sender, MouseEventArgs e)
         {
@@ -627,12 +664,25 @@ namespace TDCG
             switch (e.Button)
             {
                 case MouseButtons.Left:
+                    Debug.WriteLine("form_OnMouseDown LMB");
+
                     rotate_node = false;
                     rotate_camera = false;
 
                     if (sprite_renderer.Update(sprite_p))
                     {
                         string modename = sprite_renderer.CurrentModeName;
+                        if (modename == "MODEL")
+                        {
+                            if (swap_idx != -1)
+                            {
+                                int idx = sprite_renderer.model_mode.SelectedIdx;
+                                if (idx != swap_idx)
+                                    SwapTSOFileRow(swap_idx, idx);
+                                
+                                swap_idx = -1;
+                            }
+                        }
                         if (modename == "POSE")
                         {
                             string nodename = sprite_renderer.SelectedNodeName;
@@ -660,10 +710,22 @@ namespace TDCG
                         rotate_camera = true;
                     break;
                 case MouseButtons.Right:
+                    Debug.WriteLine("form_OnMouseDown RMB");
+
                     grab_node = false;
                     grab_camera = false;
 
-                    if (CloseToSelectedNode(screen_p))
+                    if (sprite_renderer.Update(sprite_p))
+                    {
+                        string modename = sprite_renderer.CurrentModeName;
+                        if (modename == "MODEL")
+                        {
+                            swap_idx = sprite_renderer.model_mode.SelectedIdx;
+                            Console.WriteLine("swap idx:{0}", swap_idx);
+                        }
+                        need_render = true;
+                    }
+                    else if (CloseToSelectedNode(screen_p))
                         grab_node = true;
                     else
                         grab_camera = true;
@@ -1844,7 +1906,10 @@ namespace TDCG
                     if (modename == "MODEL")
                     {
                         DrawSpriteSnapTSO();
-                        sprite_renderer.model_mode.DrawCursorSprite(sprite_renderer.model_mode.SelectedIdx);
+                        if (swap_idx != -1)
+                            sprite_renderer.model_mode.DrawDottedSprite(sprite_renderer.model_mode.SelectedIdx);
+                        else
+                            sprite_renderer.model_mode.DrawCursorSprite(sprite_renderer.model_mode.SelectedIdx);
                     }
 
                     if (modename == "SCENE")

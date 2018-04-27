@@ -1233,7 +1233,7 @@ namespace TDCG
     /// <summary>
     /// TSOファイルを扱います。
     /// </summary>
-    public class TSOFile : IDisposable
+    public class TSOFile : IDisposable, IComparable
     {
         /// <summary>
         /// bone配列
@@ -1650,5 +1650,10 @@ namespace TDCG
 
         /// 出現部位
         public byte Row;
+
+        public int CompareTo(object obj)
+        {
+            return Row.CompareTo(((TSOFile)obj).Row);
+        }
     }
 }
