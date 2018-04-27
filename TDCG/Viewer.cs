@@ -775,9 +775,6 @@ namespace TDCG
             need_render = true;
         }
 
-        // 選択フィギュアindex
-        int fig_idx = 0;
-
         /// <summary>
         /// controlを保持します。
         /// </summary>
@@ -979,14 +976,14 @@ namespace TDCG
         /// <summary>
         /// フィギュアを選択します。
         /// </summary>
-        /// <param name="fig_idx">フィギュア番号</param>
-        public void SetFigureIndex(int fig_idx)
+        /// <param name="idx">フィギュア番号</param>
+        public void SetFigureIndex(int idx)
         {
-            if (fig_idx < 0)
-                fig_idx = 0;
-            if (fig_idx > FigureList.Count - 1)
-                fig_idx = 0;
-            this.fig_idx = fig_idx;
+            if (idx < 0)
+                idx = 0;
+            if (idx > FigureList.Count - 1)
+                idx = FigureList.Count - 1;
+            sprite_renderer.scene_mode.SelectedIdx = idx;
             if (FigureSelectEvent != null)
                 FigureSelectEvent(this, EventArgs.Empty);
         }
@@ -1039,8 +1036,9 @@ namespace TDCG
         public Figure GetSelectedFigure()
         {
             Figure fig;
-            if (fig_idx < FigureList.Count)
-                fig = FigureList[fig_idx];
+            int idx = sprite_renderer.scene_mode.SelectedIdx;
+            if (idx < FigureList.Count)
+                fig = FigureList[idx];
             else
                 fig = null;
             return fig;
@@ -1055,7 +1053,10 @@ namespace TDCG
             if (FigureList.Count == 0)
                 fig = new Figure();
             else
-                fig = FigureList[fig_idx];
+            {
+                int idx = sprite_renderer.scene_mode.SelectedIdx;
+                fig = FigureList[idx];
+            }
             if (FigureList.Count == 0)
             {
                 int idx = FigureList.Count;
@@ -1129,15 +1130,20 @@ namespace TDCG
         public bool TryGetFigure(out Figure fig)
         {
             fig = null;
-            if (fig_idx < FigureList.Count)
-                fig = FigureList[fig_idx];
+            int idx = sprite_renderer.scene_mode.SelectedIdx;
+            if (idx < FigureList.Count)
+                fig = FigureList[idx];
             return fig != null;
         }
 
         /// 次のフィギュアを選択します。
         public void NextFigure()
         {
-            SetFigureIndex(fig_idx + 1);
+            int idx = sprite_renderer.scene_mode.SelectedIdx;
+            idx++;
+            if (idx > FigureList.Count - 1)
+                idx = 0;
+            SetFigureIndex(idx);
         }
 
         /// <summary>
@@ -1704,7 +1710,8 @@ namespace TDCG
             {
                 fig.Dispose();
                 FigureList.Remove(fig);
-                SetFigureIndex(fig_idx - 1);
+                int idx = sprite_renderer.scene_mode.SelectedIdx;
+                SetFigureIndex(idx - 1);
             }
             fig = null;
             // free meshes and textures.
@@ -1915,7 +1922,7 @@ namespace TDCG
                     if (modename == "SCENE")
                     {
                         DrawSpriteSnapFigure();
-                        sprite_renderer.scene_mode.DrawCursorSprite(fig_idx);
+                        sprite_renderer.scene_mode.DrawCursorSprite(sprite_renderer.scene_mode.SelectedIdx);
                     }
                     break;
                 case RenderMode.DepthMap:
