@@ -68,15 +68,15 @@ namespace TDCG
         static int FindNodeNumberByLocation(int x16)
         {
             int number = -1;
-            if (x16 >= 5 && x16 < 8)
+            if (x16 >= 1 && x16 < 4)
                 number = 0;
-            else if (x16 >= 9 && x16 < 12)
+            else if (x16 >= 5 && x16 < 8)
                 number = 1;
-            else if (x16 >= 13 && x16 < 16)
+            else if (x16 >= 9 && x16 < 12)
                 number = 2;
-            else if (x16 >= 17 && x16 < 20)
+            else if (x16 >= 13 && x16 < 16)
                 number = 3;
-            else if (x16 >= 21 && x16 < 24)
+            else if (x16 >= 17 && x16 < 20)
                 number = 4;
             return number;
         }
@@ -86,22 +86,26 @@ namespace TDCG
             int y16 = sprite_p.Y / 16;
             int x16 = sprite_p.X / 16;
 
-            if (y16 >= 5 && y16 < 40 && x16 >= 5 && x16 < 24)
+            if (x16 >= 1 && x16 < 20)
             {
-                // node location collection
-                selected_nodename = current_node_location_collection.FindNodeNameByLocation(x16, y16);
-                return true;
+                if (y16 >= 5 && y16 < 40)
+                {
+                    // node location collection
+                    selected_nodename = current_node_location_collection.FindNodeNameByLocation(x16, y16);
+                    return true;
+                }
+                else if (y16 >= 41 && y16 < 44)
+                {
+                    // node location collection tab
+                    int number = FindNodeNumberByLocation(x16);
+                    if (number != -1)
+                    {
+                        current_node_location_collection = node_location_collections[number];
+                        return true;
+                    }
+                }
             }
-            else if (y16 >= 41 && y16 < 44 && x16 >= 5 && x16 < 24)
-            {
-                // node location collection tab
-                int number = FindNodeNumberByLocation(x16);
-                if (number != -1)
-                    current_node_location_collection = node_location_collections[number];
-                return true;
-            }
-            else
-                return false;
+            return false;
         }
 
         void DrawNodeCollectionSprite(Texture texture)
@@ -109,7 +113,7 @@ namespace TDCG
             sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
 
             sprite.Begin(0);
-            sprite.Draw(texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(72, 72, 0), Color.FromArgb(0xCC, Color.White));
+            sprite.Draw(texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(8, 72, 0), Color.FromArgb(0xCC, Color.White));
             sprite.End();
         }
 
