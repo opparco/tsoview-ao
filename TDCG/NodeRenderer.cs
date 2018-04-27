@@ -27,6 +27,8 @@ namespace TDCG
         // on device lost
         public void Dispose()
         {
+            Debug.WriteLine("NodeRenderer.Dispose");
+
             if (pole != null)
                 pole.Dispose();
             if (circle != null)

@@ -706,7 +706,7 @@ namespace TDCG
                         }
                         if (modename == "POSE")
                         {
-                            string nodename = sprite_renderer.SelectedNodeName;
+                            string nodename = sprite_renderer.pose_mode.SelectedNodeName;
                             if (nodename != null)
                             {
                                 Figure fig;
@@ -733,7 +733,7 @@ namespace TDCG
                         string modename = sprite_renderer.CurrentModeName;
                         if (modename == "POSE")
                         {
-                            sprite_renderer.SelectedNodeName = selected_node.Name;
+                            sprite_renderer.pose_mode.SelectedNodeName = selected_node.Name;
                         }
                         need_render = true;
                     }
@@ -1579,13 +1579,13 @@ namespace TDCG
         {
             Console.WriteLine("OnDeviceLost");
 
+            node_renderer.Dispose();
+            sprite_renderer.Dispose();
+
             if (sprite != null)
                 sprite.Dispose();
             if (screen != null)
                 screen.Dispose();
-
-            node_renderer.Dispose();
-            sprite_renderer.Dispose();
 
             //snap:
             if (snap_surface != null)
@@ -2487,10 +2487,10 @@ namespace TDCG
         /// </summary>
         public void Dispose()
         {
+            OnDeviceLost(device, null);
+
             foreach (Figure fig in FigureList)
                 fig.Dispose();
-
-            OnDeviceLost(device, null);
 
             if (vd != null)
                 vd.Dispose();

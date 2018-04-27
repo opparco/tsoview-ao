@@ -19,18 +19,6 @@ namespace TDCG
         public PoseMode pose_mode { get { return modes[1] as PoseMode; } }
         public SceneMode scene_mode { get { return modes[2] as SceneMode; } }
 
-        public string SelectedNodeName
-        {
-            get
-            {
-                return pose_mode.SelectedNodeName;
-            }
-            set
-            {
-                pose_mode.SelectedNodeName = value;
-            }
-        }
-
         public string[] NodeNames { get { return pose_mode.NodeNames; } }
 
         public SpriteRenderer(Device device, Sprite sprite)
@@ -45,6 +33,8 @@ namespace TDCG
         // on device lost
         public void Dispose()
         {
+            Debug.WriteLine("SpriteRenderer.Dispose");
+
             for (int i = 0; i < modes.Length; i++)
                 modes[i].Dispose();
         }

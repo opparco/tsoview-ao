@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
@@ -69,6 +70,8 @@ public class Pole
     /// </summary>
     public void Dispose()
     {
+        Debug.WriteLine("Pole.Dispose");
+
         if (vb != null)
             vb.Dispose();
     }

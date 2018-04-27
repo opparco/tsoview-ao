@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
@@ -79,6 +80,8 @@ public class Circle
     /// </summary>
     public void Dispose()
     {
+        Debug.WriteLine("Circle.Dispose");
+
         if (vb != null)
             vb.Dispose();
     }
