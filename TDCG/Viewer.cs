@@ -716,6 +716,9 @@ namespace TDCG
         // 選択フィギュアindex
         int fig_idx = 0;
 
+        // 選択tso index
+        int tso_idx = 0;
+
         /// <summary>
         /// controlを保持します。
         /// </summary>
@@ -1846,6 +1849,7 @@ namespace TDCG
                     if (modename == "MODEL")
                     {
                         DrawSpriteSnapTSO();
+                        sprite_renderer.model_mode.DrawCursorSprite(tso_idx);
                     }
 
                     if (modename == "SCENE")
