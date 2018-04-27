@@ -17,7 +17,7 @@ namespace TDCG
 
         static string GetCellTexturePath()
         {
-            return Path.Combine(Application.StartupPath, @"model-cell.png");
+            return Path.Combine(Application.StartupPath, @"resources\model-mode\cell.png");
         }
 
         Texture cell_texture;
