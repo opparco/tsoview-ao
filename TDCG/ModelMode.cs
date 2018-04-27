@@ -25,14 +25,22 @@ namespace TDCG
             return Path.Combine(Application.StartupPath, @"resources\model-mode\cursor.png");
         }
 
+        static string GetDottedTexturePath()
+        {
+            return Path.Combine(Application.StartupPath, @"resources\model-mode\dotted.png");
+        }
+
         Texture cell_texture;
         Texture cursor_texture;
+        Texture dotted_texture;
 
         // on device lost
         public override void Dispose()
         {
             Debug.WriteLine("ModelMode.Dispose");
 
+            if (dotted_texture != null)
+                dotted_texture.Dispose();
             if (cursor_texture != null)
                 cursor_texture.Dispose();
             if (cell_texture != null)
@@ -48,10 +56,33 @@ namespace TDCG
 
             cell_texture = TextureLoader.FromFile(device, GetCellTexturePath(), 96, 128, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
             cursor_texture = TextureLoader.FromFile(device, GetCursorTexturePath(), 96, 96, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            dotted_texture = TextureLoader.FromFile(device, GetDottedTexturePath(), 96, 96, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
         }
+
+        int selected_idx = 0;
+        public int SelectedIdx { get { return selected_idx; } }
 
         public override bool Update(Point sprite_p)
         {
+            int y16 = sprite_p.Y / 16;
+            int x16 = sprite_p.X / 16;
+
+            for (int row = 0; row < 4; row++)
+            {
+                int y16_1 = row * 9;
+                if (y16 >= y16_1 + 5 && y16 < y16_1 + 11)
+                {
+                    for (int col = 0; col < 8; col++)
+                    {
+                        int x16_1 = col * 7;
+                        if (x16 >= x16_1 + 4 && x16 < x16_1 + 10)
+                        {
+                            selected_idx = col + row * 8;
+                            return true;
+                        }
+                    }
+                }
+            }
             return false;
         }
 
@@ -81,6 +112,18 @@ namespace TDCG
 
             sprite.Begin(0);
             sprite.Draw(cursor_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 7 + 4) * 16, (row * 9 + 5) * 16, 0), cursor_col);
+            sprite.End();
+        }
+
+        public void DrawDottedSprite(int idx)
+        {
+            int col = idx%8;
+            int row = idx/8;
+
+            sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
+
+            sprite.Begin(0);
+            sprite.Draw(dotted_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 7 + 4) * 16, (row * 9 + 5) * 16, 0), cursor_col);
             sprite.End();
         }
 
