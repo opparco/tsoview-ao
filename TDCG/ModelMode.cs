@@ -103,7 +103,7 @@ namespace TDCG
 
         Color cursor_col = Color.FromArgb(0xCC, Color.FromArgb(136, 255, 156)); // MODEL
 
-        public void DrawCursorSprite(int idx)
+        void DrawSprite(Texture texture, int idx)
         {
             int col = idx%8;
             int row = idx/8;
@@ -111,25 +111,23 @@ namespace TDCG
             sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
 
             sprite.Begin(0);
-            sprite.Draw(cursor_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 7 + 4) * 16, (row * 9 + 5) * 16, 0), cursor_col);
+            sprite.Draw(texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 7 + 4) * 16, (row * 9 + 5) * 16, 0), cursor_col);
             sprite.End();
+        }
+
+        public void DrawCursorSprite(int idx)
+        {
+            DrawSprite(cursor_texture, idx);
         }
 
         public void DrawDottedSprite(int idx)
         {
-            int col = idx%8;
-            int row = idx/8;
-
-            sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
-
-            sprite.Begin(0);
-            sprite.Draw(dotted_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 7 + 4) * 16, (row * 9 + 5) * 16, 0), cursor_col);
-            sprite.End();
+            DrawSprite(dotted_texture, idx);
         }
 
         public override void Render()
         {
-            DrawSprite(mode_texture);
+            DrawModeSprite();
             DrawCellSprite();
         }
     }

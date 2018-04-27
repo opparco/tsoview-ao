@@ -49,17 +49,19 @@ namespace TDCG
         {
             this.device_rect = device_rect;
 
-            mode_texture = TextureLoader.FromFile(device, GetModeTexturePath(), device_rect.Width, device_rect.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            mode_texture = TextureLoader.FromFile(device, GetModeTexturePath(), 1024, 768, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
         }
 
         public abstract bool Update(Point sprite_p);
 
-        protected void DrawSprite(Texture texture)
+        Color mode_col = Color.FromArgb(0xCC, Color.White);
+
+        protected void DrawModeSprite()
         {
-            sprite.Transform = Matrix.Identity;
+            sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
 
             sprite.Begin(0);
-            sprite.Draw(texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(0, 0, 0), Color.FromArgb(0xCC, Color.White));
+            sprite.Draw(mode_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(0, 0, 0), mode_col);
             sprite.End();
         }
 

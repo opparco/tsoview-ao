@@ -128,7 +128,7 @@ namespace TDCG
 
         public override void Render()
         {
-            DrawSprite(mode_texture);
+            DrawModeSprite();
             DrawNodeCollectionSprite(current_node_location_collection.node_location_texture);
             DrawSelectedNodeSprite();
         }
