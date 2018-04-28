@@ -414,11 +414,18 @@ namespace TDCG
         int swap_row = -1;
         int swap_idx = -1;
 
-        // 選択ボーン
         TMONode selected_node = null;
+
+        void BeginGrabNode()
+        {
+            grab_node = true;
+        }
 
         void WhileGrabNode(int dx, int dy)
         {
+            if (! grab_node)
+                return;
+
             if (selected_node == null)
                 return;
 
@@ -443,8 +450,21 @@ namespace TDCG
             }
         }
 
+        void EndGrabNode()
+        {
+            grab_node = false;
+        }
+
+        void BeginRotateNode()
+        {
+            rotate_node = true;
+        }
+
         void WhileRotateNode(int dx, int dy)
         {
+            if (! rotate_node)
+                return;
+
             if (selected_node == null)
                 return;
 
@@ -470,16 +490,47 @@ namespace TDCG
             }
         }
 
+        void EndRotateNode()
+        {
+            rotate_node = false;
+        }
+
+        void BeginGrabCamera()
+        {
+            grab_camera = true;
+        }
+
         void WhileGrabCamera(int dx, int dy)
         {
+            if (! grab_camera)
+                return;
+
             const float delta_scale = 0.125f;
 
-            Camera.Move(0.0f, 0.0f, -dy * delta_scale);
+            camera.Move(0.0f, 0.0f, -dy * delta_scale);
+        }
+
+        void EndGrabCamera()
+        {
+            grab_camera = false;
+        }
+
+        void BeginRotateCamera()
+        {
+            rotate_camera = true;
         }
 
         void WhileRotateCamera(int dx, int dy)
         {
-            Camera.Move(dx, -dy, 0.0f);
+            if (! rotate_camera)
+                return;
+
+            camera.Move(dx, -dy, 0.0f);
+        }
+
+        void EndRotateCamera()
+        {
+            rotate_camera = false;
         }
 
         public void SetCenterToSelectedNode()
@@ -688,9 +739,6 @@ namespace TDCG
                 case MouseButtons.Left:
                     Debug.WriteLine("form_OnMouseDown LMB");
 
-                    rotate_node = false;
-                    rotate_camera = false;
-
                     if (sprite_renderer.Update(sprite_p))
                     {
                         string modename = sprite_renderer.CurrentModeName;
@@ -727,7 +775,7 @@ namespace TDCG
                         need_render = true;
                     }
                     else if (CloseToSelectedNode(screen_p))
-                        rotate_node = true;
+                        BeginRotateNode();
                     else if (SelectNode(screen_p))
                     {
                         string modename = sprite_renderer.CurrentModeName;
@@ -738,13 +786,10 @@ namespace TDCG
                         need_render = true;
                     }
                     else
-                        rotate_camera = true;
+                        BeginRotateCamera();
                     break;
                 case MouseButtons.Right:
                     Debug.WriteLine("form_OnMouseDown RMB");
-
-                    grab_node = false;
-                    grab_camera = false;
 
                     if (sprite_renderer.Update(sprite_p))
                     {
@@ -760,9 +805,9 @@ namespace TDCG
                         need_render = true;
                     }
                     else if (CloseToSelectedNode(screen_p))
-                        grab_node = true;
+                        BeginGrabNode();
                     else
-                        grab_camera = true;
+                        BeginGrabCamera();
                     break;
             }
 
@@ -784,23 +829,34 @@ namespace TDCG
             switch (e.Button)
             {
                 case MouseButtons.Left:
-                    if (rotate_node)
-                        WhileRotateNode(dx, dy);
-                    if (rotate_camera)
-                        WhileRotateCamera(dx, dy);
+                    WhileRotateNode(dx, dy);
+                    WhileRotateCamera(dx, dy);
                     break;
                 case MouseButtons.Middle:
                     Camera.MoveView(-dx * delta_scale, dy * delta_scale);
                     break;
                 case MouseButtons.Right:
-                    if (grab_node)
-                        WhileGrabNode(dx, dy);
-                    if (grab_camera)
-                        WhileGrabCamera(dx, dy);
+                    WhileGrabNode(dx, dy);
+                    WhileGrabCamera(dx, dy);
                     break;
             }
 
             lastScreenPoint = screen_p;
+        }
+
+        protected virtual void form_OnMouseUp(object sender, MouseEventArgs e)
+        {
+            switch (e.Button)
+            {
+                case MouseButtons.Left:
+                    EndRotateNode();
+                    EndRotateCamera();
+                    break;
+                case MouseButtons.Right:
+                    EndGrabNode();
+                    EndGrabCamera();
+                    break;
+            }
         }
 
         // コントロールのサイズを変更したときに実行するハンドラ
@@ -1305,6 +1361,7 @@ namespace TDCG
 
             control.MouseDown += new MouseEventHandler(form_OnMouseDown);
             control.MouseMove += new MouseEventHandler(form_OnMouseMove);
+            control.MouseUp += new MouseEventHandler(form_OnMouseUp);
             control.Resize += new EventHandler(form_OnResize);
 
             PresentParameters pp = new PresentParameters();
