@@ -393,6 +393,8 @@ namespace TDCG
 
             techmap = new Dictionary<string, bool>();
             LoadTechMap();
+
+            manipulator = new Manipulator(camera);
         }
 
         /// <summary>
@@ -406,132 +408,10 @@ namespace TDCG
             need_render = true;
         }
 
-        bool grab_node = false;
-        bool grab_camera = false;
-        bool rotate_node = false;
-        bool rotate_camera = false;
-
         int swap_row = -1;
         int swap_idx = -1;
 
         TMONode selected_node = null;
-
-        void BeginGrabNode()
-        {
-            grab_node = true;
-        }
-
-        void WhileGrabNode(int dx, int dy)
-        {
-            if (! grab_node)
-                return;
-
-            if (selected_node == null)
-                return;
-
-            Figure fig;
-            if (TryGetFigure(out fig))
-            {
-                const float delta_scale = 0.0125f;
-
-                Vector3 translation = new Vector3(dx * delta_scale, -dy * delta_scale, 0.0f);
-
-                Quaternion world_rotation = Quaternion.Identity;
-                TMONode parent_node = selected_node.parent;
-                if (parent_node != null)
-                    world_rotation = parent_node.GetWorldRotation();
-
-                Quaternion q = camera.RotationQuaternion * Quaternion.Conjugate(world_rotation);
-
-                selected_node.Translation += Vector3.TransformCoordinate(translation, Matrix.RotationQuaternion(q));
-
-                //TODO: UpdateSelectedBoneMatrices
-                fig.UpdateBoneMatrices(true);
-            }
-        }
-
-        void EndGrabNode()
-        {
-            grab_node = false;
-        }
-
-        void BeginRotateNode()
-        {
-            rotate_node = true;
-        }
-
-        void WhileRotateNode(int dx, int dy)
-        {
-            if (! rotate_node)
-                return;
-
-            if (selected_node == null)
-                return;
-
-            Figure fig;
-            if (TryGetFigure(out fig))
-            {
-                const float delta_scale = 0.0125f;
-
-                Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * delta_scale, dy * delta_scale, 0.0f);
-
-                Quaternion world_rotation = Quaternion.Identity;
-                TMONode parent_node = selected_node.parent;
-                if (parent_node != null)
-                    world_rotation = parent_node.GetWorldRotation();
-
-                Quaternion q = camera.RotationQuaternion * Quaternion.Conjugate(world_rotation);
-                Quaternion q_1 = Quaternion.Conjugate(q);
-
-                selected_node.Rotation = Quaternion.Normalize(selected_node.Rotation * q_1 * rotation * q);
-
-                //TODO: UpdateSelectedBoneMatrices
-                fig.UpdateBoneMatrices(true);
-            }
-        }
-
-        void EndRotateNode()
-        {
-            rotate_node = false;
-        }
-
-        void BeginGrabCamera()
-        {
-            grab_camera = true;
-        }
-
-        void WhileGrabCamera(int dx, int dy)
-        {
-            if (! grab_camera)
-                return;
-
-            const float delta_scale = 0.125f;
-
-            camera.Move(0.0f, 0.0f, -dy * delta_scale);
-        }
-
-        void EndGrabCamera()
-        {
-            grab_camera = false;
-        }
-
-        void BeginRotateCamera()
-        {
-            rotate_camera = true;
-        }
-
-        void WhileRotateCamera(int dx, int dy)
-        {
-            if (! rotate_camera)
-                return;
-
-            camera.Move(dx, -dy, 0.0f);
-        }
-
-        void EndRotateCamera()
-        {
-            rotate_camera = false;
-        }
 
         public void SetCenterToSelectedNode()
         {
@@ -775,7 +655,7 @@ namespace TDCG
                         need_render = true;
                     }
                     else if (CloseToSelectedNode(screen_p))
-                        BeginRotateNode();
+                        manipulator.BeginRotateNode(selected_node);
                     else if (SelectNode(screen_p))
                     {
                         string modename = sprite_renderer.CurrentModeName;
@@ -786,7 +666,7 @@ namespace TDCG
                         need_render = true;
                     }
                     else
-                        BeginRotateCamera();
+                        manipulator.BeginRotateCamera();
                     break;
                 case MouseButtons.Right:
                     Debug.WriteLine("form_OnMouseDown RMB");
@@ -805,9 +685,9 @@ namespace TDCG
                         need_render = true;
                     }
                     else if (CloseToSelectedNode(screen_p))
-                        BeginGrabNode();
+                        manipulator.BeginGrabNode(selected_node);
                     else
-                        BeginGrabCamera();
+                        manipulator.BeginGrabCamera();
                     break;
             }
 
@@ -829,15 +709,23 @@ namespace TDCG
             switch (e.Button)
             {
                 case MouseButtons.Left:
-                    WhileRotateNode(dx, dy);
-                    WhileRotateCamera(dx, dy);
+                    if (manipulator.WhileRotateNode(dx, dy))
+                    {
+                        //TODO: UpdateSelectedBoneMatrices
+                        GetSelectedFigure().UpdateBoneMatrices(true);
+                    }
+                    manipulator.WhileRotateCamera(dx, dy);
                     break;
                 case MouseButtons.Middle:
                     Camera.MoveView(-dx * delta_scale, dy * delta_scale);
                     break;
                 case MouseButtons.Right:
-                    WhileGrabNode(dx, dy);
-                    WhileGrabCamera(dx, dy);
+                    if (manipulator.WhileGrabNode(dx, dy))
+                    {
+                        //TODO: UpdateSelectedBoneMatrices
+                        GetSelectedFigure().UpdateBoneMatrices(true);
+                    }
+                    manipulator.WhileGrabCamera(dx, dy);
                     break;
             }
 
@@ -849,12 +737,12 @@ namespace TDCG
             switch (e.Button)
             {
                 case MouseButtons.Left:
-                    EndRotateNode();
-                    EndRotateCamera();
+                    manipulator.EndRotateNode();
+                    manipulator.EndRotateCamera();
                     break;
                 case MouseButtons.Right:
-                    EndGrabNode();
-                    EndGrabCamera();
+                    manipulator.EndGrabNode();
+                    manipulator.EndGrabCamera();
                     break;
             }
         }
@@ -1319,7 +1207,8 @@ namespace TDCG
             }
         }
 
-        private SimpleCamera camera = new SimpleCamera();
+        SimpleCamera camera = new SimpleCamera();
+        Manipulator manipulator;
 
         /// <summary>
         /// カメラ
