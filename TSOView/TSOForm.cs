@@ -184,7 +184,7 @@ namespace TSOView
                 viewer.RenderMode = mode;
         }
 
-        public void FrameMove()
+        private void timer1_Tick(object sender, EventArgs e)
         {
             if (keysEnabled[keySave] && keys[keySave])
             {
@@ -289,6 +289,8 @@ namespace TSOView
                 keyPull = 1.0f;
 
             viewer.Camera.Move(keyR - keyL, keyU - keyD, keyPull - keyPush);
+            viewer.Update();
+            viewer.Render();
         }
 
         private void form_OnDragOver(object sender, DragEventArgs e)
@@ -309,13 +311,6 @@ namespace TSOView
                 foreach (string src in (string[])e.Data.GetData(DataFormats.FileDrop))
                     viewer.LoadAnyFile(src, (e.KeyState & 8) == 8);
             }
-        }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            this.FrameMove();
-            viewer.FrameMove();
-            viewer.Render();
         }
 
         protected override void OnKeyPress(System.Windows.Forms.KeyPressEventArgs e)

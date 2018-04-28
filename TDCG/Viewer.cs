@@ -1319,15 +1319,6 @@ namespace TDCG
             }
         }
 
-        /// <summary>
-        /// 指定テクスチャを開き直します。
-        /// </summary>
-        /// <param name="tex">テクスチャ</param>
-        public void OpenTexture(TSOTex tex)
-        {
-            tex.Open(device);
-        }
-
         private SimpleCamera camera = new SimpleCamera();
 
         /// <summary>
@@ -1815,32 +1806,7 @@ namespace TDCG
         [Obsolete("use RenderMode")]
         public bool SpriteShown = false;
 
-        /// <summary>
-        /// フレームを進めるのに用いるデリゲート型
-        /// </summary>
-        public delegate void FrameMovingHandler();
-
-        /// <summary>
-        /// フレームを進めるハンドラ
-        /// </summary>
-        public FrameMovingHandler FrameMoving;
-
-        /// <summary>
-        /// 次のシーンフレームに進みます。
-        /// </summary>
-        public void FrameMove()
-        {
-            FrameMove(0);
-
-            if (FrameMoving != null)
-                FrameMoving();
-        }
-
-        /// <summary>
-        /// 指定シーンフレームに進みます。
-        /// </summary>
-        /// <param name="frame_idx">obsolete</param>
-        public void FrameMove(int frame_idx)
+        public void Update()
         {
             if (camera.NeedUpdate)
             {
