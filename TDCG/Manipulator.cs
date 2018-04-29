@@ -9,10 +9,12 @@ namespace TDCG
     public class Manipulator
     {
         SimpleCamera camera;
+        Figure fig;
         TMONode selected_node;
 
         bool grab_node = false;
         bool grab_camera = false;
+        bool rotate_lamp = false;
         bool rotate_node = false;
         bool rotate_camera = false;
 
@@ -55,6 +57,38 @@ namespace TDCG
         public void EndGrabNode()
         {
             grab_node = false;
+        }
+
+        public void BeginRotateLamp(Figure fig)
+        {
+            this.fig = fig;
+
+            rotate_lamp = true;
+        }
+
+        public bool WhileRotateLamp(int dx, int dy)
+        {
+            if (! rotate_lamp)
+                return false;
+
+            if (dx == 0 && dy == 0)
+                return false;
+
+            const float delta_scale = 0.0125f;
+
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * delta_scale, dy * delta_scale, 0.0f);
+
+            Quaternion q = camera.RotationQuaternion;
+            Quaternion q_1 = Quaternion.Conjugate(q);
+
+            fig.LampRotation = Quaternion.Normalize(fig.LampRotation * q_1 * rotation * q);
+
+            return true;
+        }
+
+        public void EndRotateLamp()
+        {
+            rotate_lamp = false;
         }
 
         public void BeginRotateNode(TMONode selected_node)

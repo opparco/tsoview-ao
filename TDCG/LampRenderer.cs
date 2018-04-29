@@ -98,7 +98,7 @@ namespace TDCG
         //@param fig: ランプを描画するモデル
         public void Render(Figure fig, ref Vector3 world_position, ref Matrix world)
         {
-            Matrix world_rotation = Matrix.RotationYawPitchRoll(fig.LightDirection.Y, fig.LightDirection.X, fig.LightDirection.Z);
+            Matrix world_rotation = Matrix.RotationQuaternion(fig.LampRotation);
             DrawLampPole(ref world_position, ref world_rotation, ref world);
             DrawLampCircleW(ref world_position, ref world);
         }

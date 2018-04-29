@@ -84,8 +84,6 @@ public class Figure : IDisposable
 
         nodemap = new Dictionary<TSONode, TMONode>();
         matrixStack = new MatrixStack();
-
-        LightDirection = new Vector3(0.0f, 0.0f, -1.0f);
     }
 
     /// <summary>
@@ -319,10 +317,19 @@ public class Figure : IDisposable
         return clipped_boneMatrices;
     }
 
+    Quaternion lamp_rotation = Quaternion.Identity;
+
+    //ランプの回転
+    //xyz = (0,0,-1) を回転すると光源方向を得る
+    public Quaternion LampRotation { get { return lamp_rotation; } set { lamp_rotation = value; } }
+
     /// <summary>
     /// 光源方向
     /// </summary>
-    public Vector3 LightDirection { get; set; }
+    public Vector3 LightDirection
+    {
+        get { return Vector3.TransformCoordinate(new Vector3(0.0f, 0.0f, -1.0f), Matrix.RotationQuaternion(lamp_rotation)); }
+    }
 
     /// <summary>
     /// 光源方向ベクトルを得ます。
@@ -330,8 +337,10 @@ public class Figure : IDisposable
     /// <returns></returns>
     public Vector4 LightDirForced()
     {
-        return new Vector4(LightDirection.X, LightDirection.Y, LightDirection.Z, 0.0f);
+        Vector3 v = LightDirection;
+        return new Vector4(v.X, v.Y, v.Z, 0.0f);
     }
+
 
     public void GetWorldMatrix(out Matrix m)
     {

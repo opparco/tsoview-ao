@@ -218,9 +218,9 @@ namespace TDCG
         /// </summary>
         public string type = null;
         /// <summary>
-        /// 最後に読み込んだライト方向
+        /// 最後に読み込んだランプ回転
         /// </summary>
-        public Vector3 LightDirection;
+        public Quaternion LampRotation = Quaternion.Identity;
         /// <summary>
         /// 最後に読み込んだtmo
         /// </summary>
@@ -422,6 +422,38 @@ namespace TDCG
                 Vector3 position = Vector3.TransformCoordinate(node.GetWorldPosition(), world);
                 camera.SetCenter(position);
             }
+        }
+
+        bool CloseToLamp(Point location)
+        {
+            int screen_center_y = dev_rect.Height / 2;
+
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                Matrix world;
+                fig.GetWorldMatrix(out world);
+
+                TMONode node = fig.Tmo.FindNodeByName("face_oya");
+                if (node != null)
+                {
+                    Vector3 world_position = node.GetWorldPosition();
+                    world_position.Y += 5.0f;
+                    Vector3 position = Vector3.TransformCoordinate(world_position, world);
+                    Vector3 screen_position = WorldToScreen(position);
+
+                    int dx = location.X - (int)screen_position.X;
+                    int dy = location.Y - (int)screen_position.Y;
+
+                    Vector3 view_position = Vector3.TransformCoordinate(position, Transform_View);
+                    Vector3 view_p = new Vector3(0, 0.25f, view_position.Z);
+                    Vector3 screen_p = ViewToScreen(view_p);
+                    float radius = screen_center_y - screen_p.Y;
+
+                    return (dx * dx + dy * dy < radius * radius);
+                }
+            }
+            return false;
         }
 
         // 指定位置の近傍に selected_node があるか
@@ -644,6 +676,12 @@ namespace TDCG
                         }
                         need_render = true;
                     }
+                    else if (CloseToLamp(screen_p))
+                    {
+                        Figure fig;
+                        if (TryGetFigure(out fig))
+                            manipulator.BeginRotateLamp(fig);
+                    }
                     else if (CloseToSelectedNode(screen_p))
                         manipulator.BeginRotateNode(selected_node);
                     else if (SelectNode(screen_p))
@@ -695,6 +733,8 @@ namespace TDCG
             switch (e.Button)
             {
                 case MouseButtons.Left:
+                    if (manipulator.WhileRotateLamp(dx, dy))
+                        need_render = true;
                     if (manipulator.WhileRotateNode(dx, dy))
                     {
                         //TODO: UpdateSelectedBoneMatrices
@@ -723,6 +763,7 @@ namespace TDCG
             switch (e.Button)
             {
                 case MouseButtons.Left:
+                    manipulator.EndRotateLamp();
                     manipulator.EndRotateNode();
                     manipulator.EndRotateCamera();
                     break;
@@ -854,7 +895,7 @@ namespace TDCG
                         m.M43 = factor[14];
                         m.M44 = factor[15];
 
-                        sav.LightDirection = Vector3.TransformCoordinate(new Vector3(0.0f, 0.0f, -1.0f), m);
+                        sav.LampRotation = Quaternion.RotationMatrix(m);
                     }
                     //png.Ftmo
                     {
@@ -864,7 +905,7 @@ namespace TDCG
                     //png.Figu
                     {
                         fig = new Figure();
-                        fig.LightDirection = sav.LightDirection;
+                        fig.LampRotation = sav.LampRotation;
                         fig.Tmo = sav.Tmo;
                         sav.FigureList.Add(fig);
 
@@ -1164,8 +1205,7 @@ namespace TDCG
                 Figure fig;
                 if (TryGetFigure(out fig))
                 {
-                    if (sav.LightDirection != Vector3.Empty)
-                        fig.LightDirection = sav.LightDirection;
+                    fig.LampRotation = sav.LampRotation;
                     fig.Tmo = sav.Tmo;
                     fig.UpdateNodeMapAndBoneMatrices();
                     if (FigureUpdateEvent != null)
@@ -2532,7 +2572,7 @@ namespace TDCG
                         m.M43 = factor[14];
                         m.M44 = factor[15];
 
-                        sav.LightDirection = Vector3.TransformCoordinate(new Vector3(0.0f, 0.0f, -1.0f), m);
+                        sav.LampRotation = Quaternion.RotationMatrix(m);
                     };
                     png.Ftmo += delegate (Stream dest, int extract_length)
                     {
@@ -2542,7 +2582,7 @@ namespace TDCG
                     png.Figu += delegate (Stream dest, int extract_length)
                     {
                         fig = new Figure();
-                        fig.LightDirection = sav.LightDirection;
+                        fig.LampRotation = sav.LampRotation;
                         fig.Tmo = sav.Tmo;
                         sav.FigureList.Add(fig);
 
