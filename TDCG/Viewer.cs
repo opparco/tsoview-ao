@@ -1013,9 +1013,14 @@ namespace TDCG
         /// </summary>
         public Figure GetSelectedFigure()
         {
+            int len = FigureList.Count;
+
+            if (len == 0)
+                return null;
+
             Figure fig;
             int idx = sprite_renderer.scene_mode.SelectedIdx;
-            if (idx < FigureList.Count)
+            if (idx < len)
                 fig = FigureList[idx];
             else
                 fig = null;
@@ -1027,16 +1032,11 @@ namespace TDCG
         /// </summary>
         public Figure GetSelectedOrCreateFigure()
         {
-            Figure fig;
-            if (FigureList.Count == 0)
+            Figure fig = GetSelectedFigure();
+
+            if (fig == null)
+            {
                 fig = new Figure();
-            else
-            {
-                int idx = sprite_renderer.scene_mode.SelectedIdx;
-                fig = FigureList[idx];
-            }
-            if (FigureList.Count == 0)
-            {
                 int idx = FigureList.Count;
                 //todo: override List#Add
                 FigureList.Add(fig);
@@ -1108,8 +1108,13 @@ namespace TDCG
         public bool TryGetFigure(out Figure fig)
         {
             fig = null;
+            int len = FigureList.Count;
+
+            if (len == 0)
+                return false;
+
             int idx = sprite_renderer.scene_mode.SelectedIdx;
-            if (idx < FigureList.Count)
+            if (idx < len)
                 fig = FigureList[idx];
             return fig != null;
         }
@@ -1750,10 +1755,14 @@ namespace TDCG
             string[] nodenames = sprite_renderer.NodeNames;
 
             TMONode[] nodes = new TMONode[nodenames.Length];
+            int idx = 0;
             for (int i = 0; i < nodenames.Length; i++)
             {
-                nodes[i] = tmo.FindNodeByName(nodenames[i]);
+                TMONode node = tmo.FindNodeByName(nodenames[i]); // nullable
+                if (node != null)
+                    nodes[idx++] = node;
             }
+            Array.Resize(ref nodes, idx);
             return nodes;
         }
 
