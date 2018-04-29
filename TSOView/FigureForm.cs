@@ -76,7 +76,7 @@ namespace TSOView
             for (int i = 0; i < fig.TsoList.Count; i++)
             {
                 TSOFile tso = fig.TsoList[i];
-                ListViewItem li = new ListViewItem(tso.FileName ?? "TSO #" + i.ToString());
+                ListViewItem li = new ListViewItem(tso.FileName ?? string.Format("{0:X2}.tso", tso.Row));
                 li.Tag = tso;
                 lvTSOFiles.Items.Add(li);
             }
