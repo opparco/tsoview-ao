@@ -580,13 +580,14 @@ namespace TDCG
 
                     fig.TsoList.Sort();
                 }
-                else
+                else if (a != null)
                 {
-                    if (a != null)
-                        a.Row = (byte)brow;
-                    else
-                        b.Row = (byte)arow;
-
+                    a.Row = (byte)brow;
+                    fig.TsoList.Sort();
+                }
+                else if (b != null)
+                {
+                    b.Row = (byte)arow;
                     fig.TsoList.Sort();
                 }
             }
@@ -610,18 +611,15 @@ namespace TDCG
                 FigureList[aidx] = b;
                 FigureList[bidx] = a;
             }
-            else
+            else if (a != null)
             {
-                if (a != null)
-                {
-                    FigureList.RemoveAt(aidx); // Remove(a)
-                    FigureList.Add(a);
-                }
-                else
-                {
-                    FigureList.RemoveAt(bidx); // Remove(b)
-                    FigureList.Add(b);
-                }
+                FigureList.RemoveAt(aidx); // Remove(a)
+                FigureList.Add(a);
+            }
+            else if (b != null)
+            {
+                FigureList.RemoveAt(bidx); // Remove(b)
+                FigureList.Add(b);
             }
         }
 
