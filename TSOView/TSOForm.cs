@@ -80,6 +80,12 @@ namespace TSOView
                 viewer.ConfigConnect();
                 configForm.SetViewer(viewer);
                 figureForm.SetViewer(viewer);
+                viewer.TSOFileSelectEvent += delegate (object sender, EventArgs e)
+                {
+                    TSOFile tso;
+                    if (viewer.TryGetTSOFile(out tso))
+                        figureForm.SetTSOFile(tso);
+                };
                 viewer.FigureSelectEvent += delegate (object sender, EventArgs e)
                 {
                     Figure fig;

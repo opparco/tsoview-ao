@@ -651,6 +651,8 @@ namespace TDCG
                                     SwapTSOFileRow(swap_row, row);
                                 swap_row = -1;
                             }
+                            if (TSOFileSelectEvent != null)
+                                TSOFileSelectEvent(this, EventArgs.Empty);
                         }
                         if (modename == "POSE")
                         {
@@ -671,6 +673,8 @@ namespace TDCG
                                     SwapFigureIdx(swap_idx, idx);
                                 swap_idx = -1;
                             }
+                            if (FigureSelectEvent != null)
+                                FigureSelectEvent(this, EventArgs.Empty);
                         }
                         need_render = true;
                     }
@@ -967,6 +971,11 @@ namespace TDCG
         }
 
         /// <summary>
+        /// tso 選択時に呼び出されるハンドラ
+        /// </summary>
+        public event EventHandler TSOFileSelectEvent;
+
+        /// <summary>
         /// フィギュア選択時に呼び出されるハンドラ
         /// </summary>
         public event EventHandler FigureSelectEvent;
@@ -1125,6 +1134,33 @@ namespace TDCG
             fig.UpdateNodeMapAndBoneMatrices();
             if (FigureUpdateEvent != null)
                 FigureUpdateEvent(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// 選択 tso を得ます。
+        /// </summary>
+        public bool TryGetTSOFile(out TSOFile tso)
+        {
+            tso = null;
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                int len = fig.TsoList.Count;
+
+                if (len == 0)
+                    return false;
+
+                int row = sprite_renderer.model_mode.SelectedIdx;
+                foreach (TSOFile _tso in fig.TsoList)
+                {
+                    if (row == _tso.Row)
+                    {
+                        tso = _tso;
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>
