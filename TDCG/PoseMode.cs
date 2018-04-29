@@ -49,7 +49,7 @@ namespace TDCG
 
         static string GetNodeSpriteTexturePath()
         {
-            return Path.Combine(Application.StartupPath, @"node-sprite.png");
+            return Path.Combine(Application.StartupPath, @"resources\node-sprite.png");
         }
 
         Texture node_sprite_texture;
