@@ -397,17 +397,6 @@ namespace TDCG
             manipulator = new Manipulator(camera);
         }
 
-        /// <summary>
-        /// 選択フィギュアの光源方向を設定します。
-        /// </summary>
-        /// <param name="dir">選択フィギュアの光源方向</param>
-        public void SetLightDirection(Vector3 dir)
-        {
-            foreach (Figure fig in FigureList)
-                fig.LightDirection = dir;
-            need_render = true;
-        }
-
         int swap_row = -1;
         int swap_idx = -1;
 
@@ -658,11 +647,7 @@ namespace TDCG
                         manipulator.BeginRotateNode(selected_node);
                     else if (SelectNode(screen_p))
                     {
-                        string modename = sprite_renderer.CurrentModeName;
-                        if (modename == "POSE")
-                        {
-                            sprite_renderer.pose_mode.SelectedNodeName = selected_node.Name;
-                        }
+                        sprite_renderer.pose_mode.SelectedNodeName = selected_node.Name;
                         need_render = true;
                     }
                     else
@@ -1371,6 +1356,12 @@ namespace TDCG
 
             FigureSelectEvent += delegate (object sender, EventArgs e)
             {
+                Figure fig;
+                if (TryGetFigure(out fig))
+                {
+                    selected_node = fig.Tmo.nodes[0]; // W_Hips
+                    sprite_renderer.pose_mode.SelectedNodeName = selected_node.Name;
+                }
                 need_render = true;
             };
             FigureUpdateEvent += delegate (object sender, EventArgs e)
