@@ -26,8 +26,6 @@ namespace TSOView
         private void InitializeComponent()
         {
             this.btnDump = new System.Windows.Forms.Button();
-            this.btnUp = new System.Windows.Forms.Button();
-            this.btnDown = new System.Windows.Forms.Button();
             this.lvTSOFiles = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.lvSubScripts = new System.Windows.Forms.ListView();
@@ -65,26 +63,6 @@ namespace TSOView
             this.btnDump.Text = "&Dump";
             this.btnDump.UseVisualStyleBackColor = true;
             this.btnDump.Click += new System.EventHandler(this.btnDump_Click);
-            // 
-            // btnUp
-            // 
-            this.btnUp.Location = new System.Drawing.Point(198, 12);
-            this.btnUp.Name = "btnUp";
-            this.btnUp.Size = new System.Drawing.Size(50, 23);
-            this.btnUp.TabIndex = 1;
-            this.btnUp.Text = "&Up";
-            this.btnUp.UseVisualStyleBackColor = true;
-            this.btnUp.Click += new System.EventHandler(this.btnUp_Click);
-            // 
-            // btnDown
-            // 
-            this.btnDown.Location = new System.Drawing.Point(198, 41);
-            this.btnDown.Name = "btnDown";
-            this.btnDown.Size = new System.Drawing.Size(50, 23);
-            this.btnDown.TabIndex = 2;
-            this.btnDown.Text = "&Down";
-            this.btnDown.UseVisualStyleBackColor = true;
-            this.btnDown.Click += new System.EventHandler(this.btnDown_Click);
             // 
             // lvTSOFiles
             // 
@@ -280,8 +258,6 @@ namespace TSOView
             this.Controls.Add(this.gvShaderParams);
             this.Controls.Add(this.lvSubScripts);
             this.Controls.Add(this.lvTSOFiles);
-            this.Controls.Add(this.btnDown);
-            this.Controls.Add(this.btnUp);
             this.Controls.Add(this.btnDump);
             this.Name = "FigureForm";
             this.Text = "TSOGrid";
@@ -303,8 +279,6 @@ namespace TSOView
         #endregion
 
         private System.Windows.Forms.Button btnDump;
-        private System.Windows.Forms.Button btnUp;
-        private System.Windows.Forms.Button btnDown;
         private System.Windows.Forms.ListView lvTSOFiles;
         private System.Windows.Forms.ListView lvSubScripts;
         private System.Windows.Forms.ColumnHeader columnHeader1;

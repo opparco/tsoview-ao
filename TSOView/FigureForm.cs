@@ -138,34 +138,6 @@ namespace TSOView
             }
         }
 
-        private void btnUp_Click(object sender, EventArgs e)
-        {
-            if (lvTSOFiles.SelectedItems.Count == 0)
-                return;
-            int li_idx = lvTSOFiles.SelectedIndices[0];
-            int li_idx_prev = li_idx - 1;
-            if (li_idx_prev < 0)
-                return;
-            fig.SwapAt(li_idx_prev, li_idx);
-            SetFigure(fig);
-            ListViewItem li = lvTSOFiles.Items[li_idx_prev];
-            li.Selected = true;
-        }
-
-        private void btnDown_Click(object sender, EventArgs e)
-        {
-            if (lvTSOFiles.SelectedItems.Count == 0)
-                return;
-            int li_idx = lvTSOFiles.SelectedIndices[0];
-            int li_idx_next = li_idx + 1;
-            if (li_idx_next > lvTSOFiles.Items.Count - 1)
-                return;
-            fig.SwapAt(li_idx, li_idx_next);
-            SetFigure(fig);
-            ListViewItem li = lvTSOFiles.Items[li_idx_next];
-            li.Selected = true;
-        }
-
         private void lvTSOFiles_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lvTSOFiles.SelectedItems.Count == 0)
