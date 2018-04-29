@@ -46,19 +46,16 @@ namespace TDCG
                 modes[i].Create(client_rect);
         }
 
-        void SwitchModeByLocation(int x16, int y16)
+        int FindModeTabByLocation(int x16, int y16)
         {
-            int mode_tab = -1;
-
             if (x16 >= 11 && x16 < 24)
-                mode_tab = 0; // MODEL
+                return 0; // MODEL
             else if (x16 >= 25 && x16 < 38)
-                mode_tab = 1; // POSE
+                return 1; // POSE
             else if (x16 >= 39 && x16 < 52)
-                mode_tab = 2; // SCENE
+                return 2; // SCENE
 
-            if (mode_tab != -1)
-                current_mode = modes[mode_tab];
+            return -1;
         }
 
         public bool Update(Point sprite_p)
@@ -68,8 +65,10 @@ namespace TDCG
 
             if (y16 >= 1 && y16 < 3)
             {
-                SwitchModeByLocation(x16, y16);
-                return true;
+                int mode_tab = FindModeTabByLocation(x16, y16);
+                if (mode_tab != -1)
+                    current_mode = modes[mode_tab];
+                return mode_tab != -1;
             }
             else
                 return current_mode.Update(sprite_p);
