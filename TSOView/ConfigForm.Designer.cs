@@ -48,12 +48,21 @@
             this.tbDFIntensity = new System.Windows.Forms.TrackBar();
             this.lbDFIntensity = new System.Windows.Forms.Label();
             this.gbCamera = new System.Windows.Forms.GroupBox();
+            this.rbPersp = new System.Windows.Forms.RadioButton();
+            this.rbOrtho = new System.Windows.Forms.RadioButton();
             this.edRoll = new System.Windows.Forms.TextBox();
             this.edFovy = new System.Windows.Forms.TextBox();
             this.tbRoll = new System.Windows.Forms.TrackBar();
             this.lbRoll = new System.Windows.Forms.Label();
             this.tbFovy = new System.Windows.Forms.TrackBar();
             this.lbFovy = new System.Windows.Forms.Label();
+            this.rbRenderOcc = new System.Windows.Forms.RadioButton();
+            this.rbRenderAmb = new System.Windows.Forms.RadioButton();
+            this.rbRenderNmap = new System.Windows.Forms.RadioButton();
+            this.rbRenderDmap = new System.Windows.Forms.RadioButton();
+            this.rbRenderDF = new System.Windows.Forms.RadioButton();
+            this.rbRenderAO = new System.Windows.Forms.RadioButton();
+            this.btnCapture = new System.Windows.Forms.Button();
             this.gbDepthMap.SuspendLayout();
             this.gbAmbientOcclusion.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbAORadius)).BeginInit();
@@ -68,8 +77,6 @@
             // 
             // gbDepthMap
             // 
-            this.gbDepthMap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.gbDepthMap.Controls.Add(this.tbzfarPlane);
             this.gbDepthMap.Controls.Add(this.lbzfarPlane);
             this.gbDepthMap.Controls.Add(this.tbznearPlane);
@@ -121,8 +128,6 @@
             // 
             // gbAmbientOcclusion
             // 
-            this.gbAmbientOcclusion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.gbAmbientOcclusion.Controls.Add(this.edAORadius);
             this.gbAmbientOcclusion.Controls.Add(this.edAOIntensity);
             this.gbAmbientOcclusion.Controls.Add(this.tbAORadius);
@@ -198,8 +203,6 @@
             // 
             // gbDiffusion
             // 
-            this.gbDiffusion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.gbDiffusion.Controls.Add(this.edDFExtent);
             this.gbDiffusion.Controls.Add(this.edDFIntensity);
             this.gbDiffusion.Controls.Add(this.tbDFExtent);
@@ -276,6 +279,8 @@
             // 
             // gbCamera
             // 
+            this.gbCamera.Controls.Add(this.rbPersp);
+            this.gbCamera.Controls.Add(this.rbOrtho);
             this.gbCamera.Controls.Add(this.edRoll);
             this.gbCamera.Controls.Add(this.edFovy);
             this.gbCamera.Controls.Add(this.tbRoll);
@@ -288,6 +293,30 @@
             this.gbCamera.TabIndex = 0;
             this.gbCamera.TabStop = false;
             this.gbCamera.Text = "Camera";
+            // 
+            // rbPersp
+            // 
+            this.rbPersp.Appearance = System.Windows.Forms.Appearance.Button;
+            this.rbPersp.Location = new System.Drawing.Point(6, 82);
+            this.rbPersp.Name = "rbPersp";
+            this.rbPersp.Size = new System.Drawing.Size(52, 24);
+            this.rbPersp.TabIndex = 6;
+            this.rbPersp.Text = "Persp";
+            this.rbPersp.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.rbPersp.UseVisualStyleBackColor = true;
+            this.rbPersp.CheckedChanged += new System.EventHandler(this.rbPersp_CheckedChanged);
+            // 
+            // rbOrtho
+            // 
+            this.rbOrtho.Appearance = System.Windows.Forms.Appearance.Button;
+            this.rbOrtho.Location = new System.Drawing.Point(64, 82);
+            this.rbOrtho.Name = "rbOrtho";
+            this.rbOrtho.Size = new System.Drawing.Size(52, 24);
+            this.rbOrtho.TabIndex = 7;
+            this.rbOrtho.Text = "Ortho";
+            this.rbOrtho.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.rbOrtho.UseVisualStyleBackColor = true;
+            this.rbOrtho.CheckedChanged += new System.EventHandler(this.rbOrtho_CheckedChanged);
             // 
             // edRoll
             // 
@@ -351,11 +380,95 @@
             this.lbFovy.TabIndex = 0;
             this.lbFovy.Text = "fov in y";
             // 
+            // rbRenderOcc
+            // 
+            this.rbRenderOcc.Appearance = System.Windows.Forms.Appearance.Button;
+            this.rbRenderOcc.Location = new System.Drawing.Point(353, 80);
+            this.rbRenderOcc.Name = "rbRenderOcc";
+            this.rbRenderOcc.Size = new System.Drawing.Size(52, 24);
+            this.rbRenderOcc.TabIndex = 21;
+            this.rbRenderOcc.Text = "Occ";
+            this.rbRenderOcc.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.rbRenderOcc.UseVisualStyleBackColor = true;
+            // 
+            // rbRenderAmb
+            // 
+            this.rbRenderAmb.Appearance = System.Windows.Forms.Appearance.Button;
+            this.rbRenderAmb.Location = new System.Drawing.Point(295, 80);
+            this.rbRenderAmb.Name = "rbRenderAmb";
+            this.rbRenderAmb.Size = new System.Drawing.Size(52, 24);
+            this.rbRenderAmb.TabIndex = 20;
+            this.rbRenderAmb.Text = "Amb";
+            this.rbRenderAmb.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.rbRenderAmb.UseVisualStyleBackColor = true;
+            // 
+            // rbRenderNmap
+            // 
+            this.rbRenderNmap.Appearance = System.Windows.Forms.Appearance.Button;
+            this.rbRenderNmap.Location = new System.Drawing.Point(353, 50);
+            this.rbRenderNmap.Name = "rbRenderNmap";
+            this.rbRenderNmap.Size = new System.Drawing.Size(52, 24);
+            this.rbRenderNmap.TabIndex = 19;
+            this.rbRenderNmap.Text = "Nmap";
+            this.rbRenderNmap.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.rbRenderNmap.UseVisualStyleBackColor = true;
+            // 
+            // rbRenderDmap
+            // 
+            this.rbRenderDmap.Appearance = System.Windows.Forms.Appearance.Button;
+            this.rbRenderDmap.Location = new System.Drawing.Point(295, 50);
+            this.rbRenderDmap.Name = "rbRenderDmap";
+            this.rbRenderDmap.Size = new System.Drawing.Size(52, 24);
+            this.rbRenderDmap.TabIndex = 18;
+            this.rbRenderDmap.Text = "Dmap";
+            this.rbRenderDmap.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.rbRenderDmap.UseVisualStyleBackColor = true;
+            // 
+            // rbRenderDF
+            // 
+            this.rbRenderDF.Appearance = System.Windows.Forms.Appearance.Button;
+            this.rbRenderDF.Location = new System.Drawing.Point(353, 20);
+            this.rbRenderDF.Name = "rbRenderDF";
+            this.rbRenderDF.Size = new System.Drawing.Size(52, 24);
+            this.rbRenderDF.TabIndex = 17;
+            this.rbRenderDF.TabStop = true;
+            this.rbRenderDF.Text = "+DF";
+            this.rbRenderDF.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.rbRenderDF.UseVisualStyleBackColor = true;
+            // 
+            // rbRenderAO
+            // 
+            this.rbRenderAO.Appearance = System.Windows.Forms.Appearance.Button;
+            this.rbRenderAO.Location = new System.Drawing.Point(295, 20);
+            this.rbRenderAO.Name = "rbRenderAO";
+            this.rbRenderAO.Size = new System.Drawing.Size(52, 24);
+            this.rbRenderAO.TabIndex = 16;
+            this.rbRenderAO.Text = "+AO";
+            this.rbRenderAO.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.rbRenderAO.UseVisualStyleBackColor = true;
+            // 
+            // btnCapture
+            // 
+            this.btnCapture.Location = new System.Drawing.Point(295, 110);
+            this.btnCapture.Name = "btnCapture";
+            this.btnCapture.Size = new System.Drawing.Size(110, 83);
+            this.btnCapture.TabIndex = 22;
+            this.btnCapture.Text = "Capture";
+            this.btnCapture.UseVisualStyleBackColor = true;
+            this.btnCapture.Click += new System.EventHandler(this.btnCapture_Click);
+            // 
             // ConfigForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 411);
+            this.ClientSize = new System.Drawing.Size(434, 411);
+            this.Controls.Add(this.btnCapture);
+            this.Controls.Add(this.rbRenderOcc);
+            this.Controls.Add(this.rbRenderAmb);
+            this.Controls.Add(this.rbRenderNmap);
+            this.Controls.Add(this.rbRenderDmap);
+            this.Controls.Add(this.rbRenderDF);
+            this.Controls.Add(this.rbRenderAO);
             this.Controls.Add(this.gbCamera);
             this.Controls.Add(this.gbDiffusion);
             this.Controls.Add(this.gbAmbientOcclusion);
@@ -410,5 +523,14 @@
         private System.Windows.Forms.Label lbRoll;
         private System.Windows.Forms.TrackBar tbFovy;
         private System.Windows.Forms.Label lbFovy;
+        private System.Windows.Forms.RadioButton rbRenderOcc;
+        private System.Windows.Forms.RadioButton rbRenderAmb;
+        private System.Windows.Forms.RadioButton rbRenderNmap;
+        private System.Windows.Forms.RadioButton rbRenderDmap;
+        private System.Windows.Forms.RadioButton rbRenderDF;
+        private System.Windows.Forms.RadioButton rbRenderAO;
+        private System.Windows.Forms.Button btnCapture;
+        private System.Windows.Forms.RadioButton rbPersp;
+        private System.Windows.Forms.RadioButton rbOrtho;
     }
 }

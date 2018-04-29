@@ -1,10 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-//using System.Drawing;
-//using System.Threading;
-//using System.ComponentModel;
 using System.Windows.Forms;
 using System.IO;
 using TDCG;
@@ -18,15 +12,6 @@ namespace TSOView
         internal bool[] keys = new bool[256];
         internal bool[] keysEnabled = new bool[256];
 
-        internal int keySave = (int)Keys.Return;
-        internal int keyProjection = (int)Keys.P;
-        internal int keyMain = (int)Keys.C;
-        internal int keyAmbient = (int)Keys.C;
-        internal int keyDepthMap = (int)Keys.Z;
-        internal int keyNormalMap = (int)Keys.X;
-        internal int keyOcclusion = (int)Keys.O;
-        internal int keyDiffusion = (int)Keys.Home;
-        internal int keyShadow = (int)Keys.S;
         internal int keyFigure = (int)Keys.Tab;
         internal int keyDelete = (int)Keys.Delete;
         internal int keyCameraReset = (int)Keys.D0;
@@ -93,6 +78,7 @@ namespace TSOView
             if (viewer.InitializeApplication(this, true))
             {
                 viewer.ConfigConnect();
+                configForm.SetViewer(viewer);
                 figureForm.SetViewer(viewer);
                 viewer.FigureSelectEvent += delegate (object sender, EventArgs e)
                 {
@@ -130,102 +116,8 @@ namespace TSOView
             return (float)(Math.PI * angle / 180.0);
         }
 
-        string GetSaveFileName(string type)
-        {
-            DateTime ti = DateTime.Now;
-            CultureInfo ci = CultureInfo.InvariantCulture;
-            string ti_string = ti.ToString("yyyyMMdd-hhmmss-fff", ci);
-            return string.Format("{0}-{1}.png", ti_string, type);
-        }
-
-        void SaveToPng()
-        {
-            string type = "none";
-            switch (viewer.RenderMode)
-            {
-                case RenderMode.Main:
-                    type = "ao";
-                    break;
-                case RenderMode.Ambient:
-                    type = "amb";
-                    break;
-                case RenderMode.DepthMap:
-                    type = "d";
-                    break;
-                case RenderMode.NormalMap:
-                    type = "n";
-                    break;
-                case RenderMode.Occlusion:
-                    type = "o";
-                    break;
-                case RenderMode.Diffusion:
-                    type = "df";
-                    break;
-                case RenderMode.Shadow:
-                    type = "shadow";
-                    break;
-            }
-            viewer.SaveToPng(GetSaveFileName(type));
-        }
-
-        void SwitchProjectionMode()
-        {
-            if (viewer.ProjectionMode == ProjectionMode.Ortho)
-                viewer.ProjectionMode = ProjectionMode.Perspective;
-            else
-                viewer.ProjectionMode = ProjectionMode.Ortho;
-        }
-
-        void SwitchRenderMode(RenderMode mode)
-        {
-            if (viewer.RenderMode == mode)
-                viewer.RenderMode = RenderMode.Main;
-            else
-                viewer.RenderMode = mode;
-        }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (keysEnabled[keySave] && keys[keySave])
-            {
-                keysEnabled[keySave] = false;
-                SaveToPng();
-            }
-            if (keysEnabled[keyProjection] && keys[keyProjection])
-            {
-                keysEnabled[keyProjection] = false;
-                SwitchProjectionMode();
-            }
-            if (keysEnabled[keyAmbient] && keys[keyAmbient])
-            {
-                keysEnabled[keyAmbient] = false;
-                SwitchRenderMode(RenderMode.Ambient);
-            }
-            if (keysEnabled[keyDepthMap] && keys[keyDepthMap])
-            {
-                keysEnabled[keyDepthMap] = false;
-                SwitchRenderMode(RenderMode.DepthMap);
-            }
-            if (keysEnabled[keyNormalMap] && keys[keyNormalMap])
-            {
-                keysEnabled[keyNormalMap] = false;
-                SwitchRenderMode(RenderMode.NormalMap);
-            }
-            if (keysEnabled[keyOcclusion] && keys[keyOcclusion])
-            {
-                keysEnabled[keyOcclusion] = false;
-                SwitchRenderMode(RenderMode.Occlusion);
-            }
-            if (keysEnabled[keyDiffusion] && keys[keyDiffusion])
-            {
-                keysEnabled[keyDiffusion] = false;
-                SwitchRenderMode(RenderMode.Diffusion);
-            }
-            if (keysEnabled[keyShadow] && keys[keyShadow])
-            {
-                keysEnabled[keyShadow] = false;
-                SwitchRenderMode(RenderMode.Shadow);
-            }
             if (keysEnabled[keyConfigForm] && keys[keyConfigForm])
             {
                 keys[keyConfigForm] = false;

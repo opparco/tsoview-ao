@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.Globalization;
 using System.Windows.Forms;
 using TDCG;
 
@@ -111,6 +106,61 @@ namespace TSOView
                 this.Dispose(); // Esc was pressed
         }
 
+        Viewer viewer = null;
+
+        public void SetViewer(Viewer viewer)
+        {
+            this.viewer = viewer;
+
+            this.rbPersp.CheckedChanged -= new System.EventHandler(this.rbPersp_CheckedChanged);
+            this.rbOrtho.CheckedChanged -= new System.EventHandler(this.rbOrtho_CheckedChanged);
+            switch (viewer.ProjectionMode)
+            {
+                case ProjectionMode.Perspective:
+                    rbPersp.Checked = true;
+                    break;
+                case ProjectionMode.Ortho:
+                    rbOrtho.Checked = true;
+                    break;
+            }
+            this.rbPersp.CheckedChanged += new System.EventHandler(this.rbPersp_CheckedChanged);
+            this.rbOrtho.CheckedChanged += new System.EventHandler(this.rbOrtho_CheckedChanged);
+
+            this.rbRenderOcc.CheckedChanged -= new System.EventHandler(this.rbRenderOcc_CheckedChanged);
+            this.rbRenderAmb.CheckedChanged -= new System.EventHandler(this.rbRenderAmb_CheckedChanged);
+            this.rbRenderNmap.CheckedChanged -= new System.EventHandler(this.rbRenderNmap_CheckedChanged);
+            this.rbRenderDmap.CheckedChanged -= new System.EventHandler(this.rbRenderDmap_CheckedChanged);
+            this.rbRenderDF.CheckedChanged -= new System.EventHandler(this.rbRenderDF_CheckedChanged);
+            this.rbRenderAO.CheckedChanged -= new System.EventHandler(this.rbRenderAO_CheckedChanged);
+            switch (viewer.RenderMode)
+            {
+                case RenderMode.Ambient:
+                    rbRenderAmb.Checked = true;
+                    break;
+                case RenderMode.Occlusion:
+                    rbRenderOcc.Checked = true;
+                    break;
+                case RenderMode.DepthMap:
+                    rbRenderDmap.Checked = true;
+                    break;
+                case RenderMode.NormalMap:
+                    rbRenderNmap.Checked = true;
+                    break;
+                case RenderMode.Main:
+                    rbRenderAO.Checked = true;
+                    break;
+                case RenderMode.Diffusion:
+                    rbRenderDF.Checked = true;
+                    break;
+            }
+            this.rbRenderOcc.CheckedChanged += new System.EventHandler(this.rbRenderOcc_CheckedChanged);
+            this.rbRenderAmb.CheckedChanged += new System.EventHandler(this.rbRenderAmb_CheckedChanged);
+            this.rbRenderNmap.CheckedChanged += new System.EventHandler(this.rbRenderNmap_CheckedChanged);
+            this.rbRenderDmap.CheckedChanged += new System.EventHandler(this.rbRenderDmap_CheckedChanged);
+            this.rbRenderDF.CheckedChanged += new System.EventHandler(this.rbRenderDF_CheckedChanged);
+            this.rbRenderAO.CheckedChanged += new System.EventHandler(this.rbRenderAO_CheckedChanged);
+        }
+
         private void ConfigForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (e.CloseReason != CloseReason.FormOwnerClosing)
@@ -136,6 +186,46 @@ namespace TSOView
             edRoll.Text = string.Format("{0}", roll);
             CameraConfig.SetRollDegree(roll);
             CameraConfig.ChangeRoll += new EventHandler(tbRoll_ConfigChanged);
+        }
+
+        private void rbPersp_CheckedChanged(object sender, EventArgs e)
+        {
+            viewer.ProjectionMode = ProjectionMode.Perspective;
+        }
+
+        private void rbOrtho_CheckedChanged(object sender, EventArgs e)
+        {
+            viewer.ProjectionMode = ProjectionMode.Ortho;
+        }
+
+        private void rbRenderAO_CheckedChanged(object sender, EventArgs e)
+        {
+            viewer.RenderMode = RenderMode.Main;
+        }
+
+        private void rbRenderDF_CheckedChanged(object sender, EventArgs e)
+        {
+            viewer.RenderMode = RenderMode.Diffusion;
+        }
+
+        private void rbRenderDmap_CheckedChanged(object sender, EventArgs e)
+        {
+            viewer.RenderMode = RenderMode.DepthMap;
+        }
+
+        private void rbRenderNmap_CheckedChanged(object sender, EventArgs e)
+        {
+            viewer.RenderMode = RenderMode.NormalMap;
+        }
+
+        private void rbRenderAmb_CheckedChanged(object sender, EventArgs e)
+        {
+            viewer.RenderMode = RenderMode.Ambient;
+        }
+
+        private void rbRenderOcc_CheckedChanged(object sender, EventArgs e)
+        {
+            viewer.RenderMode = RenderMode.Occlusion;
         }
 
         private void tbznearPlane_TextChanged(object sender, EventArgs e)
@@ -190,6 +280,49 @@ namespace TSOView
             DiffusionConfig.Extent = tbDFExtent.Value / 10.0f;
             edDFExtent.Text = string.Format("{0:F2}", DiffusionConfig.Extent);
             DiffusionConfig.ChangeExtent += new EventHandler(tbDFExtent_ConfigChanged);
+        }
+
+        string GetSaveFileName(string type)
+        {
+            DateTime ti = DateTime.Now;
+            CultureInfo ci = CultureInfo.InvariantCulture;
+            string ti_string = ti.ToString("yyyyMMdd-hhmmss-fff", ci);
+            return string.Format("{0}-{1}.png", ti_string, type);
+        }
+
+        void SaveToPng()
+        {
+            string type = "none";
+            switch (viewer.RenderMode)
+            {
+                case RenderMode.Main:
+                    type = "ao";
+                    break;
+                case RenderMode.Ambient:
+                    type = "amb";
+                    break;
+                case RenderMode.DepthMap:
+                    type = "d";
+                    break;
+                case RenderMode.NormalMap:
+                    type = "n";
+                    break;
+                case RenderMode.Occlusion:
+                    type = "o";
+                    break;
+                case RenderMode.Diffusion:
+                    type = "df";
+                    break;
+                case RenderMode.Shadow:
+                    type = "shadow";
+                    break;
+            }
+            viewer.SaveToPng(GetSaveFileName(type));
+        }
+
+        private void btnCapture_Click(object sender, EventArgs e)
+        {
+            SaveToPng();
         }
     }
 }
