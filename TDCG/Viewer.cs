@@ -302,6 +302,7 @@ namespace TDCG
 
         Screen screen = null;
         Sprite sprite = null;
+        LampRenderer lamp_renderer = null;
         NodeRenderer node_renderer = null;
         SpriteRenderer sprite_renderer = null;
 
@@ -1334,6 +1335,17 @@ namespace TDCG
             if (!LoadEffect(@"screen.fx", out effect_screen, macros))
                 return false;
 
+            screen = new Screen(device);
+            sprite = new Sprite(device);
+
+            lamp_renderer = new LampRenderer(device, sprite);
+
+            if (!LoadEffect(@"circle.fx", out lamp_renderer.effect_circle, macros))
+                return false;
+
+            if (!LoadEffect(@"pole.fx", out lamp_renderer.effect_pole, macros))
+                return false;
+
             node_renderer = new NodeRenderer(device, sprite);
 
             if (!LoadEffect(@"circle.fx", out node_renderer.effect_circle, macros))
@@ -1348,8 +1360,6 @@ namespace TDCG
             handle_HohoAlpha = effect.GetParameter(null, "HohoAlpha");
             handle_UVSCR = effect.GetParameter(null, "UVSCR");
 
-            screen = new Screen(device);
-            sprite = new Sprite(device);
             sprite_renderer = new SpriteRenderer(device, sprite);
             camera.Update();
             OnDeviceReset(device, null);
@@ -1512,8 +1522,9 @@ namespace TDCG
         {
             Console.WriteLine("OnDeviceLost");
 
-            node_renderer.Dispose();
             sprite_renderer.Dispose();
+            node_renderer.Dispose();
+            lamp_renderer.Dispose();
 
             if (sprite != null)
                 sprite.Dispose();
@@ -1600,6 +1611,7 @@ namespace TDCG
             snap_texture = new Texture(device, 1024, 1024, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             snap_surface = snap_texture.GetSurfaceLevel(0);
 
+            lamp_renderer.Create(dev_rect);
             node_renderer.Create(dev_rect);
             sprite_renderer.Create(dev_rect);
 
@@ -1704,6 +1716,10 @@ namespace TDCG
 
                 AssignProjection();
                 AssignDepthProjection();
+
+                lamp_renderer.Rotation_Camera = camera.RotationMatrix;
+                lamp_renderer.Transform_View = Transform_View;
+                lamp_renderer.Transform_Projection = Transform_Projection;
 
                 node_renderer.Rotation_Camera = camera.RotationMatrix;
                 node_renderer.Transform_View = Transform_View;
@@ -1860,7 +1876,17 @@ namespace TDCG
                             device.DepthStencilSurface = dev_zbuf;
                             //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
+                            Matrix world;
+                            fig.GetWorldMatrix(out world);
+
                             node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
+                            TMONode node = fig.Tmo.FindNodeByName("face_oya");
+                            if (node != null)
+                            {
+                                Vector3 position = node.GetWorldPosition();
+                                position.Y += 5.0f;
+                                lamp_renderer.Render(fig, ref position, ref world);
+                            }
                         }
                     }
                     if (modename == "SCENE")
