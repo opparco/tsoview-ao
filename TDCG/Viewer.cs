@@ -776,6 +776,15 @@ namespace TDCG
             }
         }
 
+        public void Undo()
+        {
+            if (manipulator.Undo())
+            {
+                //TODO: UpdateSelectedBoneMatrices
+                GetSelectedFigure().UpdateBoneMatrices(true);
+            }
+        }
+
         // コントロールのサイズを変更したときに実行するハンドラ
         protected virtual void form_OnResize(object sender, EventArgs e)
         {

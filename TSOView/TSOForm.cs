@@ -18,6 +18,7 @@ namespace TSOView
         internal int keyCenter = (int)Keys.F;
         internal int keyFigureForm = (int)Keys.G;
         internal int keyConfigForm = (int)Keys.H;
+        internal int keyUndo = (int)Keys.Z;
 
         internal Viewer viewer = null;
         internal FigureForm figureForm = null;
@@ -164,6 +165,11 @@ namespace TSOView
                 // stale KeyUp event
                 figureForm.Show();
                 figureForm.Activate();
+            }
+            if (keysEnabled[keyUndo] && keys[keyUndo])
+            {
+                keysEnabled[keyUndo] = false;
+                viewer.Undo();
             }
 
             float keyL = 0.0f;

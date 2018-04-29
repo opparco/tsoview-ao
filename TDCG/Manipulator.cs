@@ -18,6 +18,9 @@ namespace TDCG
         bool rotate_node = false;
         bool rotate_camera = false;
 
+        Quaternion undo_node_rotation;
+        Vector3 undo_node_translation;
+
         public Manipulator(SimpleCamera camera)
         {
             this.camera = camera;
@@ -26,6 +29,9 @@ namespace TDCG
         public void BeginGrabNode(TMONode selected_node)
         {
             this.selected_node = selected_node;
+
+            undo_node_rotation = selected_node.Rotation;
+            undo_node_translation = selected_node.Translation;
 
             grab_node = true;
         }
@@ -94,6 +100,9 @@ namespace TDCG
         public void BeginRotateNode(TMONode selected_node)
         {
             this.selected_node = selected_node;
+
+            undo_node_rotation = selected_node.Rotation;
+            undo_node_translation = selected_node.Translation;
 
             rotate_node = true;
         }
@@ -174,6 +183,24 @@ namespace TDCG
         public void EndRotateCamera()
         {
             rotate_camera = false;
+        }
+
+        public bool Undo()
+        {
+            if (selected_node == null)
+                return false;
+
+            // swap selected_node and undo_node
+            Quaternion redo_rotation = selected_node.Rotation;
+            Vector3 redo_translation = selected_node.Translation;
+
+            selected_node.Rotation = undo_node_rotation;
+            selected_node.Translation = undo_node_translation;
+
+            undo_node_rotation = redo_rotation;
+            undo_node_translation = redo_translation;
+
+            return true;
         }
     }
 }
