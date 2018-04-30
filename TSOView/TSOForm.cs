@@ -1,6 +1,7 @@
 using System;
-using System.Windows.Forms;
+using System.Diagnostics;
 using System.IO;
+using System.Windows.Forms;
 using TDCG;
 
 namespace TSOView
@@ -97,7 +98,7 @@ namespace TSOView
                 };
                 viewer.LoadScene(Path.Combine(Application.StartupPath, @"scene"), true);
 
-                this.timer1.Enabled = true;
+                timer1.Enabled = true;
             }
         }
 
@@ -210,11 +211,17 @@ namespace TSOView
 
         private void form_OnDragDrop(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("enter form_OnDragDrop");
+            timer1.Enabled = false;
+
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 foreach (string src in (string[])e.Data.GetData(DataFormats.FileDrop))
                     viewer.LoadAnyFile(src, (e.KeyState & 8) == 8);
             }
+
+            timer1.Enabled = true;
+            Debug.WriteLine("leave form_OnDragDrop");
         }
 
         protected override void OnKeyPress(System.Windows.Forms.KeyPressEventArgs e)

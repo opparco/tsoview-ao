@@ -624,8 +624,12 @@ namespace TDCG
         }
 
         /// マウスボタンを押したときに実行するハンドラ
+        /// @event: TSOFileSelectEvent
+        /// @event: FigureSelectEvent
         protected virtual void form_OnMouseDown(object sender, MouseEventArgs e)
         {
+            Debug.WriteLine("enter form_OnMouseDown");
+
             //device 生成時の screen 座標系に変換する
             Point screen_p = new Point(e.X, e.Y);
             ScaleToScreen(ref screen_p);
@@ -718,6 +722,8 @@ namespace TDCG
             }
 
             lastScreenPoint = screen_p;
+
+            Debug.WriteLine("leave form_OnMouseDown");
         }
 
         /// マウスを移動したときに実行するハンドラ
@@ -762,6 +768,8 @@ namespace TDCG
 
         protected virtual void form_OnMouseUp(object sender, MouseEventArgs e)
         {
+            Debug.WriteLine("enter form_OnMouseUp");
+
             switch (e.Button)
             {
                 case MouseButtons.Left:
@@ -774,6 +782,8 @@ namespace TDCG
                     manipulator.EndGrabCamera();
                     break;
             }
+
+            Debug.WriteLine("leave form_OnMouseUp");
         }
 
         public void Undo()
@@ -863,6 +873,7 @@ namespace TDCG
             return num;
         }
 
+        /// @event: FigureUpdateEvent
         public void LoadScene(string path, bool append)
         {
             PNGSaveFile sav = new PNGSaveFile();
@@ -996,15 +1007,18 @@ namespace TDCG
 
         /// <summary>
         /// フィギュアを選択します。
+        /// @event: FigureSelectEvent
         /// </summary>
         /// <param name="idx">フィギュア番号</param>
         public void SetFigureIndex(int idx)
         {
             if (idx < 0)
                 idx = 0;
-            if (idx > FigureList.Count - 1)
+            if (FigureList.Count != 0 && idx > FigureList.Count - 1)
                 idx = FigureList.Count - 1;
+
             sprite_renderer.scene_mode.SelectedIdx = idx;
+
             if (FigureSelectEvent != null)
                 FigureSelectEvent(this, EventArgs.Empty);
         }
@@ -1032,6 +1046,7 @@ namespace TDCG
                 Console.WriteLine("Error: " + ex);
             }
             Figure fig = new Figure();
+            int idx = sprite_renderer.scene_mode.SelectedIdx;
             foreach (TSOFile tso in tso_list)
             {
                 tso.Open(device, effect);
@@ -1040,7 +1055,7 @@ namespace TDCG
             //todo: override List.Add
             fig.ComputeClothed();
             fig.UpdateNodeMapAndBoneMatrices();
-            int idx = FigureList.Count;
+            idx = FigureList.Count;
             //todo: override List#Add
             FigureList.Add(fig);
             fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
@@ -1048,7 +1063,11 @@ namespace TDCG
                 if (GetSelectedFigure() == sender)
                     need_render = true;
             };
-            SetFigureIndex(idx);
+            //SetFigureIndex(idx);
+            sprite_renderer.scene_mode.SelectedIdx = idx;
+
+            if (FigureSelectEvent != null)
+                FigureSelectEvent(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -1067,29 +1086,6 @@ namespace TDCG
                 fig = FigureList[idx];
             else
                 fig = null;
-            return fig;
-        }
-
-        /// <summary>
-        /// 選択フィギュアを得ます。なければ作成します。
-        /// </summary>
-        public Figure GetSelectedOrCreateFigure()
-        {
-            Figure fig = GetSelectedFigure();
-
-            if (fig == null)
-            {
-                fig = new Figure();
-                int idx = FigureList.Count;
-                //todo: override List#Add
-                FigureList.Add(fig);
-                fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
-                {
-                    if (GetSelectedFigure() == sender)
-                        need_render = true;
-                };
-                SetFigureIndex(idx);
-            }
             return fig;
         }
 
@@ -1115,6 +1111,7 @@ namespace TDCG
 
         /// <summary>
         /// 指定ストリームからTSOFileを読み込みます。
+        /// @event: FigureUpdateEvent
         /// </summary>
         /// <param name="source_stream">ストリーム</param>
         /// <param name="file">ファイル名</param>
@@ -1132,15 +1129,42 @@ namespace TDCG
             {
                 Console.WriteLine("Error: " + ex);
             }
-            Figure fig = GetSelectedOrCreateFigure();
+
+            Figure fig = GetSelectedFigure();
+            int idx = sprite_renderer.scene_mode.SelectedIdx;
+
+            bool fig_created = false;
+            if (fig == null)
+            {
+                fig = new Figure();
+                idx = FigureList.Count;
+                //todo: override List#Add
+                FigureList.Add(fig);
+                fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
+                {
+                    if (GetSelectedFigure() == sender)
+                        need_render = true;
+                };
+                fig_created = true;
+            }
+
             foreach (TSOFile tso in tso_list)
             {
                 tso.Open(device, effect);
                 fig.TsoList.Add(tso);
             }
+
             //todo: override List.Add
             fig.ComputeClothed();
             fig.UpdateNodeMapAndBoneMatrices();
+
+            if (fig_created)
+            {
+                sprite_renderer.scene_mode.SelectedIdx = idx;
+
+                if (FigureSelectEvent != null)
+                    FigureSelectEvent(this, EventArgs.Empty);
+            }
             if (FigureUpdateEvent != null)
                 FigureUpdateEvent(this, EventArgs.Empty);
         }
@@ -1186,6 +1210,7 @@ namespace TDCG
             int idx = sprite_renderer.scene_mode.SelectedIdx;
             if (idx < len)
                 fig = FigureList[idx];
+
             return fig != null;
         }
 
@@ -1211,6 +1236,7 @@ namespace TDCG
 
         /// <summary>
         /// 指定ストリームからTMOFileを読み込みます。
+        /// @event: FigureUpdateEvent
         /// </summary>
         /// <param name="source_stream">ストリーム</param>
         public void LoadTMOFile(Stream source_stream)
@@ -1236,6 +1262,7 @@ namespace TDCG
 
         /// <summary>
         /// 指定パスからPNGFileを読み込みフィギュアを作成して追加します。
+        /// @event: FigureUpdateEvent
         /// </summary>
         /// <param name="source_file">PNGFile のパス</param>
         /// <param name="append">FigureListを消去せずに追加するか</param>

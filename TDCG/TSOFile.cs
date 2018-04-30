@@ -1639,6 +1639,8 @@ namespace TDCG
         /// </summary>
         public void Dispose()
         {
+            Debug.WriteLine("TSOFile.Dispose");
+
             foreach (TSOMesh mesh in meshes)
                 mesh.Dispose();
             foreach (TSOTex tex in textures)

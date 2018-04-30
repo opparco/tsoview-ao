@@ -358,6 +358,8 @@ public class Figure : IDisposable
     /// </summary>
     public void Dispose()
     {
+        Debug.WriteLine("Figure.Dispose");
+
         foreach (TSOFile tso in TsoList)
             tso.Dispose();
     }
