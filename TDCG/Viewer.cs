@@ -262,10 +262,7 @@ namespace TDCG
                     int dx = location.X - (int)screen_position.X;
                     int dy = location.Y - (int)screen_position.Y;
 
-                    Vector3 view_position = Vector3.TransformCoordinate(position, Transform_View);
-                    Vector3 view_p = new Vector3(0, 0.25f, view_position.Z);
-                    Vector3 screen_p = ViewToScreen(view_p);
-                    float radius = screen_center_y - screen_p.Y;
+                    float radius = 36;
 
                     return (dx * dx + dy * dy < radius * radius);
                 }
@@ -294,10 +291,7 @@ namespace TDCG
                 int dx = location.X - (int)screen_position.X;
                 int dy = location.Y - (int)screen_position.Y;
 
-                Vector3 view_position = Vector3.TransformCoordinate(position, Transform_View);
-                Vector3 view_p = new Vector3(0, 0.25f, view_position.Z);
-                Vector3 screen_p = ViewToScreen(view_p);
-                float radius = screen_center_y - screen_p.Y;
+                float radius = 36;
 
                 return (dx * dx + dy * dy < radius * radius);
             }
@@ -327,10 +321,7 @@ namespace TDCG
                     int dx = location.X - (int)screen_position.X;
                     int dy = location.Y - (int)screen_position.Y;
 
-                    Vector3 view_position = Vector3.TransformCoordinate(position, Transform_View);
-                    Vector3 view_p = new Vector3(0, 0.125f, view_position.Z);
-                    Vector3 screen_p = ViewToScreen(view_p);
-                    float radius = screen_center_y - screen_p.Y;
+                    float radius = 12;
 
                     if (dx * dx + dy * dy < radius * radius)
                     {

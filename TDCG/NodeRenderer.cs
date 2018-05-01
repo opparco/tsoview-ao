@@ -56,107 +56,8 @@ namespace TDCG
         /// projection変換行列
         public Matrix Transform_Projection = Matrix.Identity;
 
-#if false
-        void DrawPoleZ()
+        void GetWorldViewMatrix(float scale, ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world, out Matrix world_view_matrix)
         {
-            float scale = 5.0f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale);
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_pole.SetValue("wvp", world_view_projection_matrix);
-            effect_pole.SetValue("col", new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            pole.Draw(effect_pole);
-        }
-
-        void DrawPoleY()
-        {
-            float scale = 5.0f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI / 2.0));
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_pole.SetValue("wvp", world_view_projection_matrix);
-            effect_pole.SetValue("col", new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
-
-            pole.Draw(effect_pole);
-        }
-
-        void DrawPoleX()
-        {
-            float scale = 5.0f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI / 2.0));
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_pole.SetValue("wvp", world_view_projection_matrix);
-            effect_pole.SetValue("col", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-            pole.Draw(effect_pole);
-        }
-
-        void DrawCircleZ()
-        {
-            float scale = 2.5f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale);
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_circle.SetValue("wvp", world_view_projection_matrix);
-            effect_circle.SetValue("col", new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
-
-            circle.Draw(effect_circle);
-        }
-
-        void DrawCircleY()
-        {
-            float scale = 2.5f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI / 2.0));
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_circle.SetValue("wvp", world_view_projection_matrix);
-            effect_circle.SetValue("col", new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
-
-            circle.Draw(effect_circle);
-        }
-
-        void DrawCircleX()
-        {
-            float scale = 2.5f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI / 2.0));
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_circle.SetValue("wvp", world_view_projection_matrix);
-            effect_circle.SetValue("col", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-            circle.Draw(effect_circle);
-        }
-
-        void DrawCircleW()
-        {
-            float scale = 1.25f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale);
-            Matrix world_view_matrix = world_matrix;
-
-            world_view_matrix.M41 += Transform_View.M41;
-            world_view_matrix.M42 += Transform_View.M42;
-            world_view_matrix.M43 += Transform_View.M43;
-
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-
-            effect_circle.SetValue("wvp", world_view_projection_matrix);
-            effect_circle.SetValue("col", new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-
-            circle.Draw(effect_circle);
-        }
-#endif
-
-        void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
-        {
-            float scale = 0.25f;
             Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * world_rotation;
 
             // translation
@@ -164,7 +65,21 @@ namespace TDCG
             world_matrix.M42 = world_position.Y;
             world_matrix.M43 = world_position.Z;
 
-            Matrix world_view_matrix = world_matrix * world * Transform_View;
+            world_view_matrix = world_matrix * world * Transform_View;
+        }
+
+        float UnprojectScaling(ref Matrix world_view_matrix)
+        {
+            return -world_view_matrix.M43 / Transform_Projection.M22;
+        }
+
+        void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
+        {
+            float scale = 0.015625f; //= 12/768
+            Matrix world_view_matrix;
+            GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
+            scale *= UnprojectScaling(ref world_view_matrix);
+            GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
             Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
 
             effect_pole.SetValue("wvp", world_view_projection_matrix);
@@ -175,15 +90,12 @@ namespace TDCG
 
         void DrawNodePoleY(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
         {
-            float scale = 0.25f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationX((float)(-Math.PI / 2.0)) * world_rotation;
-
-            // translation
-            world_matrix.M41 = world_position.X;
-            world_matrix.M42 = world_position.Y;
-            world_matrix.M43 = world_position.Z;
-
-            Matrix world_view_matrix = world_matrix * world * Transform_View;
+            float scale = 0.015625f; //= 12/768
+            Matrix world_rotation_x = Matrix.RotationX((float)(-Math.PI / 2.0)) * world_rotation;
+            Matrix world_view_matrix;
+            GetWorldViewMatrix(scale, ref world_position, ref world_rotation_x, ref world, out world_view_matrix);
+            scale *= UnprojectScaling(ref world_view_matrix);
+            GetWorldViewMatrix(scale, ref world_position, ref world_rotation_x, ref world, out world_view_matrix);
             Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
 
             effect_pole.SetValue("wvp", world_view_projection_matrix);
@@ -194,15 +106,12 @@ namespace TDCG
 
         void DrawNodePoleX(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
         {
-            float scale = 0.25f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Matrix.RotationY((float)(+Math.PI / 2.0)) * world_rotation;
-
-            // translation
-            world_matrix.M41 = world_position.X;
-            world_matrix.M42 = world_position.Y;
-            world_matrix.M43 = world_position.Z;
-
-            Matrix world_view_matrix = world_matrix * world * Transform_View;
+            float scale = 0.015625f; //= 12/768
+            Matrix world_rotation_y = Matrix.RotationY((float)(+Math.PI / 2.0)) * world_rotation;
+            Matrix world_view_matrix;
+            GetWorldViewMatrix(scale, ref world_position, ref world_rotation_y, ref world, out world_view_matrix);
+            scale *= UnprojectScaling(ref world_view_matrix);
+            GetWorldViewMatrix(scale, ref world_position, ref world_rotation_y, ref world, out world_view_matrix);
             Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
 
             effect_pole.SetValue("wvp", world_view_projection_matrix);
@@ -211,35 +120,13 @@ namespace TDCG
             pole.Draw(effect_pole);
         }
 
-        void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world)
-        {
-            Matrix world_rotation = Rotation_Camera;
-            DrawNodePoleZ(ref world_position, ref world_rotation, ref world);
-        }
-
-        void DrawNodePoleY(ref Vector3 world_position, ref Matrix world)
-        {
-            Matrix world_rotation = Rotation_Camera;
-            DrawNodePoleY(ref world_position, ref world_rotation, ref world);
-        }
-
-        void DrawNodePoleX(ref Vector3 world_position, ref Matrix world)
-        {
-            Matrix world_rotation = Rotation_Camera;
-            DrawNodePoleX(ref world_position, ref world_rotation, ref world);
-        }
-
         void DrawNodeCircleW(ref Vector3 world_position, ref Matrix world)
         {
-            float scale = 0.125f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Rotation_Camera;
-
-            // translation
-            world_matrix.M41 = world_position.X;
-            world_matrix.M42 = world_position.Y;
-            world_matrix.M43 = world_position.Z;
-
-            Matrix world_view_matrix = world_matrix * world * Transform_View;
+            float scale = 0.015625f; //= 12/768
+            Matrix world_view_matrix;
+            GetWorldViewMatrix(scale, ref world_position, ref Rotation_Camera, ref world, out world_view_matrix);
+            scale *= UnprojectScaling(ref world_view_matrix);
+            GetWorldViewMatrix(scale, ref world_position, ref Rotation_Camera, ref world, out world_view_matrix);
             Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
 
             effect_circle.SetValue("wvp", world_view_projection_matrix);
@@ -250,15 +137,11 @@ namespace TDCG
 
         void DrawSelectedNodeCircleW(ref Vector3 world_position, ref Matrix world)
         {
-            float scale = 0.25f;
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * Rotation_Camera;
-
-            // translation
-            world_matrix.M41 = world_position.X;
-            world_matrix.M42 = world_position.Y;
-            world_matrix.M43 = world_position.Z;
-
-            Matrix world_view_matrix = world_matrix * world * Transform_View;
+            float scale = 0.046875f; //= 36/768
+            Matrix world_view_matrix;
+            GetWorldViewMatrix(scale, ref world_position, ref Rotation_Camera, ref world, out world_view_matrix);
+            scale *= UnprojectScaling(ref world_view_matrix);
+            GetWorldViewMatrix(scale, ref world_position, ref Rotation_Camera, ref world, out world_view_matrix);
             Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
 
             effect_circle.SetValue("wvp", world_view_projection_matrix);
