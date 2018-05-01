@@ -676,11 +676,6 @@ namespace TDCG
         public event EventHandler FigureSelectEvent;
 
         /// <summary>
-        /// フィギュア更新時に呼び出されるハンドラ
-        /// </summary>
-        public event EventHandler FigureUpdateEvent;
-
-        /// <summary>
         /// フィギュアを選択します。
         /// @event: FigureSelectEvent
         /// </summary>
@@ -727,9 +722,6 @@ namespace TDCG
                 tso.Open(device, effect);
                 fig.TsoList.Add(tso);
             }
-            //todo: override List.Add
-            fig.ComputeClothed();
-            fig.UpdateNodeMapAndBoneMatrices();
             idx = FigureList.Count;
             //todo: override List#Add
             FigureList.Add(fig);
@@ -738,6 +730,9 @@ namespace TDCG
                 if (GetSelectedFigure() == sender)
                     need_render = true;
             };
+            //todo: override List.Add
+            fig.ComputeClothed();
+            fig.UpdateNodeMapAndBoneMatrices();
             //SetFigureIndex(idx);
             sprite_renderer.scene_mode.SelectedIdx = idx;
 
@@ -786,7 +781,6 @@ namespace TDCG
 
         /// <summary>
         /// 指定ストリームからTSOFileを読み込みます。
-        /// @event: FigureUpdateEvent
         /// </summary>
         /// <param name="source_stream">ストリーム</param>
         /// <param name="file">ファイル名</param>
@@ -840,8 +834,7 @@ namespace TDCG
                 if (FigureSelectEvent != null)
                     FigureSelectEvent(this, EventArgs.Empty);
             }
-            if (FigureUpdateEvent != null)
-                FigureUpdateEvent(this, EventArgs.Empty);
+            need_render = true;
         }
 
         /// <summary>
@@ -911,7 +904,6 @@ namespace TDCG
 
         /// <summary>
         /// 指定ストリームからTMOFileを読み込みます。
-        /// @event: FigureUpdateEvent
         /// </summary>
         /// <param name="source_stream">ストリーム</param>
         public void LoadTMOFile(Stream source_stream)
@@ -930,14 +922,12 @@ namespace TDCG
                     Console.WriteLine("Error: " + ex);
                 }
                 fig.UpdateNodeMapAndBoneMatrices();
-                if (FigureUpdateEvent != null)
-                    FigureUpdateEvent(this, EventArgs.Empty);
+                need_render = true;
             }
         }
 
         /// <summary>
         /// 指定パスからPNGFileを読み込みフィギュアを作成して追加します。
-        /// @event: FigureUpdateEvent
         /// </summary>
         /// <param name="source_file">PNGFile のパス</param>
         /// <param name="append">FigureListを消去せずに追加するか</param>
@@ -959,8 +949,7 @@ namespace TDCG
                     fig.LampRotation = sav.LampRotation;
                     fig.Tmo = sav.Tmo;
                     fig.UpdateNodeMapAndBoneMatrices();
-                    if (FigureUpdateEvent != null)
-                        FigureUpdateEvent(this, EventArgs.Empty);
+                    need_render = true;
                 }
             }
             else
@@ -972,9 +961,6 @@ namespace TDCG
                 foreach (Figure fig in sav.FigureList)
                 {
                     fig.OpenTSOFile(device, effect);
-                    //todo: override List.Add
-                    fig.ComputeClothed();
-                    fig.UpdateNodeMapAndBoneMatrices();
                     //todo: override List#Add
                     FigureList.Add(fig);
                     fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
@@ -982,10 +968,11 @@ namespace TDCG
                         if (GetSelectedFigure() == sender)
                             need_render = true;
                     };
+                    //todo: override List.Add
+                    fig.ComputeClothed();
+                    fig.UpdateNodeMapAndBoneMatrices();
                 }
                 SetFigureIndex(idx);
-                if (FigureUpdateEvent != null)
-                    FigureUpdateEvent(this, EventArgs.Empty);
             }
         }
 
@@ -1173,10 +1160,6 @@ namespace TDCG
                     selected_node = fig.Tmo.nodes[0]; // W_Hips
                     sprite_renderer.pose_mode.SelectedNodeName = selected_node.Name;
                 }
-                need_render = true;
-            };
-            FigureUpdateEvent += delegate (object sender, EventArgs e)
-            {
                 need_render = true;
             };
             return true;
