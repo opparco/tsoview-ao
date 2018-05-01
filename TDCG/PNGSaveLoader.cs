@@ -11,6 +11,25 @@ namespace TDCG
     {
         public Vector3 Translation = Vector3.Empty;
         public Vector3 Angle = Vector3.Empty;
+
+        static List<float> ReadFloats(string file)
+        {
+            List<float> floats = new List<float>();
+            string line;
+            using (StreamReader source = new StreamReader(File.OpenRead(file)))
+            while ((line = source.ReadLine()) != null)
+            {
+                floats.Add(Single.Parse(line));
+            }
+            return floats;
+        }
+
+        public void ReadFromTextFile(string file)
+        {
+            List<float> factor = ReadFloats(file);
+            Translation = new Vector3(-factor[0], -factor[1], -factor[2]);
+            Angle = new Vector3(-factor[5], -factor[4], -factor[6]);
+        }
     }
 
     /// <summary>

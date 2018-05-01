@@ -177,6 +177,13 @@ namespace TDCG
         Texture snap_texture;
         Surface snap_surface;
 
+        SimpleCamera camera = new SimpleCamera();
+
+        /// <summary>
+        /// カメラ
+        /// </summary>
+        public SimpleCamera Camera { get { return camera; } set { camera = value; } }
+
         /// <summary>
         /// viewerが保持しているフィギュアリスト
         /// </summary>
@@ -658,31 +665,6 @@ namespace TDCG
             }
         }
 
-        List<float> ReadFloats(string file)
-        {
-            List<float> floats = new List<float>();
-            string line;
-            using (StreamReader source = new StreamReader(File.OpenRead(file)))
-            while ((line = source.ReadLine()) != null)
-            {
-                floats.Add(Single.Parse(line));
-            }
-            return floats;
-        }
-
-        int GetFiguresCount(string path)
-        {
-            int num = 0;
-            while ( true )
-            {
-                string file = Path.Combine(path, string.Format("Figure{0}.txt", num + 1));
-                if (! File.Exists(file))
-                    break;
-                num++;
-            }
-            return num;
-        }
-
         /// <summary>
         /// tso 選択時に呼び出されるハンドラ
         /// </summary>
@@ -1007,13 +989,23 @@ namespace TDCG
             }
         }
 
-        SimpleCamera camera = new SimpleCamera();
-        Manipulator manipulator;
+        public static string GetCameraPresetFileName(int i)
+        {
+            return Path.Combine(Application.StartupPath, string.Format(@"resources\camera-presets\{0}.txt", i));
+        }
 
-        /// <summary>
-        /// カメラ
-        /// </summary>
-        public SimpleCamera Camera { get { return camera; } set { camera = value; } }
+        public void LoadCameraPreset(int i)
+        {
+            string file = GetCameraPresetFileName(i);
+            PNGSaveCameraDescription cameraDescription = new PNGSaveCameraDescription();
+            cameraDescription.ReadFromTextFile(file);
+
+            camera.Reset();
+            camera.Translation = cameraDescription.Translation;
+            camera.Angle = cameraDescription.Angle;
+        }
+
+        Manipulator manipulator;
 
         /// <summary>
         /// world行列

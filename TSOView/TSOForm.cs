@@ -15,7 +15,11 @@ namespace TSOView
 
         internal int keyFigure = (int)Keys.Tab;
         internal int keyDelete = (int)Keys.Delete;
-        internal int keyCameraReset = (int)Keys.D0;
+        internal int keyCamera1 = (int)Keys.D1;
+        internal int keyCamera2 = (int)Keys.D2;
+        internal int keyCamera3 = (int)Keys.D3;
+        internal int keyCamera4 = (int)Keys.D4;
+        internal int keyCamera5 = (int)Keys.D5;
         internal int keyCenter = (int)Keys.F;
         internal int keyFigureForm = (int)Keys.G;
         internal int keyConfigForm = (int)Keys.H;
@@ -98,7 +102,7 @@ namespace TSOView
                     else
                         figureForm.Clear();
                 };
-                viewer.Camera.SetTranslation(0.0f, +10.0f, +44.0f);
+                viewer.LoadCameraPreset(1);
                 foreach (string arg in args)
                     viewer.LoadAnyFile(arg, true);
                 if (viewer.FigureList.Count == 0)
@@ -154,11 +158,30 @@ namespace TSOView
                 else
                     viewer.RemoveSelectedFigure();
             }
-            if (keysEnabled[keyCameraReset] && keys[keyCameraReset])
+            if (keysEnabled[keyCamera1] && keys[keyCamera1])
             {
-                keysEnabled[keyCameraReset] = false;
-                viewer.Camera.Reset();
-                viewer.Camera.SetTranslation(0.0f, +10.0f, +44.0f);
+                keysEnabled[keyCamera1] = false;
+                viewer.LoadCameraPreset(1);
+            }
+            if (keysEnabled[keyCamera2] && keys[keyCamera2])
+            {
+                keysEnabled[keyCamera2] = false;
+                viewer.LoadCameraPreset(2);
+            }
+            if (keysEnabled[keyCamera3] && keys[keyCamera3])
+            {
+                keysEnabled[keyCamera3] = false;
+                viewer.LoadCameraPreset(3);
+            }
+            if (keysEnabled[keyCamera4] && keys[keyCamera4])
+            {
+                keysEnabled[keyCamera4] = false;
+                viewer.LoadCameraPreset(4);
+            }
+            if (keysEnabled[keyCamera5] && keys[keyCamera5])
+            {
+                keysEnabled[keyCamera5] = false;
+                viewer.LoadCameraPreset(5);
             }
             if (keysEnabled[keyCenter] && keys[keyCenter])
             {
