@@ -721,10 +721,9 @@ namespace TDCG
                 if (GetSelectedFigure() == sender)
                     need_render = true;
             };
-            //todo: override List.Add
             fig.ComputeClothed();
             fig.UpdateNodeMapAndBoneMatrices();
-            //SetFigureIndex(idx);
+
             sprite_renderer.scene_mode.SelectedIdx = idx;
 
             if (FigureSelectEvent != null)
@@ -814,7 +813,6 @@ namespace TDCG
                 fig.TsoList.Add(tso);
             }
 
-            //todo: override List.Add
             fig.ComputeClothed();
             fig.UpdateNodeMapAndBoneMatrices();
 
@@ -925,15 +923,20 @@ namespace TDCG
         public void AddFigureFromPNGFile(string source_file, bool append)
         {
             PNGSaveData sav = PNGSaveLoader.FromFile(source_file);
+            if (sav.FigureList.Count == 0 && sav.Tmo == null)
+            {
+                //not save file
+                return;
+            }
             if (sav.CameraDescription != null)
             {
                 camera.Reset();
                 camera.Translation = sav.CameraDescription.Translation;
                 camera.Angle = sav.CameraDescription.Angle;
             }
-            if (sav.FigureList.Count == 0) //POSE png
+            if (sav.FigureList.Count == 0)
             {
-                Debug.Assert(sav.Tmo != null, "save.Tmo should not be null");
+                //POSE
                 Figure fig;
                 if (TryGetFigure(out fig))
                 {
@@ -945,6 +948,7 @@ namespace TDCG
             }
             else
             {
+                //HSAV or SCNE
                 if (!append)
                     ClearFigureList();
 
@@ -959,7 +963,6 @@ namespace TDCG
                         if (GetSelectedFigure() == sender)
                             need_render = true;
                     };
-                    //todo: override List.Add
                     fig.ComputeClothed();
                     fig.UpdateNodeMapAndBoneMatrices();
                 }
