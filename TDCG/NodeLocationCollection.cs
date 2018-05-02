@@ -26,7 +26,6 @@ namespace TDCG
         {
             string[] names = new string[name_locationmap.Keys.Count];
             name_locationmap.Keys.CopyTo(names, 0);
-
             return names;
         }
 
@@ -39,7 +38,7 @@ namespace TDCG
             LoadNameLocationMap();
         }
 
-        string GetNodeLocationsPath()
+        string GetNodeLocationConfigPath()
         {
             string relative_path = Path.Combine(@"resources\node-locations", string.Format("{0}.txt", this.number));
             return Path.Combine(Application.StartupPath, relative_path);
@@ -53,7 +52,7 @@ namespace TDCG
         void LoadNameLocationMap()
         {
             char[] delim = { ' ' };
-            using (StreamReader source = new StreamReader(File.OpenRead(GetNodeLocationsPath())))
+            using (StreamReader source = new StreamReader(File.OpenRead(GetNodeLocationConfigPath())))
             {
                 string line;
                 while ((line = source.ReadLine()) != null)
