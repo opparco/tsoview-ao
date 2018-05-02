@@ -67,7 +67,7 @@ namespace TDCG
         /// <param name="source_file">PNGFileのパス</param>
         static public PNGSaveData FromFile(string source_file)
         {
-            PNGSaveData sav = new PNGSaveData();
+            PNGSaveData save_data = new PNGSaveData();
             try
             {
                 PNGFile png = new PNGFile();
@@ -75,17 +75,17 @@ namespace TDCG
 
                 png.Hsav += delegate (string type)
                 {
-                    sav.type = type;
+                    save_data.type = type;
                     fig = new Figure();
-                    sav.FigureList.Add(fig);
+                    save_data.FigureList.Add(fig);
                 };
                 png.Pose += delegate (string type)
                 {
-                    sav.type = type;
+                    save_data.type = type;
                 };
                 png.Scne += delegate (string type)
                 {
-                    sav.type = type;
+                    save_data.type = type;
                 };
                 png.Cami += delegate (Stream dest, int extract_length)
                 {
@@ -99,9 +99,9 @@ namespace TDCG
                         factor.Add(flo);
                     }
 
-                    sav.CameraDescription = new PNGSaveCameraDescription();
-                    sav.CameraDescription.Translation = new Vector3(-factor[0], -factor[1], -factor[2]);
-                    sav.CameraDescription.Angle = new Vector3(-factor[5], -factor[4], -factor[6]);
+                    save_data.CameraDescription = new PNGSaveCameraDescription();
+                    save_data.CameraDescription.Translation = new Vector3(-factor[0], -factor[1], -factor[2]);
+                    save_data.CameraDescription.Angle = new Vector3(-factor[5], -factor[4], -factor[6]);
                 };
                 png.Lgta += delegate (Stream dest, int extract_length)
                 {
@@ -136,19 +136,19 @@ namespace TDCG
                     m.M43 = factor[14];
                     m.M44 = factor[15];
 
-                    sav.LampRotation = Quaternion.RotationMatrix(m);
+                    save_data.LampRotation = Quaternion.RotationMatrix(m);
                 };
                 png.Ftmo += delegate (Stream dest, int extract_length)
                 {
-                    sav.Tmo = new TMOFile();
-                    sav.Tmo.Load(dest);
+                    save_data.Tmo = new TMOFile();
+                    save_data.Tmo.Load(dest);
                 };
                 png.Figu += delegate (Stream dest, int extract_length)
                 {
                     fig = new Figure();
-                    fig.LampRotation = sav.LampRotation;
-                    fig.Tmo = sav.Tmo;
-                    sav.FigureList.Add(fig);
+                    fig.LampRotation = save_data.LampRotation;
+                    fig.Tmo = save_data.Tmo;
+                    save_data.FigureList.Add(fig);
 
                     byte[] buf = new byte[extract_length];
                     dest.Read(buf, 0, extract_length);
@@ -191,7 +191,7 @@ namespace TDCG
                 Debug.WriteLine("loading " + source_file);
                 png.Load(source_file);
 
-                if (sav.type == "HSAV")
+                if (save_data.type == "HSAV")
                 {
                     BMPSaveData data = new BMPSaveData();
 
@@ -223,7 +223,7 @@ namespace TDCG
             {
                 Console.WriteLine("Error: " + ex);
             }
-            return sav;
+            return save_data;
         }
     }
 }

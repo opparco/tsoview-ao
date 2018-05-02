@@ -922,26 +922,26 @@ namespace TDCG
         /// <param name="append">FigureListを消去せずに追加するか</param>
         public void AddFigureFromPNGFile(string source_file, bool append)
         {
-            PNGSaveData sav = PNGSaveLoader.FromFile(source_file);
-            if (sav.FigureList.Count == 0 && sav.Tmo == null)
+            PNGSaveData save_data = PNGSaveLoader.FromFile(source_file);
+            if (save_data.FigureList.Count == 0 && save_data.Tmo == null)
             {
                 //not save file
                 return;
             }
-            if (sav.CameraDescription != null)
+            if (save_data.CameraDescription != null)
             {
                 camera.Reset();
-                camera.Translation = sav.CameraDescription.Translation;
-                camera.Angle = sav.CameraDescription.Angle;
+                camera.Translation = save_data.CameraDescription.Translation;
+                camera.Angle = save_data.CameraDescription.Angle;
             }
-            if (sav.FigureList.Count == 0)
+            if (save_data.FigureList.Count == 0)
             {
                 //POSE
                 Figure fig;
                 if (TryGetFigure(out fig))
                 {
-                    fig.LampRotation = sav.LampRotation;
-                    fig.Tmo = sav.Tmo;
+                    fig.LampRotation = save_data.LampRotation;
+                    fig.Tmo = save_data.Tmo;
                     fig.UpdateNodeMapAndBoneMatrices();
                     need_render = true;
                 }
@@ -953,7 +953,7 @@ namespace TDCG
                     ClearFigureList();
 
                 int idx = FigureList.Count;
-                foreach (Figure fig in sav.FigureList)
+                foreach (Figure fig in save_data.FigureList)
                 {
                     fig.OpenTSOFile(device, effect);
                     //todo: override List#Add

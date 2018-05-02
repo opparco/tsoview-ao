@@ -234,5 +234,14 @@ namespace TDCG
         {
             WriteFile("FTSO", 0x26F5B8FE, opt1, stream);
         }
+
+        /// FTSOチャンクを書き込みます。
+        public void WriteFTSO(TSOFile tso)
+        {
+            MemoryStream ms = new MemoryStream();
+            tso.Save(ms);
+            ms.Seek(0, SeekOrigin.Begin);
+            WriteFTSO(tso.Row, ms);
+        }
     }
 }

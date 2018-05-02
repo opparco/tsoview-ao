@@ -52,6 +52,7 @@
     <Compile Include="NodeRenderer.cs" />
     <Compile Include="PNGFile.cs" />
     <Compile Include="PNGSaveLoader.cs" />
+    <Compile Include="PNGSceneSaveWriter.cs" />
     <Compile Include="PNGWriter.cs" />
     <Compile Include="Pole.cs" />
     <Compile Include="PoseMode.cs" />
