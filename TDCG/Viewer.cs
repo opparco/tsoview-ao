@@ -262,7 +262,7 @@ namespace TDCG
                     int dx = location.X - (int)screen_position.X;
                     int dy = location.Y - (int)screen_position.Y;
 
-                    float radius = 36;
+                    float radius = 18;
 
                     return (dx * dx + dy * dy < radius * radius);
                 }
@@ -291,7 +291,7 @@ namespace TDCG
                 int dx = location.X - (int)screen_position.X;
                 int dy = location.Y - (int)screen_position.Y;
 
-                float radius = 36;
+                float radius = 18;
 
                 return (dx * dx + dy * dy < radius * radius);
             }
@@ -321,7 +321,7 @@ namespace TDCG
                     int dx = location.X - (int)screen_position.X;
                     int dy = location.Y - (int)screen_position.Y;
 
-                    float radius = 12;
+                    float radius = 6;
 
                     if (dx * dx + dy * dy < radius * radius)
                     {
