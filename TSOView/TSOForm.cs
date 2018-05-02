@@ -33,6 +33,8 @@ namespace TSOView
 
         string save_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\TechArts3D\TDCG";
 
+        bool initialized = false;
+
         public TSOForm(TSOConfig tso_config, string[] args)
         {
             InitializeComponent();
@@ -109,8 +111,7 @@ namespace TSOView
                     viewer.LoadAnyFile(arg, true);
                 if (viewer.FigureList.Count == 0)
                     viewer.LoadAnyFile(Path.Combine(save_path, "system.tdcgsav.png"), true);
-
-                timer1.Enabled = true;
+                this.initialized = true;
             }
         }
 
@@ -131,13 +132,11 @@ namespace TSOView
             }
         }
 
-        static float DegreeToRadian(float angle)
+        public void Render()
         {
-            return (float)(Math.PI * angle / 180.0);
-        }
+            if (! initialized)
+                return;
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
             if (keysEnabled[keyConfigForm] && keys[keyConfigForm])
             {
                 keys[keyConfigForm] = false;
@@ -253,7 +252,6 @@ namespace TSOView
         private void form_OnDragDrop(object sender, DragEventArgs e)
         {
             Debug.WriteLine("enter form_OnDragDrop");
-            timer1.Enabled = false;
 
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -261,7 +259,6 @@ namespace TSOView
                     viewer.LoadAnyFile(src, (e.KeyState & 8) == 8);
             }
 
-            timer1.Enabled = true;
             Debug.WriteLine("leave form_OnDragDrop");
         }
 
