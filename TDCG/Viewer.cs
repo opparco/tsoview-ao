@@ -177,6 +177,8 @@ namespace TDCG
         Texture snap_texture;
         Surface snap_surface;
 
+        SceneThumbnail scene_thumbnail = new SceneThumbnail();
+
         SimpleCamera camera = new SimpleCamera();
 
         /// <summary>
@@ -628,6 +630,9 @@ namespace TDCG
             save_data.CameraDescription = camera_desc;
 
             save_data.FigureList = FigureList;
+
+            scene_thumbnail.SaveToFile();
+
             PNGSceneSaveWriter writer = new PNGSceneSaveWriter();
             writer.Save(GetScenePath(), save_data);
         }
@@ -1338,6 +1343,9 @@ namespace TDCG
             if (screen != null)
                 screen.Dispose();
 
+            if (scene_thumbnail != null)
+                scene_thumbnail.Dispose();
+
             //snap:
             if (snap_surface != null)
                 snap_surface.Dispose();
@@ -1417,6 +1425,8 @@ namespace TDCG
             //snap:
             snap_texture = new Texture(device, 1024, 1024, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             snap_surface = snap_texture.GetSurfaceLevel(0);
+
+            scene_thumbnail.Create(device);
 
             lamp_renderer.Create(dev_rect);
             node_renderer.Create(dev_rect);
@@ -1734,6 +1744,7 @@ namespace TDCG
                     if (sprite_enabled)
                         Snap();
                     DrawFigure();
+                    scene_thumbnail.Snap(dev_surface);
                     if (sprite_enabled)
                         DrawModeSprite();
                     break;
@@ -1764,6 +1775,7 @@ namespace TDCG
                     Blit(dev_surface, occ_surface); // from:dev to:occ
                     DrawGaussianBlur(DiffusionConfig.Extent); // gb in:occ out:occ
                     DrawScreen(); // screen in:amb occ out:dev
+                    scene_thumbnail.Snap(dev_surface);
                     break;
                 case RenderMode.Shadow:
                     DrawFigure();
@@ -1777,6 +1789,7 @@ namespace TDCG
                     DrawFigure();
                     Blit(dev_surface, amb_surface); // from:dev to:amb
                     DrawMain(); // main in:amb occ out:dev
+                    scene_thumbnail.Snap(dev_surface);
                     break;
             }
 

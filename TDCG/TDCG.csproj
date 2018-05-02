@@ -57,6 +57,7 @@
     <Compile Include="Pole.cs" />
     <Compile Include="PoseMode.cs" />
     <Compile Include="SceneMode.cs" />
+    <Compile Include="SceneThumbnail.cs" />
     <Compile Include="Screen.cs" />
     <Compile Include="Shader.cs" />
     <Compile Include="SimpleCamera.cs" />
