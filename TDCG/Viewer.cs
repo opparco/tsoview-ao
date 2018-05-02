@@ -968,9 +968,8 @@ namespace TDCG
                 camera.Translation = save_data.CameraDescription.Translation;
                 camera.Angle = save_data.CameraDescription.Angle;
             }
-            if (save_data.FigureList.Count == 0)
+            if (save_data.type == "POSE")
             {
-                //POSE
                 Figure fig;
                 if (TryGetFigure(out fig))
                 {
@@ -980,9 +979,51 @@ namespace TDCG
                     need_render = true;
                 }
             }
-            else
+            if (save_data.type == "HSAV")
             {
-                //HSAV or SCNE
+                Figure fig = save_data.FigureList[0];
+                fig.OpenTSOFile(device, effect);
+
+                int len = FigureList.Count;
+                int idx = sprite_renderer.scene_mode.SelectedIdx;
+
+                if (!append && idx < len)
+                {
+                    //更新する
+                    //元のライトとポーズを維持する
+                    Figure orig_fig = FigureList[idx];
+                    fig.LampRotation = orig_fig.LampRotation;
+                    fig.Tmo = orig_fig.Tmo;
+
+                    FigureList[idx] = fig;
+                    fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
+                    {
+                        if (GetSelectedFigure() == sender)
+                            need_render = true;
+                    };
+                    fig.ComputeClothed();
+                    fig.UpdateNodeMapAndBoneMatrices();
+
+                    need_render = true;
+                }
+                else
+                {
+                    //追加する
+                    //todo: override List#Add
+                    FigureList.Add(fig);
+                    fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
+                    {
+                        if (GetSelectedFigure() == sender)
+                            need_render = true;
+                    };
+                    fig.ComputeClothed();
+                    fig.UpdateNodeMapAndBoneMatrices();
+
+                    SetFigureIndex(len);
+                }
+            }
+            if (save_data.type == "SCNE")
+            {
                 if (!append)
                     ClearFigureList();
 
