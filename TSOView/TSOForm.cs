@@ -24,6 +24,7 @@ namespace TSOView
         internal int keyFigureForm = (int)Keys.G;
         internal int keyConfigForm = (int)Keys.H;
         internal int keyUndo = (int)Keys.Z;
+        internal int keySave = (int)Keys.Enter;
 
         internal Viewer viewer = null;
         internal FigureForm figureForm = null;
@@ -200,6 +201,11 @@ namespace TSOView
             {
                 keysEnabled[keyUndo] = false;
                 viewer.Undo();
+            }
+            if (keysEnabled[keySave] && keys[keySave])
+            {
+                keysEnabled[keySave] = false;
+                viewer.SaveSceneToFile();
             }
 
             float keyL = 0.0f;

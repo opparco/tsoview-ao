@@ -113,10 +113,9 @@ namespace TDCG
             };
 
             png.Load(dest_path + @"\thumbnail.png");
-            string dest_file = Path.ChangeExtension(dest_path, @".new" + Path.GetExtension(dest_path) + @".png");
-            Console.WriteLine("Save File: " + dest_file);
+            string dest_file = Path.ChangeExtension(dest_path, Path.GetExtension(dest_path) + @".png");
+            Debug.WriteLine("Save File: " + dest_file);
             png.Save(dest_file);
         }
-
     }
 }

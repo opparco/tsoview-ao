@@ -603,6 +603,25 @@ namespace TDCG
             }
         }
 
+        public static string GetScenePath()
+        {
+            return Path.Combine(Application.StartupPath, @"scene.tdcgpose");
+        }
+
+        public void SaveSceneToFile()
+        {
+            PNGSaveData save_data = new PNGSaveData();
+
+            PNGSaveCameraDescription camera_desc = new PNGSaveCameraDescription();
+            camera_desc.Translation = camera.Translation;
+            camera_desc.Angle = camera.Angle;
+            save_data.CameraDescription = camera_desc;
+
+            save_data.FigureList = FigureList;
+            PNGSceneSaveWriter writer = new PNGSceneSaveWriter();
+            writer.Save(GetScenePath(), save_data);
+        }
+
         // コントロールのサイズを変更したときに実行するハンドラ
         protected virtual void form_OnResize(object sender, EventArgs e)
         {
