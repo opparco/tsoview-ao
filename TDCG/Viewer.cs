@@ -1570,6 +1570,132 @@ namespace TDCG
             return nodes;
         }
 
+        void SnapTsosOnModelMode()
+        {
+            device.SetRenderState(RenderStates.AlphaBlendEnable, true);
+
+            device.SetRenderTarget(0, dev_surface);
+            device.DepthStencilSurface = dev_zbuf;
+            //device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
+
+            device.VertexDeclaration = vd;
+            effect.SetValue(handle_Ambient, Ambient);
+            effect.SetValue(handle_HohoAlpha, HohoAlpha);
+            effect.SetValue(handle_UVSCR, UVSCR());
+
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                foreach (TSOFile tso in fig.TsoList)
+                {
+                    int idx = tso.Row;
+
+                    device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
+
+                    DrawTSO(fig, tso);
+                    SnapTSO(idx);
+                }
+            }
+        }
+
+        void SnapFiguresOnSceneMode()
+        {
+            device.SetRenderState(RenderStates.AlphaBlendEnable, true);
+
+            device.SetRenderTarget(0, dev_surface);
+            device.DepthStencilSurface = dev_zbuf;
+            //device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
+
+            device.VertexDeclaration = vd;
+            effect.SetValue(handle_Ambient, Ambient);
+            effect.SetValue(handle_HohoAlpha, HohoAlpha);
+            effect.SetValue(handle_UVSCR, UVSCR());
+
+            int idx = 0;
+            foreach (Figure fig in FigureList)
+            {
+                device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
+
+                DrawFigure(fig);
+                SnapFigure(idx);
+
+                idx++;
+            }
+        }
+
+        void Snap()
+        {
+            string modename = sprite_renderer.CurrentModeName;
+            if (modename == "MODEL")
+                SnapTsosOnModelMode();
+            if (modename == "SCENE")
+                SnapFiguresOnSceneMode();
+        }
+
+        void DrawSpritesOnModelMode()
+        {
+            DrawSpriteSnapTSO();
+            if (swap_row != -1)
+                sprite_renderer.model_mode.DrawDottedSprite(sprite_renderer.model_mode.SelectedIdx);
+            else
+                sprite_renderer.model_mode.DrawCursorSprite(sprite_renderer.model_mode.SelectedIdx);
+        }
+
+        void DrawSpritesOnPoseMode()
+        {
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                device.SetRenderState(RenderStates.AlphaBlendEnable, true);
+
+                device.SetRenderTarget(0, dev_surface);
+                device.DepthStencilSurface = dev_zbuf;
+                //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
+
+                Matrix world;
+                fig.GetWorldMatrix(out world);
+
+                node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
+                TMONode node = fig.Tmo.FindNodeByName("face_oya");
+                if (node != null)
+                {
+                    Vector3 position = node.GetWorldPosition();
+                    position.Y += 5.0f;
+                    lamp_renderer.Render(fig, ref position, ref world);
+                }
+            }
+        }
+
+        void DrawSpritesOnSceneMode()
+        {
+            DrawSpriteSnapFigure();
+            if (swap_idx != -1)
+                sprite_renderer.scene_mode.DrawDottedSprite(sprite_renderer.scene_mode.SelectedIdx);
+            else
+                sprite_renderer.scene_mode.DrawCursorSprite(sprite_renderer.scene_mode.SelectedIdx);
+        }
+
+        void DrawModeSprite()
+        {
+            {
+                device.SetRenderState(RenderStates.AlphaBlendEnable, true);
+
+                device.SetRenderTarget(0, dev_surface);
+                device.DepthStencilSurface = dev_zbuf;
+                //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
+
+                sprite_renderer.Render();
+            }
+
+            string modename = sprite_renderer.CurrentModeName;
+            if (modename == "MODEL")
+                DrawSpritesOnModelMode();
+            if (modename == "POSE")
+                DrawSpritesOnPoseMode();
+            if (modename == "SCENE")
+                DrawSpritesOnSceneMode();
+        }
+
         /// <summary>
         /// シーンをレンダリングします。
         /// </summary>
@@ -1588,112 +1714,9 @@ namespace TDCG
             switch (RenderMode)
             {
                 case RenderMode.Ambient:
-                    string modename = sprite_renderer.CurrentModeName;
-                    if (modename == "MODEL")
-                    {
-                        device.SetRenderState(RenderStates.AlphaBlendEnable, true);
-
-                        device.SetRenderTarget(0, dev_surface);
-                        device.DepthStencilSurface = dev_zbuf;
-                        //device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
-
-                        device.VertexDeclaration = vd;
-                        effect.SetValue(handle_Ambient, Ambient);
-                        effect.SetValue(handle_HohoAlpha, HohoAlpha);
-                        effect.SetValue(handle_UVSCR, UVSCR());
-
-                        Figure fig;
-                        if (TryGetFigure(out fig))
-                        {
-                            foreach (TSOFile tso in fig.TsoList)
-                            {
-                                int idx = tso.Row;
-
-                                device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
-
-                                DrawTSO(fig, tso);
-                                SnapTSO(idx);
-                            }
-                        }
-                    }
-
-                    if (modename == "SCENE")
-                    {
-                        device.SetRenderState(RenderStates.AlphaBlendEnable, true);
-
-                        device.SetRenderTarget(0, dev_surface);
-                        device.DepthStencilSurface = dev_zbuf;
-                        //device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
-
-                        device.VertexDeclaration = vd;
-                        effect.SetValue(handle_Ambient, Ambient);
-                        effect.SetValue(handle_HohoAlpha, HohoAlpha);
-                        effect.SetValue(handle_UVSCR, UVSCR());
-
-                        int idx = 0;
-                        foreach (Figure fig in FigureList)
-                        {
-                            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
-
-                            DrawFigure(fig);
-                            SnapFigure(idx);
-
-                            idx++;
-                        }
-                    }
-
+                    Snap();
                     DrawFigure();
-
-                    {
-                        device.SetRenderState(RenderStates.AlphaBlendEnable, true);
-
-                        device.SetRenderTarget(0, dev_surface);
-                        device.DepthStencilSurface = dev_zbuf;
-                        //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
-
-                        sprite_renderer.Render();
-                    }
-
-                    if (modename == "MODEL")
-                    {
-                        DrawSpriteSnapTSO();
-                        if (swap_row != -1)
-                            sprite_renderer.model_mode.DrawDottedSprite(sprite_renderer.model_mode.SelectedIdx);
-                        else
-                            sprite_renderer.model_mode.DrawCursorSprite(sprite_renderer.model_mode.SelectedIdx);
-                    }
-                    if (modename == "POSE")
-                    {
-                        Figure fig;
-                        if (TryGetFigure(out fig))
-                        {
-                            device.SetRenderState(RenderStates.AlphaBlendEnable, true);
-
-                            device.SetRenderTarget(0, dev_surface);
-                            device.DepthStencilSurface = dev_zbuf;
-                            //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
-
-                            Matrix world;
-                            fig.GetWorldMatrix(out world);
-
-                            node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
-                            TMONode node = fig.Tmo.FindNodeByName("face_oya");
-                            if (node != null)
-                            {
-                                Vector3 position = node.GetWorldPosition();
-                                position.Y += 5.0f;
-                                lamp_renderer.Render(fig, ref position, ref world);
-                            }
-                        }
-                    }
-                    if (modename == "SCENE")
-                    {
-                        DrawSpriteSnapFigure();
-                        if (swap_idx != -1)
-                            sprite_renderer.scene_mode.DrawDottedSprite(sprite_renderer.scene_mode.SelectedIdx);
-                        else
-                            sprite_renderer.scene_mode.DrawCursorSprite(sprite_renderer.scene_mode.SelectedIdx);
-                    }
+                    DrawModeSprite();
                     break;
                 case RenderMode.DepthMap:
                     DrawDepthNormalMap();
