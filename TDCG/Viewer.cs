@@ -431,6 +431,58 @@ namespace TDCG
             }
         }
 
+        void DoSpriteOnLMB()
+        {
+            string modename = sprite_renderer.CurrentModeName;
+            if (modename == "MODEL")
+            {
+                if (swap_row != -1)
+                {
+                    int row = sprite_renderer.model_mode.SelectedIdx;
+                    if (row != swap_row)
+                        SwapTSOFileRow(swap_row, row);
+                    swap_row = -1;
+                }
+                if (TSOFileSelectEvent != null)
+                    TSOFileSelectEvent(this, EventArgs.Empty);
+            }
+            if (modename == "POSE")
+            {
+                string nodename = sprite_renderer.pose_mode.SelectedNodeName;
+                if (nodename != null)
+                {
+                    Figure fig;
+                    if (TryGetFigure(out fig))
+                        selected_node = fig.Tmo.FindNodeByName(nodename);
+                }
+            }
+            if (modename == "SCENE")
+            {
+                if (swap_idx != -1)
+                {
+                    int idx = sprite_renderer.scene_mode.SelectedIdx;
+                    if (idx != swap_idx)
+                        SwapFigureIdx(swap_idx, idx);
+                    swap_idx = -1;
+                }
+                if (FigureSelectEvent != null)
+                    FigureSelectEvent(this, EventArgs.Empty);
+            }
+        }
+
+        void DoSpriteOnRMB()
+        {
+            string modename = sprite_renderer.CurrentModeName;
+            if (modename == "MODEL")
+            {
+                swap_row = sprite_renderer.model_mode.SelectedIdx;
+            }
+            if (modename == "SCENE")
+            {
+                swap_idx = sprite_renderer.scene_mode.SelectedIdx;
+            }
+        }
+
         /// マウスボタンを押したときに実行するハンドラ
         /// @event: TSOFileSelectEvent
         /// @event: FigureSelectEvent
@@ -451,43 +503,9 @@ namespace TDCG
                 case MouseButtons.Left:
                     Debug.WriteLine("form_OnMouseDown LMB");
 
-                    if (sprite_renderer.Update(sprite_p))
+                    if (sprite_enabled && sprite_renderer.Update(sprite_p))
                     {
-                        string modename = sprite_renderer.CurrentModeName;
-                        if (modename == "MODEL")
-                        {
-                            if (swap_row != -1)
-                            {
-                                int row = sprite_renderer.model_mode.SelectedIdx;
-                                if (row != swap_row)
-                                    SwapTSOFileRow(swap_row, row);
-                                swap_row = -1;
-                            }
-                            if (TSOFileSelectEvent != null)
-                                TSOFileSelectEvent(this, EventArgs.Empty);
-                        }
-                        if (modename == "POSE")
-                        {
-                            string nodename = sprite_renderer.pose_mode.SelectedNodeName;
-                            if (nodename != null)
-                            {
-                                Figure fig;
-                                if (TryGetFigure(out fig))
-                                    selected_node = fig.Tmo.FindNodeByName(nodename);
-                            }
-                        }
-                        if (modename == "SCENE")
-                        {
-                            if (swap_idx != -1)
-                            {
-                                int idx = sprite_renderer.scene_mode.SelectedIdx;
-                                if (idx != swap_idx)
-                                    SwapFigureIdx(swap_idx, idx);
-                                swap_idx = -1;
-                            }
-                            if (FigureSelectEvent != null)
-                                FigureSelectEvent(this, EventArgs.Empty);
-                        }
+                        DoSpriteOnLMB();
                         need_render = true;
                     }
                     else if (CloseToLamp(screen_p))
@@ -509,17 +527,9 @@ namespace TDCG
                 case MouseButtons.Right:
                     Debug.WriteLine("form_OnMouseDown RMB");
 
-                    if (sprite_renderer.Update(sprite_p))
+                    if (sprite_enabled && sprite_renderer.Update(sprite_p))
                     {
-                        string modename = sprite_renderer.CurrentModeName;
-                        if (modename == "MODEL")
-                        {
-                            swap_row = sprite_renderer.model_mode.SelectedIdx;
-                        }
-                        if (modename == "SCENE")
-                        {
-                            swap_idx = sprite_renderer.scene_mode.SelectedIdx;
-                        }
+                        DoSpriteOnRMB();
                         need_render = true;
                     }
                     else if (CloseToSelectedNode(screen_p))
@@ -1494,11 +1504,18 @@ namespace TDCG
             Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
         }
 
+        bool sprite_enabled = true;
         /// <summary>
         /// スプライトの有無
         /// </summary>
-        [Obsolete("use RenderMode")]
-        public bool SpriteShown = false;
+        public bool SpriteEnabled { get { return sprite_enabled; } }
+
+        /// スプライトの有無を切り替えます。
+        public void SwitchSpriteEnabled()
+        {
+            sprite_enabled = ! sprite_enabled;
+            need_render = true;
+        }
 
         public void Update()
         {
@@ -1714,9 +1731,11 @@ namespace TDCG
             switch (RenderMode)
             {
                 case RenderMode.Ambient:
-                    Snap();
+                    if (sprite_enabled)
+                        Snap();
                     DrawFigure();
-                    DrawModeSprite();
+                    if (sprite_enabled)
+                        DrawModeSprite();
                     break;
                 case RenderMode.DepthMap:
                     DrawDepthNormalMap();
