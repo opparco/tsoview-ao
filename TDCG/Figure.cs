@@ -27,10 +27,12 @@ public class Figure : IDisposable
     /// </summary>
     public static bool SliderMatrixEnabled = true;
 
+    SliderMatrix slider_matrix = null;
+
     /// <summary>
     /// スライダ変形行列
     /// </summary>
-    public SliderMatrix slider_matrix = null;
+    public SliderMatrix SliderMatrix { get { return slider_matrix; } }
 
     bool clothed = false;
     /// 着衣扱いか
