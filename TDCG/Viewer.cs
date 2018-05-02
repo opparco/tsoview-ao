@@ -445,8 +445,8 @@ namespace TDCG
                         SwapTSOFileRow(swap_row, row);
                     swap_row = -1;
                 }
-                if (TSOFileSelectEvent != null)
-                    TSOFileSelectEvent(this, EventArgs.Empty);
+                if (TSOSelectEvent != null)
+                    TSOSelectEvent(this, EventArgs.Empty);
             }
             if (modename == "POSE")
             {
@@ -486,8 +486,6 @@ namespace TDCG
         }
 
         /// マウスボタンを押したときに実行するハンドラ
-        /// @event: TSOFileSelectEvent
-        /// @event: FigureSelectEvent
         protected virtual void form_OnMouseDown(object sender, MouseEventArgs e)
         {
             Debug.WriteLine("enter form_OnMouseDown");
@@ -693,12 +691,22 @@ namespace TDCG
         /// <summary>
         /// tso 選択時に呼び出されるハンドラ
         /// </summary>
-        public event EventHandler TSOFileSelectEvent;
+        public event EventHandler TSOSelectEvent;
 
         /// <summary>
         /// フィギュア選択時に呼び出されるハンドラ
         /// </summary>
         public event EventHandler FigureSelectEvent;
+
+        /// <summary>
+        /// ConfigForm を起動するために呼び出されるハンドラ
+        /// </summary>
+        public event EventHandler ConfigFormEvent;
+
+        /// <summary>
+        /// FigureForm を起動するために呼び出されるハンドラ
+        /// </summary>
+        public event EventHandler FigureFormEvent;
 
         /// <summary>
         /// フィギュアを選択します。
@@ -1063,6 +1071,24 @@ namespace TDCG
 
         Manipulator manipulator;
 
+        // キー入力を保持
+        bool[] keys = new bool[256];
+        bool[] keysEnabled = new bool[256];
+
+        int keyFigure = (int)Keys.Tab;
+        int keyDelete = (int)Keys.Delete;
+        int keyCamera1 = (int)Keys.D1;
+        int keyCamera2 = (int)Keys.D2;
+        int keyCamera3 = (int)Keys.D3;
+        int keyCamera4 = (int)Keys.D4;
+        int keyCamera5 = (int)Keys.D5;
+        int keyCenter = (int)Keys.F;
+        int keyFigureForm = (int)Keys.G;
+        int keyConfigForm = (int)Keys.H;
+        int keyUndo = (int)Keys.Z;
+        int keySave = (int)Keys.Enter;
+        int keySprite = (int)Keys.Home;
+
         /// <summary>
         /// world行列
         /// </summary>
@@ -1086,6 +1112,13 @@ namespace TDCG
         {
             this.shadow_map_enabled = shadow_map_enabled;
             SetControl(control);
+
+            for (int i = 0; i < keysEnabled.Length; i++)
+            {
+                keysEnabled[i] = true;
+            }
+            control.KeyDown += new KeyEventHandler(form_OnKeyDown);
+            control.KeyUp += new KeyEventHandler(form_OnKeyUp);
 
             control.MouseDown += new MouseEventHandler(form_OnMouseDown);
             control.MouseMove += new MouseEventHandler(form_OnMouseMove);
@@ -1568,8 +1601,121 @@ namespace TDCG
             need_render = true;
         }
 
+        void form_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if ((int)e.KeyCode < keys.Length)
+            {
+                keys[(int)e.KeyCode] = true;
+            }
+        }
+
+        void form_OnKeyUp(object sender, KeyEventArgs e)
+        {
+            if ((int)e.KeyCode < keys.Length)
+            {
+                keys[(int)e.KeyCode] = false;
+                keysEnabled[(int)e.KeyCode] = true;
+            }
+        }
+
         public void Update()
         {
+            if (keysEnabled[keyConfigForm] && keys[keyConfigForm])
+            {
+                keys[keyConfigForm] = false;
+                keysEnabled[keyConfigForm] = true;
+                if (ConfigFormEvent != null)
+                    ConfigFormEvent(this, EventArgs.Empty);
+            }
+            if (keysEnabled[keyFigure] && keys[keyFigure])
+            {
+                keysEnabled[keyFigure] = false;
+                this.NextFigure();
+            }
+            if (keysEnabled[keyDelete] && keys[keyDelete])
+            {
+                keysEnabled[keyDelete] = false;
+
+                if (keys[(int)Keys.ControlKey])
+                    this.ClearFigureList();
+                else
+                    this.RemoveSelectedFigure();
+            }
+            if (keysEnabled[keyCamera1] && keys[keyCamera1])
+            {
+                keysEnabled[keyCamera1] = false;
+                this.LoadCameraPreset(1);
+            }
+            if (keysEnabled[keyCamera2] && keys[keyCamera2])
+            {
+                keysEnabled[keyCamera2] = false;
+                this.LoadCameraPreset(2);
+            }
+            if (keysEnabled[keyCamera3] && keys[keyCamera3])
+            {
+                keysEnabled[keyCamera3] = false;
+                this.LoadCameraPreset(3);
+            }
+            if (keysEnabled[keyCamera4] && keys[keyCamera4])
+            {
+                keysEnabled[keyCamera4] = false;
+                this.LoadCameraPreset(4);
+            }
+            if (keysEnabled[keyCamera5] && keys[keyCamera5])
+            {
+                keysEnabled[keyCamera5] = false;
+                this.LoadCameraPreset(5);
+            }
+            if (keysEnabled[keyCenter] && keys[keyCenter])
+            {
+                keysEnabled[keyCenter] = false;
+                this.SetCenterToSelectedNode();
+            }
+            if (keysEnabled[keyFigureForm] && keys[keyFigureForm])
+            {
+                keys[keyFigureForm] = false;
+                keysEnabled[keyFigureForm] = true;
+                if (FigureFormEvent != null)
+                    FigureFormEvent(this, EventArgs.Empty);
+            }
+            if (keysEnabled[keyUndo] && keys[keyUndo])
+            {
+                keysEnabled[keyUndo] = false;
+                this.Undo();
+            }
+            if (keysEnabled[keySave] && keys[keySave])
+            {
+                keysEnabled[keySave] = false;
+                this.SaveSceneToFile();
+            }
+            if (keysEnabled[keySprite] && keys[keySprite])
+            {
+                keysEnabled[keySprite] = false;
+                this.SwitchSpriteEnabled();
+            }
+
+            float keyL = 0.0f;
+            float keyR = 0.0f;
+            float keyU = 0.0f;
+            float keyD = 0.0f;
+            float keyPush = 0.0f;
+            float keyPull = 0.0f;
+
+            if (keys[(int)Keys.Left])
+                keyL = 2.0f;
+            if (keys[(int)Keys.Right])
+                keyR = 2.0f;
+            if (keys[(int)Keys.PageUp])
+                keyU = 2.0f;
+            if (keys[(int)Keys.PageDown])
+                keyD = 2.0f;
+            if (keys[(int)Keys.Up])
+                keyPush = 1.0f;
+            if (keys[(int)Keys.Down])
+                keyPull = 1.0f;
+
+            camera.Move(keyR - keyL, keyU - keyD, keyPull - keyPush);
+
             if (camera.NeedUpdate)
             {
                 camera.Update();
