@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.ComponentModel;
@@ -803,20 +804,30 @@ namespace TDCG
             LoadTSOFile(source_stream, null);
         }
 
-        byte DetectRowFromFileName(string file)
+        static int DetectRowFromFileName(string file)
         {
+            int row = 0x19;
             string filename = Path.GetFileNameWithoutExtension(file);
-            if (filename.Length == 2)
+            switch (filename.Length)
             {
-                //ex. filename = "00"
+                case 2:
+                    //ex. filename = "00"
+                    row = int.Parse(filename, NumberStyles.AllowHexSpecifier);
+                    break;
+                case 12:
+                    //ex. filename = "N001BODY_A00"
+                    //A: 0x00 .. Z: 0x19
+                    //0: 0x1A .. 3: 0x1D
+                    char c = filename[9];
+                    byte b = (byte)c;
+                    //Console.WriteLine("b: {0:X2}", b);
+                    if (b >= 0x41 && b < 0x5B)
+                        row = b - 0x41;
+                    else if (b >= 0x30 && b < 0x34)
+                        row = b - 0x30 + 0x1A;
+                    break;
             }
-            if (filename.Length == 12)
-            {
-                //ex. filename = "N001BODY_A00"
-                //A: 0x00 .. Z: 0x19
-                //0: 0x1A .. 3: 0x1D
-            }
-            return 0x19;
+            return row;
         }
 
         //同じrowを持つtsoを置き換える。
@@ -830,7 +841,7 @@ namespace TDCG
             else
             {
                 byte row = tso.Row;
-                int i = -1;
+                int i = 0;
                 foreach (TSOFile _tso in fig.TsoList)
                 {
                     if (row == _tso.Row)
@@ -856,7 +867,7 @@ namespace TDCG
             try
             {
                 tso.Load(source_stream);
-                tso.Row = DetectRowFromFileName(file);
+                tso.Row = (byte)DetectRowFromFileName(file);
                 tso.FileName = file != null ? Path.GetFileNameWithoutExtension(file) : null;
             }
             catch (Exception ex)
