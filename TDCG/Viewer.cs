@@ -708,9 +708,17 @@ namespace TDCG
             pose_command = null;
         }
 
-        public static string GetScenePath()
+        public static string GetThumbnailFileName()
         {
-            return Path.Combine(Application.StartupPath, @"scene.tdcgpose");
+            return Path.Combine(Application.StartupPath, @"scene.tdcgpose\thumbnail.png");
+        }
+
+        public static string GetSceneFileName()
+        {
+            DateTime ti = DateTime.Now;
+            CultureInfo ci = CultureInfo.InvariantCulture;
+            string ti_string = ti.ToString("yyyyMMdd-hhmmss-fff", ci);
+            return ti_string + ".tdcgpose.png";
         }
 
         public void SaveSceneToFile()
@@ -724,10 +732,13 @@ namespace TDCG
 
             save_data.FigureList = FigureList;
 
-            scene_thumbnail.SaveToFile();
+            string thumbnail_file = GetThumbnailFileName();
+            string dest_file = GetSceneFileName();
+
+            scene_thumbnail.SaveToFile(thumbnail_file);
 
             PNGSceneSaveWriter writer = new PNGSceneSaveWriter();
-            writer.Save(GetScenePath(), save_data);
+            writer.Save(thumbnail_file, dest_file, save_data);
         }
 
         // コントロールのサイズを変更したときに実行するハンドラ
@@ -2825,6 +2836,44 @@ namespace TDCG
             using (Surface sf = device.GetBackBuffer(0, 0, BackBufferType.Mono))
                 if (sf != null)
                     SurfaceLoader.Save(file, ImageFileFormat.Png, sf);
+        }
+
+        string GetSaveFileName(string type)
+        {
+            DateTime ti = DateTime.Now;
+            CultureInfo ci = CultureInfo.InvariantCulture;
+            string ti_string = ti.ToString("yyyyMMdd-hhmmss-fff", ci);
+            return string.Format("{0}-{1}.png", ti_string, type);
+        }
+
+        public void SaveToPng()
+        {
+            string type = "none";
+            switch (RenderMode)
+            {
+                case RenderMode.Main:
+                    type = "ao";
+                    break;
+                case RenderMode.Ambient:
+                    type = "amb";
+                    break;
+                case RenderMode.DepthMap:
+                    type = "d";
+                    break;
+                case RenderMode.NormalMap:
+                    type = "n";
+                    break;
+                case RenderMode.Occlusion:
+                    type = "o";
+                    break;
+                case RenderMode.Diffusion:
+                    type = "df";
+                    break;
+                case RenderMode.Shadow:
+                    type = "shadow";
+                    break;
+            }
+            SaveToPng(GetSaveFileName(type));
         }
 
         /// <summary>

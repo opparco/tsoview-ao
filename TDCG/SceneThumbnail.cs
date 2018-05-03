@@ -45,14 +45,9 @@ namespace TDCG
             device.StretchRectangle(dev_surface, square_rect, this.surface, new Rectangle(0, 0, 128, 128), TextureFilter.Point);
         }
 
-        public static string GetFileName()
+        public void SaveToFile(string thumbnail_file)
         {
-            return Path.Combine(Application.StartupPath, @"scene.tdcgpose\thumbnail.png");
-        }
-
-        public void SaveToFile()
-        {
-            SurfaceLoader.Save(GetFileName(), ImageFileFormat.Png, this.surface);
+            SurfaceLoader.Save(thumbnail_file, ImageFileFormat.Png, this.surface);
         }
     }
 }

@@ -102,7 +102,7 @@ namespace TDCG
             }
         }
 
-        public void Save(string dest_path, PNGSaveData save_data)
+        public void Save(string thumbnail_file, string dest_file, PNGSaveData save_data)
         {
             PNGFile png = new PNGFile();
 
@@ -112,8 +112,7 @@ namespace TDCG
                 WriteScne(pw, save_data);
             };
 
-            png.Load(dest_path + @"\thumbnail.png");
-            string dest_file = Path.ChangeExtension(dest_path, Path.GetExtension(dest_path) + @".png");
+            png.Load(thumbnail_file);
             Debug.WriteLine("Save File: " + dest_file);
             png.Save(dest_file);
         }

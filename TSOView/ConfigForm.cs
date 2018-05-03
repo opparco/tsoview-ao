@@ -282,47 +282,9 @@ namespace TSOView
             DiffusionConfig.ChangeExtent += new EventHandler(tbDFExtent_ConfigChanged);
         }
 
-        string GetSaveFileName(string type)
-        {
-            DateTime ti = DateTime.Now;
-            CultureInfo ci = CultureInfo.InvariantCulture;
-            string ti_string = ti.ToString("yyyyMMdd-hhmmss-fff", ci);
-            return string.Format("{0}-{1}.png", ti_string, type);
-        }
-
-        void SaveToPng()
-        {
-            string type = "none";
-            switch (viewer.RenderMode)
-            {
-                case RenderMode.Main:
-                    type = "ao";
-                    break;
-                case RenderMode.Ambient:
-                    type = "amb";
-                    break;
-                case RenderMode.DepthMap:
-                    type = "d";
-                    break;
-                case RenderMode.NormalMap:
-                    type = "n";
-                    break;
-                case RenderMode.Occlusion:
-                    type = "o";
-                    break;
-                case RenderMode.Diffusion:
-                    type = "df";
-                    break;
-                case RenderMode.Shadow:
-                    type = "shadow";
-                    break;
-            }
-            viewer.SaveToPng(GetSaveFileName(type));
-        }
-
         private void btnCapture_Click(object sender, EventArgs e)
         {
-            SaveToPng();
+            viewer.SaveToPng();
         }
     }
 }
