@@ -514,7 +514,7 @@ namespace TDCG
                     }
                     else if (CloseToSelectedNode(screen_p))
                     {
-                        BeginNodeCommand(selected_node);
+                        BeginSelectedNodeCommand();
                         manipulator.BeginRotateNode(selected_node);
                     }
                     else if (SelectNode(screen_p))
@@ -535,7 +535,7 @@ namespace TDCG
                     }
                     else if (CloseToSelectedNode(screen_p))
                     {
-                        BeginNodeCommand(selected_node);
+                        BeginSelectedNodeCommand();
                         manipulator.BeginGrabNode(selected_node);
                     }
                     else
@@ -597,12 +597,12 @@ namespace TDCG
                 case MouseButtons.Left:
                     manipulator.EndRotateLamp();
                     manipulator.EndRotateNode();
-                    EndNodeCommand();
+                    EndSelectedNodeCommand();
                     manipulator.EndRotateCamera();
                     break;
                 case MouseButtons.Right:
                     manipulator.EndGrabNode();
-                    EndNodeCommand();
+                    EndSelectedNodeCommand();
                     manipulator.EndGrabCamera();
                     break;
             }
@@ -610,24 +610,102 @@ namespace TDCG
             Debug.WriteLine("leave form_OnMouseUp");
         }
 
-        public void BeginNodeCommand(TMONode node)
+        /// 操作リスト
+        public List<ICommand> commands = new List<ICommand>();
+        int command_id = 0;
+
+        /// 操作を消去します。
+        public void ClearCommands()
         {
+            commands.Clear();
+            command_id = 0;
         }
 
-        public void EndNodeCommand()
+        /// ひとつ前の操作による変更を元に戻せるか。
+        public bool CanUndo()
         {
+            return (command_id > 0);
         }
 
-        public void BeginPoseCommand(Figure fig)
-        {
-        }
-
-        public void EndPoseCommand()
-        {
-        }
-
+        /// ひとつ前の操作による変更を元に戻します。
         public void Undo()
         {
+            if (!CanUndo())
+                return;
+
+            command_id--;
+            Undo(commands[command_id]);
+        }
+
+        /// 指定操作による変更を元に戻します。
+        public void Undo(ICommand command)
+        {
+            command.Undo();
+        }
+
+        /// ひとつ前の操作による変更をやり直せるか。
+        public bool CanRedo()
+        {
+            return (command_id < commands.Count);
+        }
+
+        /// ひとつ前の操作による変更をやり直します。
+        public void Redo()
+        {
+            if (!CanRedo())
+                return;
+
+            Redo(commands[command_id]);
+            command_id++;
+        }
+
+        /// 指定操作による変更をやり直します。
+        public void Redo(ICommand command)
+        {
+            command.Redo();
+        }
+
+        /// 指定操作を実行します。
+        public void Execute(ICommand command)
+        {
+            if (command.Execute())
+            {
+                if (command_id == commands.Count)
+                    commands.Add(command);
+                else
+                    commands[command_id] = command;
+                command_id++;
+            }
+        }
+
+        NodeCommand node_command = null;
+
+        public void BeginSelectedNodeCommand()
+        {
+            node_command = new NodeCommand(selected_node);
+        }
+
+        public void EndSelectedNodeCommand()
+        {
+            if (node_command != null)
+                Execute(node_command);
+
+            node_command = null;
+        }
+
+        PoseCommand pose_command = null;
+
+        public void BeginSelectedFigurePoseCommand()
+        {
+            pose_command = new PoseCommand(GetSelectedFigure());
+        }
+
+        public void EndSelectedFigurePoseCommand()
+        {
+            if (pose_command != null)
+                Execute(pose_command);
+
+            pose_command = null;
         }
 
         public static string GetScenePath()
@@ -1697,65 +1775,70 @@ namespace TDCG
             }
         }
 
-        public void ResetNode()
+        public bool CanResetSelectedNode()
         {
-            Figure fig;
-            if (TryGetFigure(out fig))
+            //TODO: selected_node should not be null
+            if (selected_node == null)
+                return false;
+
+            Figure fig = GetSelectedFigure();
+            if (fig == null)
+                return false;
+
+            if (fig.TsoList.Count == 0)
+                return false;
+
+            return true;
+        }
+
+        public void ResetSelectedNode()
+        {
+            Figure fig = GetSelectedFigure();
+            TSOFile tso = fig.TsoList[0];
+            TSONode tso_node;
+            if (tso.nodemap.TryGetValue(selected_node.Name, out tso_node))
             {
-                TMONode tmo_node = selected_node;
+                selected_node.TransformationMatrix = tso_node.TransformationMatrix;
+            }
+            fig.UpdateBoneMatrices();
+        }
 
-                //TODO: selected_node should not be null
-                if (tmo_node == null)
-                    return;
+        public bool CanResetSelectedFigurePose()
+        {
+            Figure fig = GetSelectedFigure();
+            if (fig == null)
+                return false;
 
-                if (fig.TsoList.Count == 0)
-                    return;
+            if (fig.TsoList.Count == 0)
+                return false;
 
-                BeginNodeCommand(tmo_node);
+            return true;
+        }
 
-                TSOFile tso = fig.TsoList[0];
+        public void ResetSelectedFigurePose()
+        {
+            Figure fig = GetSelectedFigure();
+
+            //NOTE: W_Hipsの移動変位は維持される
+            Vector3 w_hips_translation = Vector3.Empty;
+
+            if (fig.Tmo.w_hips_node != null)
+                w_hips_translation = fig.Tmo.w_hips_node.Translation;
+
+            TSOFile tso = fig.TsoList[0];
+            foreach (TMONode tmo_node in fig.Tmo.nodes)
+            {
                 TSONode tso_node;
                 if (tso.nodemap.TryGetValue(tmo_node.Name, out tso_node))
                 {
                     tmo_node.TransformationMatrix = tso_node.TransformationMatrix;
                 }
-                EndNodeCommand();
-                fig.UpdateBoneMatrices();
             }
-        }
 
-        public void ResetPose()
-        {
-            Figure fig;
-            if (TryGetFigure(out fig))
-            {
-                if (fig.TsoList.Count == 0)
-                    return;
+            if (fig.Tmo.w_hips_node != null)
+                fig.Tmo.w_hips_node.Translation = w_hips_translation;
 
-                BeginPoseCommand(fig);
-
-                //NOTE: W_Hipsの移動変位は維持される
-                Vector3 w_hips_translation = Vector3.Empty;
-
-                if (fig.Tmo.w_hips_node != null)
-                    w_hips_translation = fig.Tmo.w_hips_node.Translation;
-
-                TSOFile tso = fig.TsoList[0];
-                foreach (TMONode tmo_node in fig.Tmo.nodes)
-                {
-                    TSONode tso_node;
-                    if (tso.nodemap.TryGetValue(tmo_node.Name, out tso_node))
-                    {
-                        tmo_node.TransformationMatrix = tso_node.TransformationMatrix;
-                    }
-                }
-
-                if (fig.Tmo.w_hips_node != null)
-                    fig.Tmo.w_hips_node.Translation = w_hips_translation;
-
-                EndPoseCommand();
-                fig.UpdateBoneMatrices();
-            }
+            fig.UpdateBoneMatrices();
         }
 
         void form_OnKeyDown(object sender, KeyEventArgs e)
@@ -1859,12 +1942,22 @@ namespace TDCG
             if (keysEnabled[keyResetNode] && keys[keyResetNode])
             {
                 keysEnabled[keyResetNode] = false;
-                this.ResetNode();
+                if (this.CanResetSelectedNode())
+                {
+                    BeginSelectedNodeCommand();
+                    this.ResetSelectedNode();
+                    EndSelectedNodeCommand();
+                }
             }
             if (keysEnabled[keyResetPose] && keys[keyResetPose])
             {
                 keysEnabled[keyResetPose] = false;
-                this.ResetPose();
+                if (this.CanResetSelectedFigurePose())
+                {
+                    BeginSelectedFigurePoseCommand();
+                    this.ResetSelectedFigurePose();
+                    EndSelectedFigurePoseCommand();
+                }
             }
 
             float keyL = 0.0f;
