@@ -65,7 +65,6 @@
     <Compile Include="Extensions\BinaryWriterMethods.cs" />
     <Compile Include="SliderMatrix.cs" />
     <Compile Include="SpriteRenderer.cs" />
-    <Compile Include="TBNFile.cs" />
     <Compile Include="TMOFile.cs" />
     <Compile Include="TSOFile.cs" />
     <Compile Include="Viewer.cs" />

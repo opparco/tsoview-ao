@@ -696,7 +696,7 @@ namespace TDCG
     /// <summary>
     /// テクスチャ
     /// </summary>
-    public class TSOTex : IDisposable
+    public class TSOTexture : IDisposable
     {
         /// <summary>
         /// 名称
@@ -1242,7 +1242,7 @@ namespace TDCG
         /// <summary>
         /// テクスチャ配列
         /// </summary>
-        public TSOTex[] textures;
+        public TSOTexture[] textures;
         /// <summary>
         /// スクリプト配列
         /// </summary>
@@ -1294,7 +1294,7 @@ namespace TDCG
             }
 
             bw.Write(textures.Length);
-            foreach (TSOTex tex in textures)
+            foreach (TSOTexture tex in textures)
                 tex.Write(bw);
 
             bw.Write(scripts.Length);
@@ -1388,10 +1388,10 @@ namespace TDCG
             ComputeOffsetMatrices();
 
             UInt32 texture_count = reader.ReadUInt32();
-            textures = new TSOTex[texture_count];
+            textures = new TSOTexture[texture_count];
             for (int i = 0; i < texture_count; i++)
             {
-                textures[i] = new TSOTex();
+                textures[i] = new TSOTexture();
                 textures[i].Read(reader);
             }
 
@@ -1479,7 +1479,7 @@ namespace TDCG
 
         private EffectHandle handle_ShadeTex_texture;
         private EffectHandle handle_ColorTex_texture;
-        internal Dictionary<string, TSOTex> texmap;
+        internal Dictionary<string, TSOTexture> texmap;
 
         private EffectHandle handle_LightDir;
 
@@ -1497,9 +1497,9 @@ namespace TDCG
             foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
                 sub_mesh.WriteBuffer(device);
 
-            texmap = new Dictionary<string, TSOTex>();
+            texmap = new Dictionary<string, TSOTexture>();
 
-            foreach (TSOTex tex in textures)
+            foreach (TSOTexture tex in textures)
             {
                 tex.Open(device);
                 texmap[tex.name] = tex;
@@ -1582,11 +1582,11 @@ namespace TDCG
             }
             effect.SetValue(handle_LightDir, shader.LightDir);
 
-            TSOTex shadeTex;
+            TSOTexture shadeTex;
             if (shader.ShadeTexName != null && texmap.TryGetValue(shader.ShadeTexName, out shadeTex))
                 effect.SetValue(handle_ShadeTex_texture, shadeTex.d3d_tex);
 
-            TSOTex colorTex;
+            TSOTexture colorTex;
             if (shader.ColorTexName != null && texmap.TryGetValue(shader.ColorTexName, out colorTex))
                 effect.SetValue(handle_ColorTex_texture, colorTex.d3d_tex);
         }
@@ -1611,7 +1611,7 @@ namespace TDCG
                 return;
             current_shader = shader;
 
-            TSOTex colorTex;
+            TSOTexture colorTex;
             if (shader.ColorTexName != null && texmap.TryGetValue(shader.ColorTexName, out colorTex))
                 effect.SetValue(handle_ColorTex_texture, colorTex.d3d_tex);
         }
@@ -1643,7 +1643,7 @@ namespace TDCG
 
             foreach (TSOMesh mesh in meshes)
                 mesh.Dispose();
-            foreach (TSOTex tex in textures)
+            foreach (TSOTexture tex in textures)
                 tex.Dispose();
         }
 
