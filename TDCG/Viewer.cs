@@ -515,7 +515,7 @@ namespace TDCG
                     else if (CloseToSelectedNode(screen_p))
                     {
                         BeginSelectedNodeCommand();
-                        manipulator.BeginRotateNode(selected_node);
+                        manipulator.BeginRotateNode(ManipulatorDeviceType.Mouse, selected_node);
                     }
                     else if (SelectNode(screen_p))
                     {
@@ -536,7 +536,7 @@ namespace TDCG
                     else if (CloseToSelectedNode(screen_p))
                     {
                         BeginSelectedNodeCommand();
-                        manipulator.BeginGrabNode(selected_node);
+                        manipulator.BeginGrabNode(ManipulatorDeviceType.Mouse, selected_node);
                     }
                     else
                         manipulator.BeginGrabCamera();
@@ -596,12 +596,12 @@ namespace TDCG
             {
                 case MouseButtons.Left:
                     manipulator.EndRotateLamp();
-                    manipulator.EndRotateNode();
+                    manipulator.EndRotateNode(ManipulatorDeviceType.Mouse);
                     EndSelectedNodeCommand();
                     manipulator.EndRotateCamera();
                     break;
                 case MouseButtons.Right:
-                    manipulator.EndGrabNode();
+                    manipulator.EndGrabNode(ManipulatorDeviceType.Mouse);
                     EndSelectedNodeCommand();
                     manipulator.EndGrabCamera();
                     break;
@@ -1997,7 +1997,7 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Left])
                     {
                         keysEnabled[(int)Keys.Left] = false;
-                        manipulator.BeginGrabNode(selected_node);
+                        manipulator.BeginGrabNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
                     if (manipulator.WhileGrabNodeLocal(z_mode ? 0 : -6, 0, z_mode ? +6 : 0))
                     {
@@ -2010,7 +2010,7 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Down])
                     {
                         keysEnabled[(int)Keys.Down] = false;
-                        manipulator.BeginGrabNode(selected_node);
+                        manipulator.BeginGrabNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
                     if (manipulator.WhileGrabNodeLocal(0, z_mode ? 0 : +6, z_mode ? +6 : 0))
                     {
@@ -2023,7 +2023,7 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Right])
                     {
                         keysEnabled[(int)Keys.Right] = false;
-                        manipulator.BeginGrabNode(selected_node);
+                        manipulator.BeginGrabNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
                     if (manipulator.WhileGrabNodeLocal(z_mode ? 0 : +6, 0, z_mode ? -6 : 0))
                     {
@@ -2036,7 +2036,7 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Up])
                     {
                         keysEnabled[(int)Keys.Up] = false;
-                        manipulator.BeginGrabNode(selected_node);
+                        manipulator.BeginGrabNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
                     if (manipulator.WhileGrabNodeLocal(0, z_mode ? 0 : -6, z_mode ? -6 : 0))
                     {
@@ -2045,7 +2045,7 @@ namespace TDCG
                     }
                 }
                 else
-                    manipulator.EndGrabNode();
+                    manipulator.EndGrabNode(ManipulatorDeviceType.Keyboard);
             }
             else
             {
@@ -2054,7 +2054,7 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Left])
                     {
                         keysEnabled[(int)Keys.Left] = false;
-                        manipulator.BeginRotateNode(selected_node);
+                        manipulator.BeginRotateNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
                     if (manipulator.WhileRotateNodeLocal(z_mode ? 0 : -6, 0, z_mode ? +6 : 0))
                     {
@@ -2067,7 +2067,7 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Down])
                     {
                         keysEnabled[(int)Keys.Down] = false;
-                        manipulator.BeginRotateNode(selected_node);
+                        manipulator.BeginRotateNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
                     if (manipulator.WhileRotateNodeLocal(0, z_mode ? 0 : +6, z_mode ? +6 : 0))
                     {
@@ -2080,7 +2080,7 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Right])
                     {
                         keysEnabled[(int)Keys.Right] = false;
-                        manipulator.BeginRotateNode(selected_node);
+                        manipulator.BeginRotateNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
                     if (manipulator.WhileRotateNodeLocal(z_mode ? 0 : +6, 0, z_mode ? -6 : 0))
                     {
@@ -2093,7 +2093,7 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Up])
                     {
                         keysEnabled[(int)Keys.Up] = false;
-                        manipulator.BeginRotateNode(selected_node);
+                        manipulator.BeginRotateNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
                     if (manipulator.WhileRotateNodeLocal(0, z_mode ? 0 : -6, z_mode ? -6 : 0))
                     {
@@ -2102,7 +2102,7 @@ namespace TDCG
                     }
                 }
                 else
-                    manipulator.EndRotateNode();
+                    manipulator.EndRotateNode(ManipulatorDeviceType.Keyboard);
             }
 
             if (camera.NeedUpdate)

@@ -6,6 +6,15 @@ using Microsoft.DirectX.Direct3D;
 
 namespace TDCG
 {
+    /// 操作に用いるデバイス
+    public enum ManipulatorDeviceType
+    {
+        /// マウス
+        Mouse,
+        /// キーボード
+        Keyboard
+    };
+
     public class Manipulator
     {
         SimpleCamera camera;
@@ -17,14 +26,16 @@ namespace TDCG
         bool rotate_lamp = false;
         bool rotate_node = false;
         bool rotate_camera = false;
+        ManipulatorDeviceType device_type;
 
         public Manipulator(SimpleCamera camera)
         {
             this.camera = camera;
         }
 
-        public void BeginGrabNode(TMONode selected_node)
+        public void BeginGrabNode(ManipulatorDeviceType device_type, TMONode selected_node)
         {
+            this.device_type = device_type;
             this.selected_node = selected_node;
 
             grab_node = true;
@@ -71,9 +82,10 @@ namespace TDCG
             return true;
         }
 
-        public void EndGrabNode()
+        public void EndGrabNode(ManipulatorDeviceType device_type)
         {
-            grab_node = false;
+            if (device_type == this.device_type)
+                grab_node = false;
         }
 
         public void BeginRotateLamp(Figure fig)
@@ -108,8 +120,9 @@ namespace TDCG
             rotate_lamp = false;
         }
 
-        public void BeginRotateNode(TMONode selected_node)
+        public void BeginRotateNode(ManipulatorDeviceType device_type, TMONode selected_node)
         {
+            this.device_type = device_type;
             this.selected_node = selected_node;
 
             rotate_node = true;
@@ -157,9 +170,10 @@ namespace TDCG
             return true;
         }
 
-        public void EndRotateNode()
+        public void EndRotateNode(ManipulatorDeviceType device_type)
         {
-            rotate_node = false;
+            if (device_type == this.device_type)
+                rotate_node = false;
         }
 
         public void BeginGrabCamera()
