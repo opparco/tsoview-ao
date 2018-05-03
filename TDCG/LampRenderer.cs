@@ -18,10 +18,14 @@ namespace TDCG
         Circle circle = null;
         Pole pole = null;
 
+        float lamp_circle_scale;
+
         public LampRenderer(Device device, Sprite sprite)
         {
             circle = new Circle(device);
             pole = new Pole(device);
+
+            lamp_circle_scale = 18.0f/384.0f;
         }
 
         // on device lost
@@ -90,7 +94,7 @@ namespace TDCG
 
         void DrawLampPole(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
         {
-            float scale = 0.046875f; //= 36/768
+            float scale = lamp_circle_scale;
             Matrix world_view_matrix;
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
@@ -105,7 +109,7 @@ namespace TDCG
 
         void DrawLampCircleW(ref Vector3 world_position, ref Matrix world)
         {
-            float scale = 0.046875f; //= 36/768
+            float scale = lamp_circle_scale;
             Matrix world_view_matrix;
             GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);

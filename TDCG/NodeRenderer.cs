@@ -18,10 +18,16 @@ namespace TDCG
         Circle circle = null;
         Pole pole = null;
 
+        float node_circle_scale;
+        float selected_node_circle_scale;
+
         public NodeRenderer(Device device, Sprite sprite)
         {
             circle = new Circle(device);
             pole = new Pole(device);
+
+            node_circle_scale = 6.0f/384.0f;
+            selected_node_circle_scale = 18.0f/384.0f;
         }
 
         // on device lost
@@ -90,7 +96,7 @@ namespace TDCG
 
         void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
         {
-            float scale = 0.046875f; //= 36/768
+            float scale = selected_node_circle_scale;
             Matrix world_view_matrix;
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
@@ -105,7 +111,7 @@ namespace TDCG
 
         void DrawNodePoleY(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
         {
-            float scale = 0.046875f; //= 36/768
+            float scale = selected_node_circle_scale;
             Matrix world_rotation_x = Matrix.RotationX((float)(-Math.PI / 2.0)) * world_rotation;
             Matrix world_view_matrix;
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation_x, ref world, out world_view_matrix);
@@ -121,7 +127,7 @@ namespace TDCG
 
         void DrawNodePoleX(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
         {
-            float scale = 0.046875f; //= 36/768
+            float scale = selected_node_circle_scale;
             Matrix world_rotation_y = Matrix.RotationY((float)(+Math.PI / 2.0)) * world_rotation;
             Matrix world_view_matrix;
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation_y, ref world, out world_view_matrix);
@@ -137,7 +143,7 @@ namespace TDCG
 
         void DrawNodeCircleW(ref Vector3 world_position, ref Matrix world)
         {
-            float scale = 0.015625f; //= 12/768
+            float scale = node_circle_scale;
             Matrix world_view_matrix;
             GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
@@ -152,7 +158,7 @@ namespace TDCG
 
         void DrawSelectedNodeCircleW(ref Vector3 world_position, ref Matrix world)
         {
-            float scale = 0.046875f; //= 36/768
+            float scale = selected_node_circle_scale;
             Matrix world_view_matrix;
             GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
