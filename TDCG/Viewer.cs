@@ -713,7 +713,7 @@ namespace TDCG
         /// @event: FigureSelectEvent
         /// </summary>
         /// <param name="idx">フィギュア番号</param>
-        public void SetFigureIndex(int idx)
+        public void SetFigureIdx(int idx)
         {
             if (idx < 0)
                 idx = 0;
@@ -749,13 +749,12 @@ namespace TDCG
                 Console.WriteLine("Error: " + ex);
             }
             Figure fig = new Figure();
-            int idx = sprite_renderer.scene_mode.SelectedIdx;
             foreach (TSOFile tso in tso_list)
             {
                 tso.Open(device, effect);
                 fig.TsoList.Add(tso);
             }
-            idx = FigureList.Count;
+            int len = FigureList.Count;
             //todo: override List#Add
             FigureList.Add(fig);
             fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
@@ -766,10 +765,7 @@ namespace TDCG
             fig.ComputeClothed();
             fig.UpdateNodeMapAndBoneMatrices();
 
-            sprite_renderer.scene_mode.SelectedIdx = idx;
-
-            if (FigureSelectEvent != null)
-                FigureSelectEvent(this, EventArgs.Empty);
+            SetFigureIdx(len);
         }
 
         /// <summary>
@@ -860,10 +856,7 @@ namespace TDCG
 
             if (fig_created)
             {
-                sprite_renderer.scene_mode.SelectedIdx = idx;
-
-                if (FigureSelectEvent != null)
-                    FigureSelectEvent(this, EventArgs.Empty);
+                SetFigureIdx(idx);
             }
             need_render = true;
         }
@@ -920,7 +913,7 @@ namespace TDCG
             idx++;
             if (idx > FigureList.Count - 1)
                 idx = 0;
-            SetFigureIndex(idx);
+            SetFigureIdx(idx);
         }
 
         /// <summary>
@@ -987,7 +980,7 @@ namespace TDCG
 
                     // fire FigureSelectEvent
                     int idx = sprite_renderer.scene_mode.SelectedIdx;
-                    SetFigureIndex(idx);
+                    SetFigureIdx(idx);
                 }
             }
             if (save_data.type == "HSAV")
@@ -1016,7 +1009,7 @@ namespace TDCG
                     fig.UpdateNodeMapAndBoneMatrices();
 
                     // fire FigureSelectEvent
-                    SetFigureIndex(idx);
+                    SetFigureIdx(idx);
                 }
                 else
                 {
@@ -1032,7 +1025,7 @@ namespace TDCG
                     fig.UpdateNodeMapAndBoneMatrices();
 
                     // fire FigureSelectEvent
-                    SetFigureIndex(len);
+                    SetFigureIdx(len);
                 }
             }
             if (save_data.type == "SCNE")
@@ -1055,7 +1048,7 @@ namespace TDCG
                     fig.UpdateNodeMapAndBoneMatrices();
                 }
                 // fire FigureSelectEvent
-                SetFigureIndex(len);
+                SetFigureIdx(len);
             }
         }
 
@@ -1571,7 +1564,7 @@ namespace TDCG
             foreach (Figure fig in FigureList)
                 fig.Dispose();
             FigureList.Clear();
-            SetFigureIndex(0);
+            SetFigureIdx(0);
             // free meshes and textures.
             Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
         }
@@ -1587,7 +1580,7 @@ namespace TDCG
                 fig.Dispose();
                 FigureList.Remove(fig);
                 int idx = sprite_renderer.scene_mode.SelectedIdx;
-                SetFigureIndex(idx - 1);
+                SetFigureIdx(idx - 1);
             }
             fig = null;
             // free meshes and textures.
