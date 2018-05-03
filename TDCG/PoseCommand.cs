@@ -1,61 +1,61 @@
 
 namespace TDCG
 {
-    /// ‘€ì‚ğˆµ‚¢‚Ü‚·B
+    /// æ“ä½œã‚’æ‰±ã„ã¾ã™ã€‚
     public interface ICommand
     {
-        /// Œ³‚É–ß‚·B
+        /// å…ƒã«æˆ»ã™ã€‚
         void Undo();
 
-        /// ‚â‚è’¼‚·B
+        /// ã‚„ã‚Šç›´ã™ã€‚
         void Redo();
 
-        /// Às‚·‚éB
+        /// å®Ÿè¡Œã™ã‚‹ã€‚
         bool Execute();
     }
 
-    /// node‘€ì
+    /// nodeæ“ä½œ
     public class NodeCommand : ICommand
     {
         public NodeCommand(TMONode node)
         {
         }
 
-        /// Œ³‚É–ß‚·B
+        /// å…ƒã«æˆ»ã™ã€‚
         public void Undo()
         {
         }
 
-        /// ‚â‚è’¼‚·B
+        /// ã‚„ã‚Šç›´ã™ã€‚
         public void Redo()
         {
         }
 
-        /// Às‚·‚éB
+        /// å®Ÿè¡Œã™ã‚‹ã€‚
         public bool Execute()
         {
             return false;
         }
     }
 
-    /// pose‘€ì
+    /// poseæ“ä½œ
     public class PoseCommand : ICommand
     {
         public PoseCommand(Figure fig)
         {
         }
 
-        /// Œ³‚É–ß‚·B
+        /// å…ƒã«æˆ»ã™ã€‚
         public void Undo()
         {
         }
 
-        /// ‚â‚è’¼‚·B
+        /// ã‚„ã‚Šç›´ã™ã€‚
         public void Redo()
         {
         }
 
-        /// Às‚·‚éB
+        /// å®Ÿè¡Œã™ã‚‹ã€‚
         public bool Execute()
         {
             return false;
