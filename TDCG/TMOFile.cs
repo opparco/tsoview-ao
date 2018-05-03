@@ -40,7 +40,7 @@ namespace TDCG
         public byte[] footer;
 
         /// <summary>
-        /// bone名称とboneを関連付ける辞書
+        /// 名称の短い形式とboneを関連付ける辞書
         /// </summary>
         public Dictionary<string, TMONode> nodemap;
 
@@ -155,20 +155,21 @@ namespace TDCG
 
             for (int i = 0; i < nodes.Length; i++)
             {
-                nodemap.Add(nodes[i].Path, nodes[i]);
+                nodemap.Add(nodes[i].Name, nodes[i]);
             }
 
             List<TMONode> root_nodes = new List<TMONode>();
 
             for (int i = 0; i < nodes.Length; i++)
             {
-                int index = nodes[i].Path.LastIndexOf('|');
-                if (index == 0)
+                int idx = nodes[i].Path.LastIndexOf('|');
+                if (idx == 0)
                     root_nodes.Add(nodes[i]);
-                if (index <= 0)
+                if (idx <= 0)
                     continue;
-                string path = nodes[i].Path.Substring(0, index);
-                nodes[i].parent = nodemap[path];
+                string parent_path = nodes[i].Path.Substring(0, idx);
+                string parent_name = parent_path.Substring(parent_path.LastIndexOf('|') + 1);
+                nodes[i].parent = nodemap[parent_name];
                 nodes[i].parent.children.Add(nodes[i]);
             }
 
@@ -184,16 +185,17 @@ namespace TDCG
         }
 
         /// <summary>
-        /// 指定名称（短い形式）を持つnodeを検索します。
+        /// 指定名称の短い形式を持つnodeを検索します。
         /// </summary>
-        /// <param name="name">node名称（短い形式）</param>
+        /// <param name="name">名称の短い形式</param>
         /// <returns></returns>
         public TMONode FindNodeByName(string name)
         {
-            foreach (TMONode node in nodes)
-                if (node.Name == name)
-                    return node;
-            return null;
+            TMONode node;
+            if (nodemap.TryGetValue(name, out node))
+                return node;
+            else
+                return null;
         }
     }
 

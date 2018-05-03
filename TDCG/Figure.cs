@@ -148,7 +148,7 @@ public class Figure : IDisposable
         foreach (TSONode tso_node in tso.nodes)
         {
             TMONode tmo_node;
-            if (tmo.nodemap.TryGetValue(tso_node.Path, out tmo_node))
+            if (tmo.nodemap.TryGetValue(tso_node.Name, out tmo_node))
                 nodemap.Add(tso_node, tmo_node);
         }
     }

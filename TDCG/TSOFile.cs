@@ -1257,7 +1257,7 @@ namespace TDCG
         public TSOMesh[] meshes;
 
         /// <summary>
-        /// bone名称とboneを関連付ける辞書
+        /// 名称の短い形式とboneを関連付ける辞書
         /// </summary>
         public Dictionary<string, TSONode> nodemap;
 
@@ -1430,16 +1430,17 @@ namespace TDCG
 
             for (int i = 0; i < nodes.Length; i++)
             {
-                nodemap.Add(nodes[i].Path, nodes[i]);
+                nodemap.Add(nodes[i].Name, nodes[i]);
             }
 
             for (int i = 0; i < nodes.Length; i++)
             {
-                int index = nodes[i].Path.LastIndexOf('|');
-                if (index <= 0)
+                int idx = nodes[i].Path.LastIndexOf('|');
+                if (idx <= 0)
                     continue;
-                string path = nodes[i].Path.Substring(0, index);
-                nodes[i].parent = nodemap[path];
+                string parent_path = nodes[i].Path.Substring(0, idx);
+                string parent_name = parent_path.Substring(parent_path.LastIndexOf('|') + 1);
+                nodes[i].parent = nodemap[parent_name];
                 nodes[i].parent.children.Add(nodes[i]);
             }
         }
