@@ -984,7 +984,10 @@ namespace TDCG
                     fig.LampRotation = save_data.LampRotation;
                     fig.Tmo = save_data.Tmo;
                     fig.UpdateNodeMapAndBoneMatrices();
-                    need_render = true;
+
+                    // fire FigureSelectEvent
+                    int idx = sprite_renderer.scene_mode.SelectedIdx;
+                    SetFigureIndex(idx);
                 }
             }
             if (save_data.type == "HSAV")
@@ -1012,7 +1015,8 @@ namespace TDCG
                     fig.ComputeClothed();
                     fig.UpdateNodeMapAndBoneMatrices();
 
-                    need_render = true;
+                    // fire FigureSelectEvent
+                    SetFigureIndex(idx);
                 }
                 else
                 {
@@ -1027,6 +1031,7 @@ namespace TDCG
                     fig.ComputeClothed();
                     fig.UpdateNodeMapAndBoneMatrices();
 
+                    // fire FigureSelectEvent
                     SetFigureIndex(len);
                 }
             }
@@ -1035,7 +1040,7 @@ namespace TDCG
                 if (!append)
                     ClearFigureList();
 
-                int idx = FigureList.Count;
+                int len = FigureList.Count;
                 foreach (Figure fig in save_data.FigureList)
                 {
                     fig.OpenTSOFile(device, effect);
@@ -1049,7 +1054,8 @@ namespace TDCG
                     fig.ComputeClothed();
                     fig.UpdateNodeMapAndBoneMatrices();
                 }
-                SetFigureIndex(idx);
+                // fire FigureSelectEvent
+                SetFigureIndex(len);
             }
         }
 
