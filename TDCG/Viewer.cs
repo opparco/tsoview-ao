@@ -1728,14 +1728,6 @@ namespace TDCG
                 AssignProjection();
                 AssignDepthProjection();
 
-                lamp_renderer.Rotation_Camera = camera.RotationMatrix;
-                lamp_renderer.Transform_View = Transform_View;
-                lamp_renderer.Transform_Projection = Transform_Projection;
-
-                node_renderer.Rotation_Camera = camera.RotationMatrix;
-                node_renderer.Transform_View = Transform_View;
-                node_renderer.Transform_Projection = Transform_Projection;
-
                 need_render = true;
             }
         }
@@ -1869,12 +1861,15 @@ namespace TDCG
                 Matrix world;
                 fig.GetWorldMatrix(out world);
 
+                Matrix camera_rotation = camera.RotationMatrix;
+                node_renderer.SetTransform(ref camera_rotation, ref Transform_View, ref Transform_Projection);
                 node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
                 TMONode node = fig.Tmo.FindNodeByName("face_oya");
                 if (node != null)
                 {
                     Vector3 position = node.GetWorldPosition();
                     position.Y += 5.0f;
+                    lamp_renderer.SetTransform(ref camera_rotation, ref Transform_View, ref Transform_Projection);
                     lamp_renderer.Render(fig, ref position, ref world);
                 }
             }
