@@ -513,7 +513,10 @@ namespace TDCG
                             manipulator.BeginRotateLamp(fig);
                     }
                     else if (CloseToSelectedNode(screen_p))
+                    {
+                        BeginNodeCommand(selected_node);
                         manipulator.BeginRotateNode(selected_node);
+                    }
                     else if (SelectNode(screen_p))
                     {
                         sprite_renderer.pose_mode.SelectedNodeName = selected_node.Name;
@@ -531,7 +534,10 @@ namespace TDCG
                         need_render = true;
                     }
                     else if (CloseToSelectedNode(screen_p))
+                    {
+                        BeginNodeCommand(selected_node);
                         manipulator.BeginGrabNode(selected_node);
+                    }
                     else
                         manipulator.BeginGrabCamera();
                     break;
@@ -591,10 +597,12 @@ namespace TDCG
                 case MouseButtons.Left:
                     manipulator.EndRotateLamp();
                     manipulator.EndRotateNode();
+                    EndNodeCommand();
                     manipulator.EndRotateCamera();
                     break;
                 case MouseButtons.Right:
                     manipulator.EndGrabNode();
+                    EndNodeCommand();
                     manipulator.EndGrabCamera();
                     break;
             }
@@ -602,13 +610,24 @@ namespace TDCG
             Debug.WriteLine("leave form_OnMouseUp");
         }
 
+        public void BeginNodeCommand(TMONode node)
+        {
+        }
+
+        public void EndNodeCommand()
+        {
+        }
+
+        public void BeginPoseCommand(Figure fig)
+        {
+        }
+
+        public void EndPoseCommand()
+        {
+        }
+
         public void Undo()
         {
-            if (manipulator.Undo())
-            {
-                //TODO: UpdateSelectedBoneMatrices
-                GetSelectedFigure().UpdateBoneMatrices();
-            }
         }
 
         public static string GetScenePath()
@@ -1678,7 +1697,6 @@ namespace TDCG
             }
         }
 
-        //TODO: UndoBoneMatrices
         public void ResetNode()
         {
             Figure fig;
@@ -1693,18 +1711,19 @@ namespace TDCG
                 if (fig.TsoList.Count == 0)
                     return;
 
-                TSOFile tso = fig.TsoList[0];
+                BeginNodeCommand(tmo_node);
 
+                TSOFile tso = fig.TsoList[0];
                 TSONode tso_node;
                 if (tso.nodemap.TryGetValue(tmo_node.Name, out tso_node))
                 {
                     tmo_node.TransformationMatrix = tso_node.TransformationMatrix;
                 }
+                EndNodeCommand();
                 fig.UpdateBoneMatrices();
             }
         }
 
-        //TODO: UndoBoneMatrices
         public void ResetPose()
         {
             Figure fig;
@@ -1713,7 +1732,7 @@ namespace TDCG
                 if (fig.TsoList.Count == 0)
                     return;
 
-                TSOFile tso = fig.TsoList[0];
+                BeginPoseCommand(fig);
 
                 //NOTE: W_Hipsの移動変位は維持される
                 Vector3 w_hips_translation = Vector3.Empty;
@@ -1721,6 +1740,7 @@ namespace TDCG
                 if (fig.Tmo.w_hips_node != null)
                     w_hips_translation = fig.Tmo.w_hips_node.Translation;
 
+                TSOFile tso = fig.TsoList[0];
                 foreach (TMONode tmo_node in fig.Tmo.nodes)
                 {
                     TSONode tso_node;
@@ -1733,6 +1753,7 @@ namespace TDCG
                 if (fig.Tmo.w_hips_node != null)
                     fig.Tmo.w_hips_node.Translation = w_hips_translation;
 
+                EndPoseCommand();
                 fig.UpdateBoneMatrices();
             }
         }
