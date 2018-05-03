@@ -682,7 +682,7 @@ namespace TDCG
 
         public void BeginSelectedNodeCommand()
         {
-            node_command = new NodeCommand(selected_node);
+            node_command = new NodeCommand(GetSelectedFigure(), selected_node.Name);
         }
 
         public void EndSelectedNodeCommand()
@@ -1075,6 +1075,7 @@ namespace TDCG
             Figure fig;
             if (TryGetFigure(out fig))
             {
+                BeginSelectedFigurePoseCommand();
                 try
                 {
                     TMOFile tmo = new TMOFile();
@@ -1086,6 +1087,8 @@ namespace TDCG
                     Console.WriteLine("Error: " + ex);
                 }
                 fig.UpdateNodeMapAndBoneMatrices();
+
+                EndSelectedFigurePoseCommand();
 
                 // fire FigureSelectEvent
                 SetFigureIdx(sprite_renderer.scene_mode.SelectedIdx);
@@ -1116,9 +1119,13 @@ namespace TDCG
                 Figure fig;
                 if (TryGetFigure(out fig))
                 {
+                    BeginSelectedFigurePoseCommand();
+
                     fig.LampRotation = save_data.LampRotation;
                     fig.Tmo = save_data.Tmo;
                     fig.UpdateNodeMapAndBoneMatrices();
+
+                    EndSelectedFigurePoseCommand();
 
                     // fire FigureSelectEvent
                     SetFigureIdx(sprite_renderer.scene_mode.SelectedIdx);
@@ -1226,6 +1233,7 @@ namespace TDCG
         int keyFigureForm = (int)Keys.G;
         int keyConfigForm = (int)Keys.H;
         int keyUndo = (int)Keys.Z;
+        int keyRedo = (int)Keys.Y;
         int keySave = (int)Keys.Enter;
         int keySprite = (int)Keys.Home;
         int keyResetLamp = (int)Keys.D9;
@@ -1923,6 +1931,11 @@ namespace TDCG
             {
                 keysEnabled[keyUndo] = false;
                 this.Undo();
+            }
+            if (keysEnabled[keyRedo] && keys[keyRedo])
+            {
+                keysEnabled[keyRedo] = false;
+                this.Redo();
             }
             if (keysEnabled[keySave] && keys[keySave])
             {
