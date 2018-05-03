@@ -41,8 +41,8 @@ public class Figure : IDisposable
         get { return clothed; }
     }
 
-    /// 着衣扱いかを算出します。
-    public void ComputeClothed()
+    /// 着衣扱いかを更新します。
+    public void UpdateClothed()
     {
         clothed = false;
         foreach (TSOFile tso in TsoList)

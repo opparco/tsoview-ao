@@ -758,7 +758,7 @@ namespace TDCG
                 if (GetSelectedFigure() == sender)
                     need_render = true;
             };
-            fig.ComputeClothed();
+            fig.UpdateClothed();
             fig.UpdateNodeMapAndBoneMatrices();
 
             // fire FigureSelectEvent
@@ -898,7 +898,7 @@ namespace TDCG
                 fig.TsoList.Add(tso);
             }
 
-            fig.ComputeClothed();
+            fig.UpdateClothed();
             fig.UpdateNodeMapAndBoneMatrices();
 
             SetFigureIdx(idx);
@@ -1049,7 +1049,7 @@ namespace TDCG
                         if (GetSelectedFigure() == sender)
                             need_render = true;
                     };
-                    fig.ComputeClothed();
+                    fig.UpdateClothed();
                     fig.UpdateNodeMapAndBoneMatrices();
 
                     // fire FigureSelectEvent
@@ -1065,7 +1065,7 @@ namespace TDCG
                         if (GetSelectedFigure() == sender)
                             need_render = true;
                     };
-                    fig.ComputeClothed();
+                    fig.UpdateClothed();
                     fig.UpdateNodeMapAndBoneMatrices();
 
                     // fire FigureSelectEvent
@@ -1088,7 +1088,7 @@ namespace TDCG
                         if (GetSelectedFigure() == sender)
                             need_render = true;
                     };
-                    fig.ComputeClothed();
+                    fig.UpdateClothed();
                     fig.UpdateNodeMapAndBoneMatrices();
                 }
                 // fire FigureSelectEvent
@@ -1647,7 +1647,7 @@ namespace TDCG
                 }
                 tso = null;
 
-                fig.ComputeClothed();
+                fig.UpdateClothed();
                 fig.UpdateNodeMapAndBoneMatrices();
             }
             fig = null;
