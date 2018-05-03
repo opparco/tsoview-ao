@@ -123,6 +123,23 @@ namespace TDCG
             return true;
         }
 
+        public bool WhileRotateNodeLocal(int dx, int dy, int dz)
+        {
+            if (! rotate_node)
+                return false;
+
+            if (dx == 0 && dy == 0 && dz == 0)
+                return false;
+
+            const float delta_scale = 0.0125f;
+
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * delta_scale, dy * delta_scale, dz * delta_scale);
+
+            selected_node.Rotation = Quaternion.Normalize(selected_node.Rotation * rotation);
+
+            return true;
+        }
+
         public void EndRotateNode()
         {
             rotate_node = false;
