@@ -1634,6 +1634,27 @@ namespace TDCG
             Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
         }
 
+        public void RemoveSelectedTSO()
+        {
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                TSOFile tso;
+                if (TryGetTSOFile(out tso))
+                {
+                    tso.Dispose();
+                    fig.TsoList.Remove(tso);
+                }
+                tso = null;
+
+                fig.ComputeClothed();
+                fig.UpdateNodeMapAndBoneMatrices();
+            }
+            fig = null;
+            // free meshes and textures.
+            Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
+        }
+
         bool sprite_enabled = true;
         /// <summary>
         /// スプライトの有無
@@ -1751,8 +1772,9 @@ namespace TDCG
             {
                 keysEnabled[keyDelete] = false;
 
-                if (keys[(int)Keys.ControlKey])
-                    this.ClearFigureList();
+                string modename = sprite_renderer.CurrentModeName;
+                if (modename == "MODEL")
+                    this.RemoveSelectedTSO();
                 else
                     this.RemoveSelectedFigure();
             }
