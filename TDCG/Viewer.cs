@@ -387,19 +387,16 @@ namespace TDCG
                     byte tmp = a.Row;
                     a.Row = b.Row;
                     b.Row = tmp;
-
-                    fig.TsoList.Sort();
                 }
                 else if (a != null)
                 {
                     a.Row = (byte)brow;
-                    fig.TsoList.Sort();
                 }
                 else if (b != null)
                 {
                     b.Row = (byte)arow;
-                    fig.TsoList.Sort();
                 }
+                fig.TsoList.Sort();
             }
         }
 
@@ -669,9 +666,7 @@ namespace TDCG
             switch (Path.GetExtension(source_file).ToLower())
             {
                 case ".tso":
-                    if (!append)
-                        ClearFigureList();
-                    LoadTSOFile(source_file);
+                    LoadTSOFile(source_file, append);
                     break;
                 case ".tmo":
                     LoadTMOFile(source_file);
@@ -765,6 +760,7 @@ namespace TDCG
             fig.ComputeClothed();
             fig.UpdateNodeMapAndBoneMatrices();
 
+            // fire FigureSelectEvent
             SetFigureIdx(len);
         }
 
@@ -791,11 +787,11 @@ namespace TDCG
         /// 指定パスからTSOFileを読み込みます。
         /// </summary>
         /// <param name="source_file">パス</param>
-        public void LoadTSOFile(string source_file)
+        public void LoadTSOFile(string source_file, bool append)
         {
             Debug.WriteLine("loading " + source_file);
             using (Stream source_stream = File.OpenRead(source_file))
-                LoadTSOFile(source_stream, source_file);
+                LoadTSOFile(source_stream, source_file, append);
         }
 
         /// <summary>
@@ -807,31 +803,77 @@ namespace TDCG
             LoadTSOFile(source_stream, null);
         }
 
+        byte DetectRowFromFileName(string file)
+        {
+            string filename = Path.GetFileNameWithoutExtension(file);
+            if (filename.Length == 2)
+            {
+                //ex. filename = "00"
+            }
+            if (filename.Length == 12)
+            {
+                //ex. filename = "N001BODY_A00"
+                //A: 0x00 .. Z: 0x19
+                //0: 0x1A .. 3: 0x1D
+            }
+            return 0x19;
+        }
+
+        //同じrowを持つtsoを置き換える。
+        //なければ追加する。
+        void ChangeTsoSameRow(Figure fig, TSOFile tso)
+        {
+            if (fig.TsoList.Count == 0)
+            {
+                fig.TsoList.Add(tso);
+            }
+            else
+            {
+                byte row = tso.Row;
+                int i = -1;
+                foreach (TSOFile _tso in fig.TsoList)
+                {
+                    if (row == _tso.Row)
+                    {
+                        fig.TsoList[i] = tso;
+                        fig.TsoList.Sort();
+                        return;
+                    }
+                    i++;
+                }
+                fig.TsoList.Add(tso);
+            }
+        }
+
         /// <summary>
         /// 指定ストリームからTSOFileを読み込みます。
         /// </summary>
         /// <param name="source_stream">ストリーム</param>
         /// <param name="file">ファイル名</param>
-        public void LoadTSOFile(Stream source_stream, string file)
+        public void LoadTSOFile(Stream source_stream, string file, bool append = false)
         {
-            List<TSOFile> tso_list = new List<TSOFile>();
+            TSOFile tso = new TSOFile();
             try
             {
-                TSOFile tso = new TSOFile();
                 tso.Load(source_stream);
+                tso.Row = DetectRowFromFileName(file);
                 tso.FileName = file != null ? Path.GetFileNameWithoutExtension(file) : null;
-                tso_list.Add(tso);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error: " + ex);
             }
 
+            tso.Open(device, effect);
+
             Figure fig = GetSelectedFigure();
             int idx = sprite_renderer.scene_mode.SelectedIdx;
 
-            bool fig_created = false;
-            if (fig == null)
+            if (!append && fig != null)
+            {
+                ChangeTsoSameRow(fig, tso);
+            }
+            else
             {
                 fig = new Figure();
                 idx = FigureList.Count;
@@ -842,23 +884,13 @@ namespace TDCG
                     if (GetSelectedFigure() == sender)
                         need_render = true;
                 };
-                fig_created = true;
-            }
-
-            foreach (TSOFile tso in tso_list)
-            {
-                tso.Open(device, effect);
                 fig.TsoList.Add(tso);
             }
 
             fig.ComputeClothed();
             fig.UpdateNodeMapAndBoneMatrices();
 
-            if (fig_created)
-            {
-                SetFigureIdx(idx);
-            }
-            need_render = true;
+            SetFigureIdx(idx);
         }
 
         /// <summary>
@@ -979,8 +1011,7 @@ namespace TDCG
                     fig.UpdateNodeMapAndBoneMatrices();
 
                     // fire FigureSelectEvent
-                    int idx = sprite_renderer.scene_mode.SelectedIdx;
-                    SetFigureIdx(idx);
+                    SetFigureIdx(sprite_renderer.scene_mode.SelectedIdx);
                 }
             }
             if (save_data.type == "HSAV")
