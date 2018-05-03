@@ -54,6 +54,23 @@ namespace TDCG
             return true;
         }
 
+        public bool WhileGrabNodeLocal(int dx, int dy, int dz)
+        {
+            if (! grab_node)
+                return false;
+
+            if (dx == 0 && dy == 0 & dz == 0)
+                return false;
+
+            const float delta_scale = 0.0125f;
+
+            Vector3 translation = new Vector3(dx * delta_scale, -dy * delta_scale, dz * delta_scale);
+
+            selected_node.Translation += translation;
+
+            return true;
+        }
+
         public void EndGrabNode()
         {
             grab_node = false;

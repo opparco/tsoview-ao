@@ -1984,62 +1984,126 @@ namespace TDCG
                 }
             }
 
-            bool with_control = Control.ModifierKeys == Keys.Control;
+            // CRTL 同時押しで移動; なければ回転
+            bool grab_mode = (Control.ModifierKeys & Keys.Control) == Keys.Control;
 
-            if (keys[(int)Keys.Up])
+            // SHIFT 同時押しでZ軸操作
+            bool z_mode = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
+
+            if (grab_mode)
             {
-                if (keysEnabled[(int)Keys.Up])
+                if (keys[(int)Keys.Left])
                 {
-                    keysEnabled[(int)Keys.Up] = false;
-                    manipulator.BeginRotateNode(selected_node);
+                    if (keysEnabled[(int)Keys.Left])
+                    {
+                        keysEnabled[(int)Keys.Left] = false;
+                        manipulator.BeginGrabNode(selected_node);
+                    }
+                    if (manipulator.WhileGrabNodeLocal(z_mode ? 0 : -6, 0, z_mode ? +6 : 0))
+                    {
+                        //TODO: UpdateSelectedBoneMatrices
+                        GetSelectedFigure().UpdateBoneMatrices();
+                    }
                 }
-                if (manipulator.WhileRotateNodeLocal(0, with_control ? 0 : -6, with_control ? -6 : 0))
+                else if (keys[(int)Keys.Down])
                 {
-                    //TODO: UpdateSelectedBoneMatrices
-                    GetSelectedFigure().UpdateBoneMatrices();
+                    if (keysEnabled[(int)Keys.Down])
+                    {
+                        keysEnabled[(int)Keys.Down] = false;
+                        manipulator.BeginGrabNode(selected_node);
+                    }
+                    if (manipulator.WhileGrabNodeLocal(0, z_mode ? 0 : +6, z_mode ? +6 : 0))
+                    {
+                        //TODO: UpdateSelectedBoneMatrices
+                        GetSelectedFigure().UpdateBoneMatrices();
+                    }
                 }
-            }
-            else if (keys[(int)Keys.Down])
-            {
-                if (keysEnabled[(int)Keys.Down])
+                else if (keys[(int)Keys.Right])
                 {
-                    keysEnabled[(int)Keys.Down] = false;
-                    manipulator.BeginRotateNode(selected_node);
+                    if (keysEnabled[(int)Keys.Right])
+                    {
+                        keysEnabled[(int)Keys.Right] = false;
+                        manipulator.BeginGrabNode(selected_node);
+                    }
+                    if (manipulator.WhileGrabNodeLocal(z_mode ? 0 : +6, 0, z_mode ? -6 : 0))
+                    {
+                        //TODO: UpdateSelectedBoneMatrices
+                        GetSelectedFigure().UpdateBoneMatrices();
+                    }
                 }
-                if (manipulator.WhileRotateNodeLocal(0, with_control ? 0 : +6, with_control ? +6 : 0))
+                else if (keys[(int)Keys.Up])
                 {
-                    //TODO: UpdateSelectedBoneMatrices
-                    GetSelectedFigure().UpdateBoneMatrices();
+                    if (keysEnabled[(int)Keys.Up])
+                    {
+                        keysEnabled[(int)Keys.Up] = false;
+                        manipulator.BeginGrabNode(selected_node);
+                    }
+                    if (manipulator.WhileGrabNodeLocal(0, z_mode ? 0 : -6, z_mode ? -6 : 0))
+                    {
+                        //TODO: UpdateSelectedBoneMatrices
+                        GetSelectedFigure().UpdateBoneMatrices();
+                    }
                 }
-            }
-            else if (keys[(int)Keys.Left])
-            {
-                if (keysEnabled[(int)Keys.Left])
-                {
-                    keysEnabled[(int)Keys.Left] = false;
-                    manipulator.BeginRotateNode(selected_node);
-                }
-                if (manipulator.WhileRotateNodeLocal(-6, 0, 0))
-                {
-                    //TODO: UpdateSelectedBoneMatrices
-                    GetSelectedFigure().UpdateBoneMatrices();
-                }
-            }
-            else if (keys[(int)Keys.Right])
-            {
-                if (keysEnabled[(int)Keys.Right])
-                {
-                    keysEnabled[(int)Keys.Right] = false;
-                    manipulator.BeginRotateNode(selected_node);
-                }
-                if (manipulator.WhileRotateNodeLocal(+6, 0, 0))
-                {
-                    //TODO: UpdateSelectedBoneMatrices
-                    GetSelectedFigure().UpdateBoneMatrices();
-                }
+                else
+                    manipulator.EndGrabNode();
             }
             else
-                manipulator.EndRotateNode();
+            {
+                if (keys[(int)Keys.Left])
+                {
+                    if (keysEnabled[(int)Keys.Left])
+                    {
+                        keysEnabled[(int)Keys.Left] = false;
+                        manipulator.BeginRotateNode(selected_node);
+                    }
+                    if (manipulator.WhileRotateNodeLocal(z_mode ? 0 : -6, 0, z_mode ? +6 : 0))
+                    {
+                        //TODO: UpdateSelectedBoneMatrices
+                        GetSelectedFigure().UpdateBoneMatrices();
+                    }
+                }
+                else if (keys[(int)Keys.Down])
+                {
+                    if (keysEnabled[(int)Keys.Down])
+                    {
+                        keysEnabled[(int)Keys.Down] = false;
+                        manipulator.BeginRotateNode(selected_node);
+                    }
+                    if (manipulator.WhileRotateNodeLocal(0, z_mode ? 0 : +6, z_mode ? +6 : 0))
+                    {
+                        //TODO: UpdateSelectedBoneMatrices
+                        GetSelectedFigure().UpdateBoneMatrices();
+                    }
+                }
+                else if (keys[(int)Keys.Right])
+                {
+                    if (keysEnabled[(int)Keys.Right])
+                    {
+                        keysEnabled[(int)Keys.Right] = false;
+                        manipulator.BeginRotateNode(selected_node);
+                    }
+                    if (manipulator.WhileRotateNodeLocal(z_mode ? 0 : +6, 0, z_mode ? -6 : 0))
+                    {
+                        //TODO: UpdateSelectedBoneMatrices
+                        GetSelectedFigure().UpdateBoneMatrices();
+                    }
+                }
+                else if (keys[(int)Keys.Up])
+                {
+                    if (keysEnabled[(int)Keys.Up])
+                    {
+                        keysEnabled[(int)Keys.Up] = false;
+                        manipulator.BeginRotateNode(selected_node);
+                    }
+                    if (manipulator.WhileRotateNodeLocal(0, z_mode ? 0 : -6, z_mode ? -6 : 0))
+                    {
+                        //TODO: UpdateSelectedBoneMatrices
+                        GetSelectedFigure().UpdateBoneMatrices();
+                    }
+                }
+                else
+                    manipulator.EndRotateNode();
+            }
 
             if (camera.NeedUpdate)
             {
