@@ -115,7 +115,7 @@ public class Figure : IDisposable
 
         UpdateNodeMap();
 
-        UpdateBoneMatrices(true);
+        UpdateBoneMatrices();
     }
 
     /// <summary>
@@ -161,8 +161,7 @@ public class Figure : IDisposable
     /// <summary>
     /// bone行列を更新します。
     /// </summary>
-    /// <param name="forced">obsolete</param>
-    public void UpdateBoneMatrices(bool forced = false)
+    public void UpdateBoneMatrices()
     {
         UpdateBoneMatrices(tmo);
 

@@ -562,7 +562,7 @@ namespace TDCG
                     if (manipulator.WhileRotateNode(dx, dy))
                     {
                         //TODO: UpdateSelectedBoneMatrices
-                        GetSelectedFigure().UpdateBoneMatrices(true);
+                        GetSelectedFigure().UpdateBoneMatrices();
                     }
                     manipulator.WhileRotateCamera(dx, dy);
                     break;
@@ -573,7 +573,7 @@ namespace TDCG
                     if (manipulator.WhileGrabNode(dx, dy))
                     {
                         //TODO: UpdateSelectedBoneMatrices
-                        GetSelectedFigure().UpdateBoneMatrices(true);
+                        GetSelectedFigure().UpdateBoneMatrices();
                     }
                     manipulator.WhileGrabCamera(dx, dy);
                     break;
@@ -607,7 +607,7 @@ namespace TDCG
             if (manipulator.Undo())
             {
                 //TODO: UpdateSelectedBoneMatrices
-                GetSelectedFigure().UpdateBoneMatrices(true);
+                GetSelectedFigure().UpdateBoneMatrices();
             }
         }
 
@@ -989,7 +989,9 @@ namespace TDCG
                     Console.WriteLine("Error: " + ex);
                 }
                 fig.UpdateNodeMapAndBoneMatrices();
-                need_render = true;
+
+                // fire FigureSelectEvent
+                SetFigureIdx(sprite_renderer.scene_mode.SelectedIdx);
             }
         }
 
@@ -1129,6 +1131,9 @@ namespace TDCG
         int keyUndo = (int)Keys.Z;
         int keySave = (int)Keys.Enter;
         int keySprite = (int)Keys.Home;
+        int keyResetLamp = (int)Keys.D9;
+        int keyResetNode = (int)Keys.D0;
+        int keyResetPose = (int)Keys.F12;
 
         /// <summary>
         /// world行列
@@ -1642,6 +1647,75 @@ namespace TDCG
             need_render = true;
         }
 
+        public void ResetLamp()
+        {
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                fig.LampRotation = Quaternion.Identity;
+                need_render = true;
+            }
+        }
+
+        //TODO: UndoBoneMatrices
+        public void ResetNode()
+        {
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                TMONode tmo_node = selected_node;
+
+                //TODO: selected_node should not be null
+                if (tmo_node == null)
+                    return;
+
+                if (fig.TsoList.Count == 0)
+                    return;
+
+                TSOFile tso = fig.TsoList[0];
+
+                TSONode tso_node;
+                if (tso.nodemap.TryGetValue(tmo_node.Name, out tso_node))
+                {
+                    tmo_node.TransformationMatrix = tso_node.TransformationMatrix;
+                }
+                fig.UpdateBoneMatrices();
+            }
+        }
+
+        //TODO: UndoBoneMatrices
+        public void ResetPose()
+        {
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                if (fig.TsoList.Count == 0)
+                    return;
+
+                TSOFile tso = fig.TsoList[0];
+
+                //NOTE: W_Hipsの移動変位は維持される
+                Vector3 w_hips_translation = Vector3.Empty;
+
+                if (fig.Tmo.w_hips_node != null)
+                    w_hips_translation = fig.Tmo.w_hips_node.Translation;
+
+                foreach (TMONode tmo_node in fig.Tmo.nodes)
+                {
+                    TSONode tso_node;
+                    if (tso.nodemap.TryGetValue(tmo_node.Name, out tso_node))
+                    {
+                        tmo_node.TransformationMatrix = tso_node.TransformationMatrix;
+                    }
+                }
+
+                if (fig.Tmo.w_hips_node != null)
+                    fig.Tmo.w_hips_node.Translation = w_hips_translation;
+
+                fig.UpdateBoneMatrices();
+            }
+        }
+
         void form_OnKeyDown(object sender, KeyEventArgs e)
         {
             if ((int)e.KeyCode < keys.Length)
@@ -1733,6 +1807,21 @@ namespace TDCG
             {
                 keysEnabled[keySprite] = false;
                 this.SwitchSpriteEnabled();
+            }
+            if (keysEnabled[keyResetLamp] && keys[keyResetLamp])
+            {
+                keysEnabled[keyResetLamp] = false;
+                this.ResetLamp();
+            }
+            if (keysEnabled[keyResetNode] && keys[keyResetNode])
+            {
+                keysEnabled[keyResetNode] = false;
+                this.ResetNode();
+            }
+            if (keysEnabled[keyResetPose] && keys[keyResetPose])
+            {
+                keysEnabled[keyResetPose] = false;
+                this.ResetPose();
             }
 
             float keyL = 0.0f;

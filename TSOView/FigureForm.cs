@@ -172,7 +172,7 @@ namespace TSOView
                 return;
 
             fig.SliderMatrix.ArmRatio = tbSlideArm.Value / (float)tbSlideArm.Maximum;
-            fig.UpdateBoneMatrices(true);
+            fig.UpdateBoneMatrices();
         }
 
         private void tbSlideLeg_ValueChanged(object sender, EventArgs e)
@@ -181,7 +181,7 @@ namespace TSOView
                 return;
 
             fig.SliderMatrix.LegRatio = tbSlideLeg.Value / (float)tbSlideLeg.Maximum;
-            fig.UpdateBoneMatrices(true);
+            fig.UpdateBoneMatrices();
         }
 
         private void tbSlideWaist_ValueChanged(object sender, EventArgs e)
@@ -190,7 +190,7 @@ namespace TSOView
                 return;
 
             fig.SliderMatrix.WaistRatio = tbSlideWaist.Value / (float)tbSlideWaist.Maximum;
-            fig.UpdateBoneMatrices(true);
+            fig.UpdateBoneMatrices();
         }
 
         private void tbSlideOppai_ValueChanged(object sender, EventArgs e)
@@ -199,7 +199,7 @@ namespace TSOView
                 return;
 
             fig.SliderMatrix.OppaiRatio = tbSlideOppai.Value / (float)tbSlideOppai.Maximum;
-            fig.UpdateBoneMatrices(true);
+            fig.UpdateBoneMatrices();
         }
 
         private void tbSlideAge_ValueChanged(object sender, EventArgs e)
@@ -208,7 +208,7 @@ namespace TSOView
                 return;
 
             fig.SliderMatrix.AgeRatio = tbSlideAge.Value / (float)tbSlideAge.Maximum;
-            fig.UpdateBoneMatrices(true);
+            fig.UpdateBoneMatrices();
         }
 
         private void tbSlideEye_ValueChanged(object sender, EventArgs e)
@@ -217,7 +217,7 @@ namespace TSOView
                 return;
 
             fig.SliderMatrix.EyeRatio = tbSlideEye.Value / (float)tbSlideEye.Maximum;
-            fig.UpdateBoneMatrices(true);
+            fig.UpdateBoneMatrices();
         }
 
         private void FigureForm_DragDrop(object sender, DragEventArgs e)
