@@ -2237,14 +2237,14 @@ namespace TDCG
                 fig.GetWorldMatrix(out world);
 
                 Matrix camera_rotation = camera.RotationMatrix;
-                node_renderer.SetTransform(ref camera_rotation, ref Transform_View, ref Transform_Projection);
+                node_renderer.SetTransform(projection_mode, ref camera_rotation, ref Transform_View, ref Transform_Projection);
                 node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
                 TMONode node = fig.Tmo.FindNodeByName("face_oya");
                 if (node != null)
                 {
                     Vector3 position = node.GetWorldPosition();
                     position.Y += 5.0f;
-                    lamp_renderer.SetTransform(ref camera_rotation, ref Transform_View, ref Transform_Projection);
+                    lamp_renderer.SetTransform(projection_mode, ref camera_rotation, ref Transform_View, ref Transform_Projection);
                     lamp_renderer.Render(fig, ref position, ref world);
                 }
             }

@@ -47,6 +47,8 @@ namespace TDCG
             pole.Create();
         }
 
+        ProjectionMode projection_mode = ProjectionMode.Perspective;
+
         /// camera回転行列
         Matrix camera_rotation = Matrix.Identity;
 
@@ -56,8 +58,9 @@ namespace TDCG
         /// projection変換行列
         Matrix transform_projection = Matrix.Identity;
 
-        public void SetTransform(ref Matrix camera_rotation, ref Matrix view, ref Matrix proj)
+        public void SetTransform(ProjectionMode projection_mode, ref Matrix camera_rotation, ref Matrix view, ref Matrix proj)
         {
+            this.projection_mode = projection_mode;
             this.camera_rotation = camera_rotation;
             this.transform_view = view;
             this.transform_projection = proj;
@@ -77,7 +80,12 @@ namespace TDCG
 
         float UnprojectScaling(ref Matrix world_view_matrix)
         {
-            return -world_view_matrix.M43 / transform_projection.M22;
+            float d;
+            if (projection_mode == ProjectionMode.Ortho)
+                d = 1.0f;
+            else
+                d = -world_view_matrix.M43;
+            return d / transform_projection.M22;
         }
 
         void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
