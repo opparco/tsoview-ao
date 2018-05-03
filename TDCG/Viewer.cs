@@ -596,13 +596,13 @@ namespace TDCG
             {
                 case MouseButtons.Left:
                     manipulator.EndRotateLamp();
-                    manipulator.EndRotateNode(ManipulatorDeviceType.Mouse);
-                    EndSelectedNodeCommand();
+                    if (manipulator.EndRotateNode(ManipulatorDeviceType.Mouse))
+                        EndSelectedNodeCommand();
                     manipulator.EndRotateCamera();
                     break;
                 case MouseButtons.Right:
-                    manipulator.EndGrabNode(ManipulatorDeviceType.Mouse);
-                    EndSelectedNodeCommand();
+                    if (manipulator.EndGrabNode(ManipulatorDeviceType.Mouse))
+                        EndSelectedNodeCommand();
                     manipulator.EndGrabCamera();
                     break;
             }
@@ -1997,9 +1997,10 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Left])
                     {
                         keysEnabled[(int)Keys.Left] = false;
+                        BeginSelectedNodeCommand();
                         manipulator.BeginGrabNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
-                    if (manipulator.WhileGrabNodeLocal(z_mode ? 0 : -6, 0, z_mode ? +6 : 0))
+                    if (manipulator.WhileGrabNodeLocal(z_mode ? 0 : -2, 0, z_mode ? +2 : 0))
                     {
                         //TODO: UpdateSelectedBoneMatrices
                         GetSelectedFigure().UpdateBoneMatrices();
@@ -2010,9 +2011,10 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Down])
                     {
                         keysEnabled[(int)Keys.Down] = false;
+                        BeginSelectedNodeCommand();
                         manipulator.BeginGrabNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
-                    if (manipulator.WhileGrabNodeLocal(0, z_mode ? 0 : +6, z_mode ? +6 : 0))
+                    if (manipulator.WhileGrabNodeLocal(0, z_mode ? 0 : +2, z_mode ? +2 : 0))
                     {
                         //TODO: UpdateSelectedBoneMatrices
                         GetSelectedFigure().UpdateBoneMatrices();
@@ -2023,9 +2025,10 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Right])
                     {
                         keysEnabled[(int)Keys.Right] = false;
+                        BeginSelectedNodeCommand();
                         manipulator.BeginGrabNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
-                    if (manipulator.WhileGrabNodeLocal(z_mode ? 0 : +6, 0, z_mode ? -6 : 0))
+                    if (manipulator.WhileGrabNodeLocal(z_mode ? 0 : +2, 0, z_mode ? -2 : 0))
                     {
                         //TODO: UpdateSelectedBoneMatrices
                         GetSelectedFigure().UpdateBoneMatrices();
@@ -2036,16 +2039,19 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Up])
                     {
                         keysEnabled[(int)Keys.Up] = false;
+                        BeginSelectedNodeCommand();
                         manipulator.BeginGrabNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
-                    if (manipulator.WhileGrabNodeLocal(0, z_mode ? 0 : -6, z_mode ? -6 : 0))
+                    if (manipulator.WhileGrabNodeLocal(0, z_mode ? 0 : -2, z_mode ? -2 : 0))
                     {
                         //TODO: UpdateSelectedBoneMatrices
                         GetSelectedFigure().UpdateBoneMatrices();
                     }
                 }
-                else
-                    manipulator.EndGrabNode(ManipulatorDeviceType.Keyboard);
+                else if (manipulator.EndGrabNode(ManipulatorDeviceType.Keyboard))
+                {
+                    EndSelectedNodeCommand();
+                }
             }
             else
             {
@@ -2054,9 +2060,10 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Left])
                     {
                         keysEnabled[(int)Keys.Left] = false;
+                        BeginSelectedNodeCommand();
                         manipulator.BeginRotateNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
-                    if (manipulator.WhileRotateNodeLocal(z_mode ? 0 : -6, 0, z_mode ? +6 : 0))
+                    if (manipulator.WhileRotateNodeLocal(z_mode ? 0 : -2, 0, z_mode ? +2 : 0))
                     {
                         //TODO: UpdateSelectedBoneMatrices
                         GetSelectedFigure().UpdateBoneMatrices();
@@ -2067,9 +2074,10 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Down])
                     {
                         keysEnabled[(int)Keys.Down] = false;
+                        BeginSelectedNodeCommand();
                         manipulator.BeginRotateNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
-                    if (manipulator.WhileRotateNodeLocal(0, z_mode ? 0 : +6, z_mode ? +6 : 0))
+                    if (manipulator.WhileRotateNodeLocal(0, z_mode ? 0 : +2, z_mode ? +2 : 0))
                     {
                         //TODO: UpdateSelectedBoneMatrices
                         GetSelectedFigure().UpdateBoneMatrices();
@@ -2080,9 +2088,10 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Right])
                     {
                         keysEnabled[(int)Keys.Right] = false;
+                        BeginSelectedNodeCommand();
                         manipulator.BeginRotateNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
-                    if (manipulator.WhileRotateNodeLocal(z_mode ? 0 : +6, 0, z_mode ? -6 : 0))
+                    if (manipulator.WhileRotateNodeLocal(z_mode ? 0 : +2, 0, z_mode ? -2 : 0))
                     {
                         //TODO: UpdateSelectedBoneMatrices
                         GetSelectedFigure().UpdateBoneMatrices();
@@ -2093,16 +2102,19 @@ namespace TDCG
                     if (keysEnabled[(int)Keys.Up])
                     {
                         keysEnabled[(int)Keys.Up] = false;
+                        BeginSelectedNodeCommand();
                         manipulator.BeginRotateNode(ManipulatorDeviceType.Keyboard, selected_node);
                     }
-                    if (manipulator.WhileRotateNodeLocal(0, z_mode ? 0 : -6, z_mode ? -6 : 0))
+                    if (manipulator.WhileRotateNodeLocal(0, z_mode ? 0 : -2, z_mode ? -2 : 0))
                     {
                         //TODO: UpdateSelectedBoneMatrices
                         GetSelectedFigure().UpdateBoneMatrices();
                     }
                 }
-                else
-                    manipulator.EndRotateNode(ManipulatorDeviceType.Keyboard);
+                else if (manipulator.EndRotateNode(ManipulatorDeviceType.Keyboard))
+                {
+                    EndSelectedNodeCommand();
+                }
             }
 
             if (camera.NeedUpdate)

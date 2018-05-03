@@ -82,10 +82,12 @@ namespace TDCG
             return true;
         }
 
-        public void EndGrabNode(ManipulatorDeviceType device_type)
+        public bool EndGrabNode(ManipulatorDeviceType device_type)
         {
-            if (device_type == this.device_type)
+            bool same_device = (device_type == this.device_type);
+            if (same_device)
                 grab_node = false;
+            return same_device;
         }
 
         public void BeginRotateLamp(Figure fig)
@@ -170,10 +172,12 @@ namespace TDCG
             return true;
         }
 
-        public void EndRotateNode(ManipulatorDeviceType device_type)
+        public bool EndRotateNode(ManipulatorDeviceType device_type)
         {
-            if (device_type == this.device_type)
+            bool same_device = (device_type == this.device_type);
+            if (same_device)
                 rotate_node = false;
+            return same_device;
         }
 
         public void BeginGrabCamera()
