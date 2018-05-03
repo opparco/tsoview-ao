@@ -82,7 +82,7 @@ namespace TDCG
 
         void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
         {
-            float scale = 0.015625f; //= 12/768
+            float scale = 0.046875f; //= 36/768
             Matrix world_view_matrix;
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
@@ -97,7 +97,7 @@ namespace TDCG
 
         void DrawNodePoleY(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
         {
-            float scale = 0.015625f; //= 12/768
+            float scale = 0.046875f; //= 36/768
             Matrix world_rotation_x = Matrix.RotationX((float)(-Math.PI / 2.0)) * world_rotation;
             Matrix world_view_matrix;
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation_x, ref world, out world_view_matrix);
@@ -113,7 +113,7 @@ namespace TDCG
 
         void DrawNodePoleX(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
         {
-            float scale = 0.015625f; //= 12/768
+            float scale = 0.046875f; //= 36/768
             Matrix world_rotation_y = Matrix.RotationY((float)(+Math.PI / 2.0)) * world_rotation;
             Matrix world_view_matrix;
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation_y, ref world, out world_view_matrix);
