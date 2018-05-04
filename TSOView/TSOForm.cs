@@ -42,6 +42,8 @@ namespace TSOView
             viewer.SetRenderMode(tso_config.RenderMode);
             viewer.MainGel = tso_config.MainGel;
             viewer.ScreenDof = tso_config.ScreenDof;
+            viewer.GrabNodeDelta = tso_config.GrabNodeDelta;
+            viewer.RotateNodeDelta = tso_config.RotateNodeDelta;
 
             this.figureForm = new FigureForm();
             this.configForm = new ConfigForm();

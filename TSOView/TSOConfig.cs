@@ -32,6 +32,8 @@ public class TSOConfig
     public bool PseudoFullScreen { get; set; }
     public bool Keying { get; set; }
     public int RecordStep { get; set; }
+    public int GrabNodeDelta { get; set; }
+    public int RotateNodeDelta { get; set; }
 
     public TSOConfig()
     {
@@ -51,6 +53,8 @@ public class TSOConfig
         this.PseudoFullScreen = false;
         this.Keying = false;
         this.RecordStep = 5;
+        this.GrabNodeDelta = 2;
+        this.RotateNodeDelta = 2;
     }
 
     public void Dump()

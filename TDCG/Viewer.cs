@@ -211,6 +211,8 @@ namespace TDCG
             XRGBDepth = true;
             MainGel = false;
             ScreenDof = false;
+            GrabNodeDelta = 2;
+            RotateNodeDelta = 2;
 
             techmap = new Dictionary<string, bool>();
             LoadTechMap();
@@ -2022,70 +2024,74 @@ namespace TDCG
 
             if (grab_mode)
             {
+                int d = GrabNodeDelta;
+
                 if (keys[(int)Keys.NumPad4])
-                    GrabNodeLocalByKey((int)Keys.NumPad4, -2, 0, 0);
+                    GrabNodeLocalByKey((int)Keys.NumPad4, -d, 0, 0);
 
                 else if (keys[(int)Keys.NumPad2])
-                    GrabNodeLocalByKey((int)Keys.NumPad2, 0, +2, 0);
+                    GrabNodeLocalByKey((int)Keys.NumPad2, 0, +d, 0);
 
                 else if (keys[(int)Keys.NumPad6])
-                    GrabNodeLocalByKey((int)Keys.NumPad6, +2, 0, 0);
+                    GrabNodeLocalByKey((int)Keys.NumPad6, +d, 0, 0);
 
                 else if (keys[(int)Keys.NumPad8])
-                    GrabNodeLocalByKey((int)Keys.NumPad8, 0, -2, 0);
+                    GrabNodeLocalByKey((int)Keys.NumPad8, 0, -d, 0);
 
                 else if (keys[(int)Keys.NumPad1])
-                    GrabNodeLocalByKey((int)Keys.NumPad1, 0, 0, +2);
+                    GrabNodeLocalByKey((int)Keys.NumPad1, 0, 0, +d);
 
                 else if (keys[(int)Keys.NumPad9])
-                    GrabNodeLocalByKey((int)Keys.NumPad9, 0, 0, -2);
+                    GrabNodeLocalByKey((int)Keys.NumPad9, 0, 0, -d);
 
                 else if (keys[(int)Keys.Left])
-                    GrabNodeLocalByKey((int)Keys.Left, z_mode ? 0 : -2, 0, z_mode ? +2 : 0);
+                    GrabNodeLocalByKey((int)Keys.Left, z_mode ? 0 : -d, 0, z_mode ? +d : 0);
 
                 else if (keys[(int)Keys.Down])
-                    GrabNodeLocalByKey((int)Keys.Down, 0, z_mode ? 0 : +2, z_mode ? +2 : 0);
+                    GrabNodeLocalByKey((int)Keys.Down, 0, z_mode ? 0 : +d, z_mode ? +d : 0);
 
                 else if (keys[(int)Keys.Right])
-                    GrabNodeLocalByKey((int)Keys.Right, z_mode ? 0 : +2, 0, z_mode ? -2 : 0);
+                    GrabNodeLocalByKey((int)Keys.Right, z_mode ? 0 : +d, 0, z_mode ? -d : 0);
 
                 else if (keys[(int)Keys.Up])
-                    GrabNodeLocalByKey((int)Keys.Up, 0, z_mode ? 0 : -2, z_mode ? -2 : 0);
+                    GrabNodeLocalByKey((int)Keys.Up, 0, z_mode ? 0 : -d, z_mode ? -d : 0);
 
                 else if (manipulator.EndGrabNode(ManipulatorDeviceType.Keyboard))
                     EndSelectedNodeCommand();
             }
             else
             {
+                int d = RotateNodeDelta;
+
                 if (keys[(int)Keys.NumPad4])
-                    RotateNodeLocalByKey((int)Keys.NumPad4, -2, 0, 0);
+                    RotateNodeLocalByKey((int)Keys.NumPad4, -d, 0, 0);
 
                 else if (keys[(int)Keys.NumPad2])
-                    RotateNodeLocalByKey((int)Keys.NumPad2, 0, +2, 0);
+                    RotateNodeLocalByKey((int)Keys.NumPad2, 0, +d, 0);
 
                 else if (keys[(int)Keys.NumPad6])
-                    RotateNodeLocalByKey((int)Keys.NumPad6, +2, 0, 0);
+                    RotateNodeLocalByKey((int)Keys.NumPad6, +d, 0, 0);
 
                 else if (keys[(int)Keys.NumPad8])
-                    RotateNodeLocalByKey((int)Keys.NumPad8, 0, -2, 0);
+                    RotateNodeLocalByKey((int)Keys.NumPad8, 0, -d, 0);
 
                 else if (keys[(int)Keys.NumPad1])
-                    RotateNodeLocalByKey((int)Keys.NumPad1, 0, 0, +2);
+                    RotateNodeLocalByKey((int)Keys.NumPad1, 0, 0, +d);
 
                 else if (keys[(int)Keys.NumPad9])
-                    RotateNodeLocalByKey((int)Keys.NumPad9, 0, 0, -2);
+                    RotateNodeLocalByKey((int)Keys.NumPad9, 0, 0, -d);
 
                 else if (keys[(int)Keys.Left])
-                    RotateNodeLocalByKey((int)Keys.Left, z_mode ? 0 : -2, 0, z_mode ? +2 : 0);
+                    RotateNodeLocalByKey((int)Keys.Left, z_mode ? 0 : -d, 0, z_mode ? +d : 0);
 
                 else if (keys[(int)Keys.Down])
-                    RotateNodeLocalByKey((int)Keys.Down, 0, z_mode ? 0 : +2, z_mode ? +2 : 0);
+                    RotateNodeLocalByKey((int)Keys.Down, 0, z_mode ? 0 : +d, z_mode ? +d : 0);
 
                 else if (keys[(int)Keys.Right])
-                    RotateNodeLocalByKey((int)Keys.Right, z_mode ? 0 : +2, 0, z_mode ? -2 : 0);
+                    RotateNodeLocalByKey((int)Keys.Right, z_mode ? 0 : +d, 0, z_mode ? -d : 0);
 
                 else if (keys[(int)Keys.Up])
-                    RotateNodeLocalByKey((int)Keys.Up, 0, z_mode ? 0 : -2, z_mode ? -2 : 0);
+                    RotateNodeLocalByKey((int)Keys.Up, 0, z_mode ? 0 : -d, z_mode ? -d : 0);
 
                 else if (manipulator.EndRotateNode(ManipulatorDeviceType.Keyboard))
                     EndSelectedNodeCommand();
@@ -2419,6 +2425,12 @@ namespace TDCG
 
         /// config: dof mode
         public bool ScreenDof { get; set; }
+
+        /// config: キーボード操作によるボーン移動の変位
+        public int GrabNodeDelta { get; set; }
+
+        /// config: キーボード操作によるボーン回転の変位
+        public int RotateNodeDelta { get; set; }
 
         /// <summary>
         /// UVSCR値を得ます。
