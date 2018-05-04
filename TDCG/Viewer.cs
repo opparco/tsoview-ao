@@ -2157,7 +2157,6 @@ namespace TDCG
 
             device.SetRenderTarget(0, dev_surface);
             device.DepthStencilSurface = dev_zbuf;
-            //device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
 
             device.VertexDeclaration = vd;
             effect.SetValue(handle_Ambient, Ambient);
@@ -2185,7 +2184,6 @@ namespace TDCG
 
             device.SetRenderTarget(0, dev_surface);
             device.DepthStencilSurface = dev_zbuf;
-            //device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
 
             device.VertexDeclaration = vd;
             effect.SetValue(handle_Ambient, Ambient);
@@ -2231,7 +2229,6 @@ namespace TDCG
 
                 device.SetRenderTarget(0, dev_surface);
                 device.DepthStencilSurface = dev_zbuf;
-                //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
                 Matrix world;
                 fig.GetWorldMatrix(out world);
@@ -2266,7 +2263,6 @@ namespace TDCG
 
                 device.SetRenderTarget(0, dev_surface);
                 device.DepthStencilSurface = dev_zbuf;
-                //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
                 sprite_renderer.Render();
             }
@@ -2640,7 +2636,6 @@ namespace TDCG
 
             device.SetRenderTarget(0, dev_surface);
             device.DepthStencilSurface = dev_zbuf;
-            //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
             sprite.Transform = Matrix.Scaling(dev_rect.Width / 1024.0f * 0.75f, dev_rect.Height / 768.0f * 0.75f, 1.0f);
 
@@ -2669,7 +2664,6 @@ namespace TDCG
 
             device.SetRenderTarget(0, dev_surface);
             device.DepthStencilSurface = dev_zbuf;
-            //device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
             sprite.Transform = Matrix.Scaling(dev_rect.Width / 2048.0f, dev_rect.Height / 1536.0f, 1.0f);
 

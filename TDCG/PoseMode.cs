@@ -133,39 +133,30 @@ namespace TDCG
         {
             Texture node_location_texture = current_node_location_collection.node_location_texture;
 
-            sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
-
-            sprite.Begin(0);
             sprite.Draw(node_location_menu_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(8, 72, 0), Color.FromArgb(0xCC, Color.White));
-            sprite.End();
         }
 
         void DrawNodeCollectionSprite()
         {
             Texture node_location_texture = current_node_location_collection.node_location_texture;
 
-            sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
-
-            sprite.Begin(0);
             sprite.Draw(node_location_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(8, 72, 0), Color.FromArgb(0xCC, Color.White));
-            sprite.End();
         }
 
         void DrawSelectedNodeSprite()
         {
-            sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
-
             Point location;
             if (current_node_location_collection.GetNodeLocation(selected_nodename, out location))
             {
-                sprite.Begin(0);
                 sprite.Draw(node_sprite_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(location.X, location.Y, 0), Color.FromArgb(0xCC, Color.Cyan));
-                sprite.End();
             }
         }
 
         public override void Render()
         {
+            sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
+            sprite.Begin(SpriteFlags.AlphaBlend);
+
             DrawModeSprite();
             DrawNodeCollectionMenuSprite();
             if (collection_enabled)
@@ -173,6 +164,8 @@ namespace TDCG
                 DrawNodeCollectionSprite();
                 DrawSelectedNodeSprite();
             }
+
+            sprite.End();
         }
     }
 }

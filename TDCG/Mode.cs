@@ -58,11 +58,7 @@ namespace TDCG
 
         protected void DrawModeSprite()
         {
-            sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
-
-            sprite.Begin(0);
             sprite.Draw(mode_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(0, 0, 0), mode_col);
-            sprite.End();
         }
 
         public abstract void Render();

@@ -90,15 +90,11 @@ namespace TDCG
 
         void DrawCellSprite()
         {
-            sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
-
-            sprite.Begin(0);
             for (int row = 0; row < 2; row++)
             for (int col = 0; col < 6; col++)
             {
                 sprite.Draw(cell_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 9 + 5) * 16, (row * 9 + 5) * 16, 0), cell_col);
             }
-            sprite.End();
         }
 
         Color cursor_col = Color.FromArgb(0xCC, Color.FromArgb(253, 218, 112)); // SCENE
@@ -109,9 +105,10 @@ namespace TDCG
             int row = idx/6;
 
             sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
+            sprite.Begin(SpriteFlags.AlphaBlend);
 
-            sprite.Begin(0);
             sprite.Draw(texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 9 + 5) * 16, (row * 9 + 5) * 16, 0), cursor_col);
+
             sprite.End();
         }
 
@@ -127,8 +124,13 @@ namespace TDCG
 
         public override void Render()
         {
+            sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f, device_rect.Height / 768.0f, 1.0f);
+            sprite.Begin(SpriteFlags.AlphaBlend);
+
             DrawModeSprite();
             DrawCellSprite();
+
+            sprite.End();
         }
     }
 }
