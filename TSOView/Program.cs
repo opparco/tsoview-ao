@@ -34,6 +34,12 @@ static class Program
         using (TSOForm tso_form = new TSOForm(tso_config, args))
         {
             tso_form.Show();
+            if (tso_config.ShowConfigForm)
+            {
+                // stale KeyUp event
+                tso_form.configForm.Show();
+                tso_form.configForm.Activate();
+            }
 
             while (tso_form.Created)
             {

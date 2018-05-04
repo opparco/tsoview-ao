@@ -37,6 +37,7 @@ public class TSOConfig
     public int LampRadius { get; set; }
     public int NodeRadius { get; set; }
     public int SelectedNodeRadius { get; set; }
+    public bool ShowConfigForm { get; set; }
 
     public TSOConfig()
     {
@@ -61,6 +62,7 @@ public class TSOConfig
         this.LampRadius = 18;
         this.NodeRadius = 6;
         this.SelectedNodeRadius = 18;
+        this.ShowConfigForm = true;
     }
 
     public void Dump()
