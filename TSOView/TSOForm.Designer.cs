@@ -36,7 +36,7 @@ namespace TSOView
             this.AllowDrop = true;
             this.ClientSize = new System.Drawing.Size(284, 263);
             this.Name = "TSOForm";
-            this.Text = "TSOViewAO";
+            this.Text = "SceneEditor";
             this.ResumeLayout(false);
 
         }

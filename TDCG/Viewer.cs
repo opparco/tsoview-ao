@@ -1368,28 +1368,28 @@ namespace TDCG
             sw.Stop();
             Console.WriteLine(toonshader_filename + " read time: " + sw.Elapsed);
 
-            if (!LoadEffect(@"clear.fx", out effect_clear))
+            if (!LoadEffect(@"effects\clear.fx", out effect_clear))
                 return false;
 
-            if (!LoadEffect(@"dnclear.fx", out effect_dnclear))
+            if (!LoadEffect(@"effects\dnclear.fx", out effect_dnclear))
                 return false;
 
-            if (!LoadEffect(@"dnmap.fx", out effect_dnmap, macros, effect_pool))
+            if (!LoadEffect(@"effects\dnmap.fx", out effect_dnmap, macros, effect_pool))
                 return false;
 
-            if (!LoadEffect(@"depth.fx", out effect_depth, macros))
+            if (!LoadEffect(@"effects\depth.fx", out effect_depth, macros))
                 return false;
 
-            if (!LoadEffect(@"ao.fx", out effect_ao, macros))
+            if (!LoadEffect(@"effects\ao.fx", out effect_ao, macros))
                 return false;
 
-            if (!LoadEffect(@"gb.fx", out effect_gb))
+            if (!LoadEffect(@"effects\gb.fx", out effect_gb))
                 return false;
 
-            if (!LoadEffect(@"main.fx", out effect_main, macros))
+            if (!LoadEffect(@"effects\main.fx", out effect_main, macros))
                 return false;
 
-            if (!LoadEffect(@"screen.fx", out effect_screen, macros))
+            if (!LoadEffect(@"effects\screen.fx", out effect_screen, macros))
                 return false;
 
             screen = new Screen(device);
@@ -1397,18 +1397,18 @@ namespace TDCG
 
             lamp_renderer = new LampRenderer(device, sprite);
 
-            if (!LoadEffect(@"circle.fx", out lamp_renderer.effect_circle, macros))
+            if (!LoadEffect(@"effects\circle.fx", out lamp_renderer.effect_circle, macros))
                 return false;
 
-            if (!LoadEffect(@"pole.fx", out lamp_renderer.effect_pole, macros))
+            if (!LoadEffect(@"effects\pole.fx", out lamp_renderer.effect_pole, macros))
                 return false;
 
             node_renderer = new NodeRenderer(device, sprite);
 
-            if (!LoadEffect(@"circle.fx", out node_renderer.effect_circle, macros))
+            if (!LoadEffect(@"effects\circle.fx", out node_renderer.effect_circle, macros))
                 return false;
 
-            if (!LoadEffect(@"pole.fx", out node_renderer.effect_pole, macros))
+            if (!LoadEffect(@"effects\pole.fx", out node_renderer.effect_pole, macros))
                 return false;
 
             handle_LocalBoneMats = effect.GetParameter(null, "LocalBoneMats");
@@ -2529,12 +2529,12 @@ namespace TDCG
 
         static string GetHideTechsPath()
         {
-            return Path.Combine(Application.StartupPath, @"hidetechs.txt");
+            return Path.Combine(Application.StartupPath, @"resources\hidetechs.txt");
         }
 
         static string GetRandomTexturePath()
         {
-            return Path.Combine(Application.StartupPath, @"rand.png");
+            return Path.Combine(Application.StartupPath, @"resources\rand.png");
         }
 
         Dictionary<string, bool> techmap;
