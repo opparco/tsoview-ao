@@ -20,6 +20,11 @@ namespace TDCG
             return Path.Combine(Application.StartupPath, @"resources\model-mode\cell.png");
         }
 
+        static string GetCharactersTexturePath()
+        {
+            return Path.Combine(Application.StartupPath, @"resources\model-mode\chars.png");
+        }
+
         static string GetCursorTexturePath()
         {
             return Path.Combine(Application.StartupPath, @"resources\model-mode\cursor.png");
@@ -31,6 +36,7 @@ namespace TDCG
         }
 
         Texture cell_texture;
+        Texture characters_texture;
         Texture cursor_texture;
         Texture dotted_texture;
 
@@ -43,6 +49,8 @@ namespace TDCG
                 dotted_texture.Dispose();
             if (cursor_texture != null)
                 cursor_texture.Dispose();
+            if (characters_texture != null)
+                characters_texture.Dispose();
             if (cell_texture != null)
                 cell_texture.Dispose();
 
@@ -55,6 +63,7 @@ namespace TDCG
             base.Create(device_rect);
 
             cell_texture = TextureLoader.FromFile(device, GetCellTexturePath(), 96, 128, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            characters_texture = TextureLoader.FromFile(device, GetCharactersTexturePath(), 768, 32, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
             cursor_texture = TextureLoader.FromFile(device, GetCursorTexturePath(), 96, 96, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
             dotted_texture = TextureLoader.FromFile(device, GetDottedTexturePath(), 96, 96, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
         }
@@ -94,6 +103,12 @@ namespace TDCG
             for (int col = 0; col < 8; col++)
             {
                 sprite.Draw(cell_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 7 + 4) * 16, (row * 9 + 5) * 16, 0), cell_col);
+            }
+            for (int idx = 0; idx < 30; idx++)
+            {
+                int col = idx%8;
+                int row = idx/8;
+                sprite.Draw(characters_texture, new Rectangle(idx * 24, 0, 24, 32), new Vector3(0, 0, 0), new Vector3((col * 7 + 4) * 16 + 36, (row * 9 + 5) * 16 + 96, 0), cell_col);
             }
         }
 
