@@ -140,10 +140,17 @@ namespace TSOView
             Debug.WriteLine("leave form_OnDragDrop");
         }
 
+        /// <summary>
+        /// Escを押すと抜けます。
+        /// </summary>
+        /// <param name="e">イベント引数</param>
         protected override void OnKeyPress(System.Windows.Forms.KeyPressEventArgs e)
         {
             if ((int)(byte)e.KeyChar == (int)System.Windows.Forms.Keys.Escape)
+            {
+                viewer.SaveSceneToFile();
                 this.Dispose(); // Esc was pressed
+            }
         }
     }
 }
