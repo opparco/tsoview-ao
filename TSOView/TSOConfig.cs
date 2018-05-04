@@ -34,6 +34,9 @@ public class TSOConfig
     public int RecordStep { get; set; }
     public int GrabNodeDelta { get; set; }
     public int RotateNodeDelta { get; set; }
+    public int LampRadius { get; set; }
+    public int NodeRadius { get; set; }
+    public int SelectedNodeRadius { get; set; }
 
     public TSOConfig()
     {
@@ -55,6 +58,9 @@ public class TSOConfig
         this.RecordStep = 5;
         this.GrabNodeDelta = 2;
         this.RotateNodeDelta = 2;
+        this.LampRadius = 18;
+        this.NodeRadius = 6;
+        this.SelectedNodeRadius = 18;
     }
 
     public void Dump()

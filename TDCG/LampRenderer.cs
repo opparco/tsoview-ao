@@ -24,8 +24,6 @@ namespace TDCG
         {
             circle = new Circle(device);
             pole = new Pole(device);
-
-            lamp_circle_scale = 18.0f/384.0f;
         }
 
         // on device lost
@@ -45,10 +43,12 @@ namespace TDCG
         }
 
         // on device reset
-        public void Create(Rectangle device_rect)
+        public void Create(Rectangle device_rect, int lamp_radius)
         {
             circle.Create();
             pole.Create();
+
+            lamp_circle_scale = lamp_radius * 2.0f / device_rect.Height;
         }
 
         ProjectionMode projection_mode = ProjectionMode.Perspective;

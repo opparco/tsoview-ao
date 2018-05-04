@@ -213,6 +213,9 @@ namespace TDCG
             ScreenDof = false;
             GrabNodeDelta = 2;
             RotateNodeDelta = 2;
+            LampRadius = 18;
+            NodeRadius = 6;
+            SelectedNodeRadius = 18;
 
             techmap = new Dictionary<string, bool>();
             LoadTechMap();
@@ -267,7 +270,7 @@ namespace TDCG
                     int dx = location.X - (int)screen_position.X;
                     int dy = location.Y - (int)screen_position.Y;
 
-                    float radius = 18;
+                    float radius = LampRadius;
 
                     return (dx * dx + dy * dy < radius * radius);
                 }
@@ -296,7 +299,7 @@ namespace TDCG
                 int dx = location.X - (int)screen_position.X;
                 int dy = location.Y - (int)screen_position.Y;
 
-                float radius = 18;
+                float radius = SelectedNodeRadius;
 
                 return (dx * dx + dy * dy < radius * radius);
             }
@@ -326,7 +329,7 @@ namespace TDCG
                     int dx = location.X - (int)screen_position.X;
                     int dy = location.Y - (int)screen_position.Y;
 
-                    float radius = 6;
+                    float radius = NodeRadius;
 
                     if (dx * dx + dy * dy < radius * radius)
                     {
@@ -1666,8 +1669,8 @@ namespace TDCG
 
             scene_thumbnail.Create(device);
 
-            lamp_renderer.Create(dev_rect);
-            node_renderer.Create(dev_rect);
+            lamp_renderer.Create(dev_rect, LampRadius);
+            node_renderer.Create(dev_rect, NodeRadius, SelectedNodeRadius);
             sprite_renderer.Create(dev_rect);
 
             effect_depth.SetValue("DepthMap_texture", dmap_texture); // in
@@ -2431,6 +2434,15 @@ namespace TDCG
 
         /// config: キーボード操作によるボーン回転の変位
         public int RotateNodeDelta { get; set; }
+
+        /// ライト操作円の半径
+        public int LampRadius { get; set; }
+
+        /// ボーン選択円の半径
+        public int NodeRadius { get; set; }
+
+        /// ボーン操作円の半径
+        public int SelectedNodeRadius { get; set; }
 
         /// <summary>
         /// UVSCR値を得ます。

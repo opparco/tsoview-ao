@@ -44,6 +44,9 @@ namespace TSOView
             viewer.ScreenDof = tso_config.ScreenDof;
             viewer.GrabNodeDelta = tso_config.GrabNodeDelta;
             viewer.RotateNodeDelta = tso_config.RotateNodeDelta;
+            viewer.LampRadius = tso_config.LampRadius;
+            viewer.NodeRadius = tso_config.NodeRadius;
+            viewer.SelectedNodeRadius = tso_config.SelectedNodeRadius;
 
             this.figureForm = new FigureForm();
             this.configForm = new ConfigForm();

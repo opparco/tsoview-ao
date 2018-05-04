@@ -25,9 +25,6 @@ namespace TDCG
         {
             circle = new Circle(device);
             pole = new Pole(device);
-
-            node_circle_scale = 6.0f/384.0f;
-            selected_node_circle_scale = 18.0f/384.0f;
         }
 
         // on device lost
@@ -47,10 +44,13 @@ namespace TDCG
         }
 
         // on device reset
-        public void Create(Rectangle device_rect)
+        public void Create(Rectangle device_rect, int node_radius, int selected_node_radius)
         {
             circle.Create();
             pole.Create();
+
+            node_circle_scale = node_radius * 2.0f / device_rect.Height;
+            selected_node_circle_scale = selected_node_radius * 2.0f / device_rect.Height;
         }
 
         ProjectionMode projection_mode = ProjectionMode.Perspective;
