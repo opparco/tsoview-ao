@@ -615,6 +615,36 @@ namespace TDCG
             Debug.WriteLine("leave form_OnMouseUp");
         }
 
+        protected virtual void form_OnDragOver(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                if ((e.KeyState & 8) == 8)
+                    e.Effect = DragDropEffects.Copy;
+                else
+                    e.Effect = DragDropEffects.Move;
+            }
+        }
+
+        protected virtual void form_OnDragDrop(object sender, DragEventArgs e)
+        {
+            Debug.WriteLine("enter form_OnDragDrop");
+
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                foreach (string src in (string[])e.Data.GetData(DataFormats.FileDrop))
+                    this.LoadAnyFile(src, (e.KeyState & 8) == 8);
+            }
+
+            Debug.WriteLine("leave form_OnDragDrop");
+        }
+
+        // コントロールのサイズを変更したときに実行するハンドラ
+        protected virtual void form_OnResize(object sender, EventArgs e)
+        {
+            need_render = true;
+        }
+
         /// 操作リスト
         public List<ICommand> commands = new List<ICommand>();
         int command_id = 0;
@@ -744,12 +774,6 @@ namespace TDCG
 
             PNGSceneSaveWriter writer = new PNGSceneSaveWriter();
             writer.Save(thumbnail_file, dest_file, save_data);
-        }
-
-        // コントロールのサイズを変更したときに実行するハンドラ
-        protected virtual void form_OnResize(object sender, EventArgs e)
-        {
-            need_render = true;
         }
 
         /// <summary>
@@ -1432,6 +1456,10 @@ namespace TDCG
             control.MouseDown += new MouseEventHandler(form_OnMouseDown);
             control.MouseMove += new MouseEventHandler(form_OnMouseMove);
             control.MouseUp += new MouseEventHandler(form_OnMouseUp);
+
+            control.DragDrop += new DragEventHandler(form_OnDragDrop);
+            control.DragOver += new DragEventHandler(form_OnDragOver);
+
             control.Resize += new EventHandler(form_OnResize);
 
             return true;

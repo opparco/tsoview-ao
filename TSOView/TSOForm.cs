@@ -26,9 +26,6 @@ namespace TSOView
             if (tso_config.Keying)
                 this.TransparencyKey = tso_config.ScreenColor;
 
-            this.DragDrop += new DragEventHandler(form_OnDragDrop);
-            this.DragOver += new DragEventHandler(form_OnDragOver);
-
             this.viewer = new Viewer();
             viewer.Windowed = tso_config.Windowed;
             viewer.DeviceSize = tso_config.DeviceSize;
@@ -114,30 +111,6 @@ namespace TSOView
 
             viewer.Update();
             viewer.Render();
-        }
-
-        private void form_OnDragOver(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                if ((e.KeyState & 8) == 8)
-                    e.Effect = DragDropEffects.Copy;
-                else
-                    e.Effect = DragDropEffects.Move;
-            }
-        }
-
-        private void form_OnDragDrop(object sender, DragEventArgs e)
-        {
-            Debug.WriteLine("enter form_OnDragDrop");
-
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                foreach (string src in (string[])e.Data.GetData(DataFormats.FileDrop))
-                    viewer.LoadAnyFile(src, (e.KeyState & 8) == 8);
-            }
-
-            Debug.WriteLine("leave form_OnDragDrop");
         }
 
         /// <summary>
