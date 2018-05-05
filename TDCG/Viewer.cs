@@ -373,7 +373,7 @@ namespace TDCG
             location.Y = location.Y * 768 / client_size.Height;
         }
 
-        void SwapTSOFileRow(int arow, int brow)
+        void SwapTSORow(int arow, int brow)
         {
             Figure fig;
             if (TryGetFigure(out fig))
@@ -445,7 +445,7 @@ namespace TDCG
                 {
                     int row = sprite_renderer.model_mode.SelectedIdx;
                     if (row != swap_row)
-                        SwapTSOFileRow(swap_row, row);
+                        SwapTSORow(swap_row, row);
                     swap_row = -1;
                 }
                 if (TSOSelectEvent != null)
@@ -1789,6 +1789,7 @@ namespace TDCG
             Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
         }
 
+        /// 選択 tso を削除します。
         public void RemoveSelectedTSO()
         {
             Figure fig;
@@ -1823,6 +1824,7 @@ namespace TDCG
             need_render = true;
         }
 
+        /// ライト方向をリセットします。
         public void ResetLamp()
         {
             Figure fig;
@@ -1849,6 +1851,7 @@ namespace TDCG
             return true;
         }
 
+        /// 選択ボーンをリセットします。
         public void ResetSelectedNode()
         {
             Figure fig = GetSelectedFigure();
@@ -1873,6 +1876,7 @@ namespace TDCG
             return true;
         }
 
+        /// 選択フィギュアのポーズをリセットします。
         public void ResetSelectedFigurePose()
         {
             Figure fig = GetSelectedFigure();
@@ -2279,6 +2283,7 @@ namespace TDCG
                 Matrix camera_rotation = camera.RotationMatrix;
                 node_renderer.SetTransform(projection_mode, ref camera_rotation, ref Transform_View, ref Transform_Projection);
                 node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
+
                 TMONode node = fig.Tmo.FindNodeByName("face_oya");
                 if (node != null)
                 {
