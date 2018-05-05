@@ -211,8 +211,12 @@ namespace TDCG
             XRGBDepth = true;
             MainGel = false;
             ScreenDof = false;
-            GrabNodeDelta = 2;
-            RotateNodeDelta = 2;
+            KeyGrabNodeDelta = 2;
+            KeyRotateNodeDelta = 2;
+            MouseGrabNodeDelta = 0.0125f;
+            MouseRotateNodeDelta = 0.0125f;
+            MouseGrabCameraDelta = 0.125f;
+            MouseRotateCameraDelta = 0.01f;
             LampRadius = 18;
             NodeRadius = 6;
             SelectedNodeRadius = 18;
@@ -530,6 +534,9 @@ namespace TDCG
                     else
                         manipulator.BeginRotateCamera();
                     break;
+                case MouseButtons.Middle:
+                    manipulator.BeginGrabCamera();
+                    break;
                 case MouseButtons.Right:
                     Debug.WriteLine("form_OnMouseDown RMB");
 
@@ -556,8 +563,6 @@ namespace TDCG
         /// マウスを移動したときに実行するハンドラ
         protected virtual void form_OnMouseMove(object sender, MouseEventArgs e)
         {
-            const float delta_scale = 0.125f;
-
             //device 生成時の screen 座標系に変換する
             Point screen_p = new Point(e.X, e.Y);
             ScaleToScreen(ref screen_p);
@@ -578,7 +583,7 @@ namespace TDCG
                     manipulator.WhileRotateCamera(dx, dy);
                     break;
                 case MouseButtons.Middle:
-                    Camera.MoveView(-dx * delta_scale, dy * delta_scale);
+                    manipulator.WhileGrabCamera(dx, dy);
                     break;
                 case MouseButtons.Right:
                     if (manipulator.WhileGrabNode(dx, dy))
@@ -586,7 +591,7 @@ namespace TDCG
                         //TODO: UpdateSelectedBoneMatrices
                         GetSelectedFigure().UpdateBoneMatrices();
                     }
-                    manipulator.WhileGrabCamera(dx, dy);
+                    manipulator.WhileGrabCameraDepth(dx, dy);
                     break;
             }
 
@@ -604,6 +609,9 @@ namespace TDCG
                     if (manipulator.EndRotateNode(ManipulatorDeviceType.Mouse))
                         EndSelectedNodeCommand();
                     manipulator.EndRotateCamera();
+                    break;
+                case MouseButtons.Middle:
+                    manipulator.EndGrabCamera();
                     break;
                 case MouseButtons.Right:
                     if (manipulator.EndGrabNode(ManipulatorDeviceType.Mouse))
@@ -1433,6 +1441,10 @@ namespace TDCG
 
             sprite_renderer = new SpriteRenderer(device, sprite);
             camera.Update();
+            manipulator.GrabNodeDelta = MouseGrabNodeDelta;
+            manipulator.RotateNodeDelta = MouseRotateNodeDelta;
+            manipulator.GrabCameraDelta = MouseGrabCameraDelta;
+            manipulator.RotateCameraDelta = MouseRotateCameraDelta;
             OnDeviceReset(device, null);
 
             FigureSelectEvent += delegate (object sender, EventArgs e)
@@ -2065,7 +2077,7 @@ namespace TDCG
 
             if (grab_mode)
             {
-                int d = GrabNodeDelta;
+                int d = KeyGrabNodeDelta;
 
                 if (keys[(int)Keys.NumPad4])
                     GrabNodeLocalByKey((int)Keys.NumPad4, -d, 0, 0);
@@ -2102,7 +2114,7 @@ namespace TDCG
             }
             else
             {
-                int d = RotateNodeDelta;
+                int d = KeyRotateNodeDelta;
 
                 if (keys[(int)Keys.NumPad4])
                     RotateNodeLocalByKey((int)Keys.NumPad4, -d, 0, 0);
@@ -2469,10 +2481,22 @@ namespace TDCG
         public bool ScreenDof { get; set; }
 
         /// config: キーボード操作によるボーン移動の変位
-        public int GrabNodeDelta { get; set; }
+        public int KeyGrabNodeDelta { get; set; }
 
         /// config: キーボード操作によるボーン回転の変位
-        public int RotateNodeDelta { get; set; }
+        public int KeyRotateNodeDelta { get; set; }
+
+        /// config: マウス操作によるボーン移動の感度
+        public float MouseGrabNodeDelta { get; set; }
+
+        /// config: マウス操作によるボーン回転の感度
+        public float MouseRotateNodeDelta { get; set; }
+
+        /// config: マウス操作によるカメラ移動の感度
+        public float MouseGrabCameraDelta { get; set; }
+
+        /// config: マウス操作によるカメラ回転の感度
+        public float MouseRotateCameraDelta { get; set; }
 
         /// ライト操作円の半径
         public int LampRadius { get; set; }

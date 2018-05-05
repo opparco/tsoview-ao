@@ -25,17 +25,11 @@ namespace TDCG
         //カメラ移動方向ベクトル
         Vector3 dirD;
         
-        //カメラ奥行オフセット値
-        float zD;
-        
         //更新する必要があるか
         bool needUpdate;
         
         //view行列
         Matrix view;
-        
-        //移動時回転単位（ラジアン）
-        float angleU;
 
         /// <summary>
         /// 角度
@@ -77,10 +71,8 @@ namespace TDCG
             center = Vector3.Empty;
             translation = new Vector3(0.0f, 0.0f, +10.0f);
             dirD = Vector3.Empty;
-            zD = 0.0f;
             needUpdate = true;
             view = Matrix.Identity;
-            angleU = 0.01f;
         }
 
         /// <summary>
@@ -108,15 +100,13 @@ namespace TDCG
         /// </summary>
         /// <param name="dirX">移動方向（経度）</param>
         /// <param name="dirY">移動方向（緯度）</param>
-        /// <param name="dirZ">移動方向（奥行）</param>
-        public void Move(float dirX, float dirY, float dirZ)
+        public void Move(float dirX, float dirY)
         {
-            if (dirX == 0.0f && dirY == 0.0f && dirZ == 0.0f)
+            if (dirX == 0.0f && dirY == 0.0f)
                 return;
 
             dirD.X += dirX;
             dirD.Y += dirY;
-            this.zD += dirZ;
             needUpdate = true;
         }
 
@@ -128,10 +118,8 @@ namespace TDCG
             if (!needUpdate)
                 return;
 
-            angle.Y += angleU * -dirD.X;
-            angle.X += angleU * +dirD.Y;
-
-            this.translation.Z += zD;
+            angle.Y += -dirD.X;
+            angle.X += +dirD.Y;
 
             Matrix m = Matrix.RotationYawPitchRoll(angle.Y, angle.X, angle.Z);
             m.M41 = center.X;
@@ -219,10 +207,12 @@ namespace TDCG
         /// </summary>
         /// <param name="dx">X軸移動距離</param>
         /// <param name="dy">Y軸移動距離</param>
-        public void MoveView(float dx, float dy)
+        /// <param name="dz">Z軸移動距離</param>
+        public void MoveView(float dx, float dy, float dz)
         {
             this.translation.X += dx;
             this.translation.Y += dy;
+            this.translation.Z += dz;
             needUpdate = true;
         }
 
@@ -232,7 +222,6 @@ namespace TDCG
         protected void ResetDefValue()
         {
             dirD = Vector3.Empty;
-            zD = 0.0f;
         }
     }
 }

@@ -28,9 +28,22 @@ namespace TDCG
         bool rotate_camera = false;
         ManipulatorDeviceType device_type;
 
+        //ボーン移動操作の感度
+        public float GrabNodeDelta { get; set; }
+        //ボーン回転操作の感度
+        public float RotateNodeDelta { get; set; }
+        //カメラ移動操作の感度
+        public float GrabCameraDelta { get; set; }
+        //カメラ回転操作の感度
+        public float RotateCameraDelta { get; set; }
+
         public Manipulator(SimpleCamera camera)
         {
             this.camera = camera;
+            GrabNodeDelta = 0.0125f;
+            RotateNodeDelta = 0.0125f;
+            GrabCameraDelta = 0.125f;
+            RotateCameraDelta = 0.01f;
         }
 
         public void BeginGrabNode(ManipulatorDeviceType device_type, TMONode selected_node)
@@ -49,9 +62,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            const float delta_scale = 0.0125f;
-
-            Vector3 translation = new Vector3(dx * delta_scale, -dy * delta_scale, 0.0f);
+            Vector3 translation = new Vector3(dx * GrabNodeDelta, -dy * GrabNodeDelta, 0.0f);
 
             Quaternion world_rotation = Quaternion.Identity;
             TMONode parent_node = selected_node.parent;
@@ -73,9 +84,7 @@ namespace TDCG
             if (dx == 0 && dy == 0 & dz == 0)
                 return false;
 
-            const float delta_scale = 0.0125f;
-
-            Vector3 translation = new Vector3(dx * delta_scale, -dy * delta_scale, dz * delta_scale);
+            Vector3 translation = new Vector3(dx * GrabNodeDelta, -dy * GrabNodeDelta, dz * GrabNodeDelta);
 
             selected_node.Translation += translation;
 
@@ -105,9 +114,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            const float delta_scale = 0.0125f;
-
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * delta_scale, dy * delta_scale, 0.0f);
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * RotateNodeDelta, dy * RotateNodeDelta, 0.0f);
 
             Quaternion q = camera.RotationQuaternion;
             Quaternion q_1 = Quaternion.Conjugate(q);
@@ -138,9 +145,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            const float delta_scale = 0.0125f;
-
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * delta_scale, dy * delta_scale, 0.0f);
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * RotateNodeDelta, dy * RotateNodeDelta, 0.0f);
 
             Quaternion world_rotation = Quaternion.Identity;
             TMONode parent_node = selected_node.parent;
@@ -163,9 +168,7 @@ namespace TDCG
             if (dx == 0 && dy == 0 && dz == 0)
                 return false;
 
-            const float delta_scale = 0.0125f;
-
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * delta_scale, dy * delta_scale, dz * delta_scale);
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * RotateNodeDelta, dy * RotateNodeDelta, dz * RotateNodeDelta);
 
             selected_node.Rotation = Quaternion.Normalize(selected_node.Rotation * rotation);
 
@@ -190,12 +193,23 @@ namespace TDCG
             if (! grab_camera)
                 return false;
 
+            if (dx == 0 && dy == 0)
+                return false;
+
+            camera.MoveView(-dx * GrabCameraDelta, dy * GrabCameraDelta, 0.0f);
+
+            return true;
+        }
+
+        public bool WhileGrabCameraDepth(int dx, int dy)
+        {
+            if (! grab_camera)
+                return false;
+
             if (dy == 0)
                 return false;
 
-            const float delta_scale = 0.125f;
-
-            camera.Move(0.0f, 0.0f, -dy * delta_scale);
+            camera.MoveView(0.0f, 0.0f, -dy * GrabCameraDelta);
 
             return true;
         }
@@ -218,7 +232,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            camera.Move(dx, -dy, 0.0f);
+            camera.Move(dx * RotateCameraDelta, -dy * RotateCameraDelta);
 
             return true;
         }

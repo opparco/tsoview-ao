@@ -32,8 +32,12 @@ public class TSOConfig
     public bool PseudoFullScreen { get; set; }
     public bool Keying { get; set; }
     public int RecordStep { get; set; }
-    public int GrabNodeDelta { get; set; }
-    public int RotateNodeDelta { get; set; }
+    public int KeyGrabNodeDelta { get; set; }
+    public int KeyRotateNodeDelta { get; set; }
+    public float MouseGrabNodeDelta { get; set; }
+    public float MouseRotateNodeDelta { get; set; }
+    public float MouseGrabCameraDelta { get; set; }
+    public float MouseRotateCameraDelta { get; set; }
     public int LampRadius { get; set; }
     public int NodeRadius { get; set; }
     public int SelectedNodeRadius { get; set; }
@@ -57,8 +61,12 @@ public class TSOConfig
         this.PseudoFullScreen = false;
         this.Keying = false;
         this.RecordStep = 5;
-        this.GrabNodeDelta = 2;
-        this.RotateNodeDelta = 2;
+        this.KeyGrabNodeDelta = 2;
+        this.KeyRotateNodeDelta = 2;
+        MouseGrabNodeDelta = 0.0125f;
+        MouseRotateNodeDelta = 0.0125f;
+        MouseGrabCameraDelta = 0.125f;
+        MouseRotateCameraDelta = 0.01f;
         this.LampRadius = 18;
         this.NodeRadius = 6;
         this.SelectedNodeRadius = 18;
