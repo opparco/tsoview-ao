@@ -786,7 +786,7 @@ namespace TDCG
                     LoadTMOFile(source_file);
                     break;
                 case ".png":
-                    AddFigureFromPNGFile(source_file, append);
+                    LoadPNGFile(source_file, append);
                     break;
                 default:
                     if (!append)
@@ -1112,11 +1112,11 @@ namespace TDCG
         }
 
         /// <summary>
-        /// 指定パスからPNGFileを読み込みフィギュアを作成して追加します。
+        /// 指定パスからPNGFileを読み込みます。
         /// </summary>
         /// <param name="source_file">PNGFile のパス</param>
         /// <param name="append">FigureListを消去せずに追加するか</param>
-        public void AddFigureFromPNGFile(string source_file, bool append)
+        public void LoadPNGFile(string source_file, bool append)
         {
             PNGSaveData save_data = PNGSaveLoader.FromFile(source_file);
             if (save_data.FigureList.Count == 0 && save_data.Tmo == null)
@@ -1126,6 +1126,8 @@ namespace TDCG
             }
             if (save_data.CameraDescription != null)
             {
+                save_data.CameraDescription.Angle.Z = CameraConfig.Roll;
+
                 camera.Reset();
                 camera.Translation = save_data.CameraDescription.Translation;
                 camera.Angle = save_data.CameraDescription.Angle;
@@ -2820,35 +2822,6 @@ namespace TDCG
             device.DepthStencilSurface = dev_zbuf;
 
             screen.Draw(effect_screen);
-        }
-
-        /// <summary>
-        /// Direct3Dメッシュを描画します。
-        /// </summary>
-        /// <param name="mesh">メッシュ</param>
-        /// <param name="wld">ワールド変換行列</param>
-        /// <param name="color">描画色</param>
-        public void DrawMesh(Mesh mesh, Matrix wld, Vector4 color)
-        {
-            effect.Technique = "BONE";
-
-            Matrix wv = wld * Transform_View;
-            Matrix wvp = wv * Transform_Projection;
-
-            effect.SetValue("wld", wld);
-            effect.SetValue("wv", wv);
-            effect.SetValue("wvp", wvp);
-
-            effect.SetValue("ManColor", color);
-
-            int npass = effect.Begin(0);
-            for (int ipass = 0; ipass < npass; ipass++)
-            {
-                effect.BeginPass(ipass);
-                mesh.DrawSubset(0);
-                effect.EndPass();
-            }
-            effect.End();
         }
 
         /// <summary>

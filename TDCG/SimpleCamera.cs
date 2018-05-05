@@ -34,9 +34,6 @@ namespace TDCG
         //view行列
         Matrix view;
         
-        //Z軸回転差分
-        float rotZD;
-        
         //移動時回転単位（ラジアン）
         float angleU;
 
@@ -83,7 +80,6 @@ namespace TDCG
             zD = 0.0f;
             needUpdate = true;
             view = Matrix.Identity;
-            rotZD = 0.0f;
             angleU = 0.01f;
         }
 
@@ -125,19 +121,6 @@ namespace TDCG
         }
 
         /// <summary>
-        /// カメラをZ軸回転します。
-        /// </summary>
-        /// <param name="angle">回転角度（ラジアン）</param>
-        public void RotZ(float angle)
-        {
-            if (angle == 0.0f)
-                return;
-
-            rotZD = angle;
-            needUpdate = true;
-        }
-
-        /// <summary>
         /// カメラの位置と姿勢を更新します。
         /// </summary>
         public void Update()
@@ -147,7 +130,7 @@ namespace TDCG
 
             angle.Y += angleU * -dirD.X;
             angle.X += angleU * +dirD.Y;
-            angle.Z += +rotZD;
+
             this.translation.Z += zD;
 
             Matrix m = Matrix.RotationYawPitchRoll(angle.Y, angle.X, angle.Z);
@@ -250,7 +233,6 @@ namespace TDCG
         {
             dirD = Vector3.Empty;
             zD = 0.0f;
-            rotZD = 0.0f;
         }
     }
 }
