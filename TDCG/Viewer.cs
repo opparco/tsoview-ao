@@ -1280,18 +1280,6 @@ namespace TDCG
             this.shadow_map_enabled = shadow_map_enabled;
             SetControl(control);
 
-            for (int i = 0; i < keysEnabled.Length; i++)
-            {
-                keysEnabled[i] = true;
-            }
-            control.KeyDown += new KeyEventHandler(form_OnKeyDown);
-            control.KeyUp += new KeyEventHandler(form_OnKeyUp);
-
-            control.MouseDown += new MouseEventHandler(form_OnMouseDown);
-            control.MouseMove += new MouseEventHandler(form_OnMouseMove);
-            control.MouseUp += new MouseEventHandler(form_OnMouseUp);
-            control.Resize += new EventHandler(form_OnResize);
-
             PresentParameters pp = new PresentParameters();
             try
             {
@@ -1431,6 +1419,19 @@ namespace TDCG
                 }
                 need_render = true;
             };
+
+            for (int i = 0; i < keysEnabled.Length; i++)
+            {
+                keysEnabled[i] = true;
+            }
+            control.KeyDown += new KeyEventHandler(form_OnKeyDown);
+            control.KeyUp += new KeyEventHandler(form_OnKeyUp);
+
+            control.MouseDown += new MouseEventHandler(form_OnMouseDown);
+            control.MouseMove += new MouseEventHandler(form_OnMouseMove);
+            control.MouseUp += new MouseEventHandler(form_OnMouseUp);
+            control.Resize += new EventHandler(form_OnResize);
+
             return true;
         }
 
@@ -1575,9 +1576,12 @@ namespace TDCG
         {
             Console.WriteLine("OnDeviceLost");
 
-            sprite_renderer.Dispose();
-            node_renderer.Dispose();
-            lamp_renderer.Dispose();
+            if (sprite_renderer != null)
+                sprite_renderer.Dispose();
+            if (node_renderer != null)
+                node_renderer.Dispose();
+            if (lamp_renderer != null)
+                lamp_renderer.Dispose();
 
             if (sprite != null)
                 sprite.Dispose();
