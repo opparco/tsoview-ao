@@ -54,9 +54,9 @@ namespace TDCG
         /// </summary>
         public TMOFile Tmo;
         /// <summary>
-        /// フィギュアリスト
+        /// フィギュア配列
         /// </summary>
-        public List<Figure> FigureList = new List<Figure>();
+        public Figure[] figures;
     }
 
     public class PNGSaveLoader
@@ -72,20 +72,23 @@ namespace TDCG
             {
                 PNGFile png = new PNGFile();
                 Figure fig = null;
+                int fig_idx = 0;
 
-                png.Hsav += delegate (string type)
+                png.Hsav += delegate (string type, uint opt0, uint opt1)
                 {
                     save_data.type = type;
                     fig = new Figure();
-                    save_data.FigureList.Add(fig);
+                    save_data.figures = new Figure[1];
+                    save_data.figures[fig_idx++] = fig;
                 };
-                png.Pose += delegate (string type)
+                png.Pose += delegate (string type, uint opt0, uint opt1)
                 {
                     save_data.type = type;
                 };
-                png.Scne += delegate (string type)
+                png.Scne += delegate (string type, uint opt0, uint opt1)
                 {
                     save_data.type = type;
+                    save_data.figures = new Figure[opt1];
                 };
                 png.Cami += delegate (Stream dest, int extract_length)
                 {
@@ -148,7 +151,7 @@ namespace TDCG
                     fig = new Figure();
                     fig.LampRotation = save_data.LampRotation;
                     fig.Tmo = save_data.Tmo;
-                    save_data.FigureList.Add(fig);
+                    save_data.figures[fig_idx++] = fig;
 
                     byte[] buf = new byte[extract_length];
                     dest.Read(buf, 0, extract_length);

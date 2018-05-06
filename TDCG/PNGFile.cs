@@ -168,7 +168,7 @@ namespace TDCG
         /// Typeチャンクを読み込むのに用いるデリゲート型
         /// </summary>
         /// <param name="type">type</param>
-        public delegate void TaobTypeHandler(string type);
+        public delegate void TaobTypeHandler(string type, uint opt0, uint opt1);
         /// <summary>
         /// Camiチャンクを読み込むのに用いるデリゲート型
         /// </summary>
@@ -242,6 +242,8 @@ namespace TDCG
         {
             String type = System.Text.Encoding.ASCII.GetString(chunk_data, 0, 4);
             //Console.WriteLine("taOb chunk type: {0}", type);
+            uint opt0 = BitConverter.ToUInt32(chunk_data, 4);
+            uint opt1 = BitConverter.ToUInt32(chunk_data, 8);
             int extract_length = BitConverter.ToInt32(chunk_data, 12);
             int length = BitConverter.ToInt32(chunk_data, 16);
             //Console.WriteLine("taOb extract length: {0}", extract_length);
@@ -259,17 +261,17 @@ namespace TDCG
             else if (type == "HSAV")
             {
                 if (Hsav != null)
-                    Hsav(type);
+                    Hsav(type, opt0, opt1);
             }
             else if (type == "POSE")
             {
                 if (Pose != null)
-                    Pose(type);
+                    Pose(type, opt0, opt1);
             }
             else if (type == "SCNE")
             {
                 if (Scne != null)
-                    Scne(type);
+                    Scne(type, opt0, opt1);
             }
             else if (type == "CAMI") //Camera
             {
@@ -293,11 +295,11 @@ namespace TDCG
             }
             else if (type == "FTSO") //TSO
             {
-                byte[] opt1 = new byte[4];
-                Array.Copy(chunk_data, 8, opt1, 0, 4);
+                byte[] _opt1 = new byte[4];
+                Array.Copy(chunk_data, 8, _opt1, 0, 4);
 
                 if (Ftso != null)
-                    Ftso(dest, extract_length, opt1);
+                    Ftso(dest, extract_length, _opt1);
             }
         }
     }

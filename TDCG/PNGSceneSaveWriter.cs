@@ -90,9 +90,9 @@ namespace TDCG
         void WriteScne(PNGWriter pw, PNGSaveData save_data)
         {
             pw.WriteTDCG();
-            pw.WriteSCNE(save_data.FigureList.Count);
+            pw.WriteSCNE(save_data.figures.Length);
             WriteCAMI(pw, save_data.CameraDescription);
-            foreach (Figure fig in save_data.FigureList)
+            foreach (Figure fig in save_data.figures)
             {
                 WriteLGTA(pw, fig.LampRotation);
                 pw.WriteFTMO(fig.Tmo);

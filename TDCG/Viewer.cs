@@ -178,6 +178,9 @@ namespace TDCG
         Texture snap_texture;
         Surface snap_surface;
 
+#if false
+        ModelThumbnail model_thumbnail = new ModelThumbnail();
+#endif
         SceneThumbnail scene_thumbnail = new SceneThumbnail();
 
         SimpleCamera camera = new SimpleCamera();
@@ -751,9 +754,22 @@ namespace TDCG
             pose_command = null;
         }
 
-        public static string GetThumbnailFileName()
+        public static string GetModelThumbnailFileName()
+        {
+            return Path.Combine(Application.StartupPath, @"model.tdcgsav\thumbnail.png");
+        }
+
+        public static string GetSceneThumbnailFileName()
         {
             return Path.Combine(Application.StartupPath, @"scene.tdcgpose\thumbnail.png");
+        }
+
+        public static string GetModelFileName()
+        {
+            DateTime ti = DateTime.Now;
+            CultureInfo ci = CultureInfo.InvariantCulture;
+            string ti_string = ti.ToString("yyyyMMdd-hhmmss-fff", ci);
+            return ti_string + ".tdcgsav.png";
         }
 
         public static string GetSceneFileName()
@@ -764,6 +780,28 @@ namespace TDCG
             return ti_string + ".tdcgpose.png";
         }
 
+#if false
+        public void SaveModelToFile()
+        {
+            Figure fig = GetSelectedFigure();
+            if (fig == null)
+                return;
+
+            PNGSaveData save_data = new PNGSaveData();
+
+            save_data.figures = new Figure[1];
+            save_data.figures[0] = fig;
+
+            string thumbnail_file = GetModelThumbnailFileName();
+            string dest_file = GetModelFileName();
+
+            model_thumbnail.SaveToFile(thumbnail_file);
+
+            PNGModelSaveWriter writer = new PNGModelSaveWriter();
+            writer.Save(thumbnail_file, dest_file, save_data);
+        }
+#endif
+
         public void SaveSceneToFile()
         {
             PNGSaveData save_data = new PNGSaveData();
@@ -773,9 +811,10 @@ namespace TDCG
             camera_desc.Angle = camera.Angle;
             save_data.CameraDescription = camera_desc;
 
-            save_data.FigureList = FigureList;
+            save_data.figures = new Figure[FigureList.Count];
+            FigureList.CopyTo(save_data.figures);
 
-            string thumbnail_file = GetThumbnailFileName();
+            string thumbnail_file = GetSceneThumbnailFileName();
             string dest_file = GetSceneFileName();
 
             scene_thumbnail.SaveToFile(thumbnail_file);
@@ -1151,7 +1190,7 @@ namespace TDCG
         public void LoadPNGFile(string source_file, bool append)
         {
             PNGSaveData save_data = PNGSaveLoader.FromFile(source_file);
-            if (save_data.FigureList.Count == 0 && save_data.Tmo == null)
+            if (save_data.type == null)
             {
                 //not save file
                 return;
@@ -1183,7 +1222,7 @@ namespace TDCG
             }
             if (save_data.type == "HSAV")
             {
-                Figure fig = save_data.FigureList[0];
+                Figure fig = save_data.figures[0];
                 fig.OpenTSOFile(device, effect);
 
                 int len = FigureList.Count;
@@ -1232,7 +1271,7 @@ namespace TDCG
                     ClearFigureList();
 
                 int len = FigureList.Count;
-                foreach (Figure fig in save_data.FigureList)
+                foreach (Figure fig in save_data.figures)
                 {
                     fig.OpenTSOFile(device, effect);
                     //todo: override List#Add
@@ -1713,6 +1752,9 @@ namespace TDCG
             snap_texture = new Texture(device, 1024, 1024, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             snap_surface = snap_texture.GetSurfaceLevel(0);
 
+#if false
+            model_thumbnail.Create(device);
+#endif
             scene_thumbnail.Create(device);
 
             lamp_renderer.Create(dev_rect, LampRadius);
@@ -2400,6 +2442,9 @@ namespace TDCG
                     DrawMain(); // main in:amb occ out:dev
                     break;
             }
+#if false
+            model_thumbnail.Snap(dev_surface);
+#endif
             scene_thumbnail.Snap(dev_surface);
             if (sprite_enabled)
                 DrawModeSprite();
