@@ -2385,7 +2385,6 @@ namespace TDCG
                     Blit(dev_surface, occ_surface); // from:dev to:occ
                     DrawGaussianBlur(DiffusionConfig.Extent); // gb in:occ out:occ
                     DrawScreen(); // screen in:amb occ out:dev
-                    scene_thumbnail.Snap(dev_surface);
                     break;
                 case RenderMode.Shadow:
                     DrawFigure();
@@ -2399,7 +2398,6 @@ namespace TDCG
                     DrawFigure();
                     Blit(dev_surface, amb_surface); // from:dev to:amb
                     DrawMain(); // main in:amb occ out:dev
-                    scene_thumbnail.Snap(dev_surface);
                     break;
             }
             scene_thumbnail.Snap(dev_surface);
