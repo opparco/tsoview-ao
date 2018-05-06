@@ -213,10 +213,10 @@ namespace TDCG
             ScreenDof = false;
             KeyGrabNodeDelta = 2;
             KeyRotateNodeDelta = 2;
-            MouseGrabNodeDelta = 0.0125f;
-            MouseRotateNodeDelta = 0.0125f;
-            MouseGrabCameraDelta = 0.125f;
-            MouseRotateCameraDelta = 0.01f;
+            GrabNodeSpeed = 0.0125f;
+            RotateNodeSpeed = 0.0125f;
+            GrabCameraSpeed = 0.125f;
+            RotateCameraSpeed = 0.01f;
             LampRadius = 18;
             NodeRadius = 6;
             SelectedNodeRadius = 18;
@@ -1441,10 +1441,10 @@ namespace TDCG
 
             sprite_renderer = new SpriteRenderer(device, sprite);
             camera.Update();
-            manipulator.GrabNodeDelta = MouseGrabNodeDelta;
-            manipulator.RotateNodeDelta = MouseRotateNodeDelta;
-            manipulator.GrabCameraDelta = MouseGrabCameraDelta;
-            manipulator.RotateCameraDelta = MouseRotateCameraDelta;
+            manipulator.GrabNodeSpeed = GrabNodeSpeed;
+            manipulator.RotateNodeSpeed = RotateNodeSpeed;
+            manipulator.GrabCameraSpeed = GrabCameraSpeed;
+            manipulator.RotateCameraSpeed = RotateCameraSpeed;
             OnDeviceReset(device, null);
 
             FigureSelectEvent += delegate (object sender, EventArgs e)
@@ -2480,23 +2480,23 @@ namespace TDCG
         /// config: dof mode
         public bool ScreenDof { get; set; }
 
-        /// config: キーボード操作によるボーン移動の変位
+        /// config: キーボード操作によるボーン移動の変位; マウス距離に換算
         public int KeyGrabNodeDelta { get; set; }
 
-        /// config: キーボード操作によるボーン回転の変位
+        /// config: キーボード操作によるボーン回転の変位; マウス距離に換算
         public int KeyRotateNodeDelta { get; set; }
 
-        /// config: マウス操作によるボーン移動の感度
-        public float MouseGrabNodeDelta { get; set; }
+        /// config: ボーン移動の速度
+        public float GrabNodeSpeed { get; set; }
 
-        /// config: マウス操作によるボーン回転の感度
-        public float MouseRotateNodeDelta { get; set; }
+        /// config: ボーン回転の速度
+        public float RotateNodeSpeed { get; set; }
 
-        /// config: マウス操作によるカメラ移動の感度
-        public float MouseGrabCameraDelta { get; set; }
+        /// config: カメラ移動の速度
+        public float GrabCameraSpeed { get; set; }
 
-        /// config: マウス操作によるカメラ回転の感度
-        public float MouseRotateCameraDelta { get; set; }
+        /// config: カメラ回転の速度
+        public float RotateCameraSpeed { get; set; }
 
         /// ライト操作円の半径
         public int LampRadius { get; set; }

@@ -41,10 +41,10 @@ namespace TSOView
             viewer.ScreenDof = tso_config.ScreenDof;
             viewer.KeyGrabNodeDelta = tso_config.KeyGrabNodeDelta;
             viewer.KeyRotateNodeDelta = tso_config.KeyRotateNodeDelta;
-            viewer.MouseGrabNodeDelta = tso_config.MouseGrabNodeDelta;
-            viewer.MouseRotateNodeDelta = tso_config.MouseRotateNodeDelta;
-            viewer.MouseGrabCameraDelta = tso_config.MouseGrabCameraDelta;
-            viewer.MouseRotateCameraDelta = tso_config.MouseRotateCameraDelta;
+            viewer.GrabNodeSpeed = tso_config.GrabNodeSpeed;
+            viewer.RotateNodeSpeed = tso_config.RotateNodeSpeed;
+            viewer.GrabCameraSpeed = tso_config.GrabCameraSpeed;
+            viewer.RotateCameraSpeed = tso_config.RotateCameraSpeed;
             viewer.LampRadius = tso_config.LampRadius;
             viewer.NodeRadius = tso_config.NodeRadius;
             viewer.SelectedNodeRadius = tso_config.SelectedNodeRadius;

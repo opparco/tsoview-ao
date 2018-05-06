@@ -29,21 +29,21 @@ namespace TDCG
         ManipulatorDeviceType device_type;
 
         //ボーン移動操作の感度
-        public float GrabNodeDelta { get; set; }
+        public float GrabNodeSpeed { get; set; }
         //ボーン回転操作の感度
-        public float RotateNodeDelta { get; set; }
+        public float RotateNodeSpeed { get; set; }
         //カメラ移動操作の感度
-        public float GrabCameraDelta { get; set; }
+        public float GrabCameraSpeed { get; set; }
         //カメラ回転操作の感度
-        public float RotateCameraDelta { get; set; }
+        public float RotateCameraSpeed { get; set; }
 
         public Manipulator(SimpleCamera camera)
         {
             this.camera = camera;
-            GrabNodeDelta = 0.0125f;
-            RotateNodeDelta = 0.0125f;
-            GrabCameraDelta = 0.125f;
-            RotateCameraDelta = 0.01f;
+            GrabNodeSpeed = 0.0125f;
+            RotateNodeSpeed = 0.0125f;
+            GrabCameraSpeed = 0.125f;
+            RotateCameraSpeed = 0.01f;
         }
 
         public void BeginGrabNode(ManipulatorDeviceType device_type, TMONode selected_node)
@@ -62,7 +62,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            Vector3 translation = new Vector3(dx * GrabNodeDelta, -dy * GrabNodeDelta, 0.0f);
+            Vector3 translation = new Vector3(dx * GrabNodeSpeed, -dy * GrabNodeSpeed, 0.0f);
 
             Quaternion world_rotation = Quaternion.Identity;
             TMONode parent_node = selected_node.parent;
@@ -84,7 +84,7 @@ namespace TDCG
             if (dx == 0 && dy == 0 & dz == 0)
                 return false;
 
-            Vector3 translation = new Vector3(dx * GrabNodeDelta, -dy * GrabNodeDelta, dz * GrabNodeDelta);
+            Vector3 translation = new Vector3(dx * GrabNodeSpeed, -dy * GrabNodeSpeed, dz * GrabNodeSpeed);
 
             selected_node.Translation += translation;
 
@@ -114,7 +114,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * RotateNodeDelta, dy * RotateNodeDelta, 0.0f);
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * RotateNodeSpeed, dy * RotateNodeSpeed, 0.0f);
 
             Quaternion q = camera.RotationQuaternion;
             Quaternion q_1 = Quaternion.Conjugate(q);
@@ -145,7 +145,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * RotateNodeDelta, dy * RotateNodeDelta, 0.0f);
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * RotateNodeSpeed, dy * RotateNodeSpeed, 0.0f);
 
             Quaternion world_rotation = Quaternion.Identity;
             TMONode parent_node = selected_node.parent;
@@ -168,7 +168,7 @@ namespace TDCG
             if (dx == 0 && dy == 0 && dz == 0)
                 return false;
 
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * RotateNodeDelta, dy * RotateNodeDelta, dz * RotateNodeDelta);
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * RotateNodeSpeed, dy * RotateNodeSpeed, dz * RotateNodeSpeed);
 
             selected_node.Rotation = Quaternion.Normalize(selected_node.Rotation * rotation);
 
@@ -196,7 +196,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            camera.MoveView(-dx * GrabCameraDelta, dy * GrabCameraDelta, 0.0f);
+            camera.MoveView(-dx * GrabCameraSpeed, dy * GrabCameraSpeed, 0.0f);
 
             return true;
         }
@@ -209,7 +209,7 @@ namespace TDCG
             if (dy == 0)
                 return false;
 
-            camera.MoveView(0.0f, 0.0f, -dy * GrabCameraDelta);
+            camera.MoveView(0.0f, 0.0f, -dy * GrabCameraSpeed);
 
             return true;
         }
@@ -232,7 +232,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            camera.Move(dx * RotateCameraDelta, -dy * RotateCameraDelta);
+            camera.Move(dx * RotateCameraSpeed, -dy * RotateCameraSpeed);
 
             return true;
         }
