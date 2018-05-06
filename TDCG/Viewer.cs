@@ -2351,15 +2351,12 @@ namespace TDCG
 
             AssignWorldViewProjection();
 
+            if (sprite_enabled)
+                Snap();
             switch (RenderMode)
             {
                 case RenderMode.Ambient:
-                    if (sprite_enabled)
-                        Snap();
                     DrawFigure();
-                    scene_thumbnail.Snap(dev_surface);
-                    if (sprite_enabled)
-                        DrawModeSprite();
                     break;
                 case RenderMode.DepthMap:
                     DrawDepthNormalMap();
@@ -2405,6 +2402,9 @@ namespace TDCG
                     scene_thumbnail.Snap(dev_surface);
                     break;
             }
+            scene_thumbnail.Snap(dev_surface);
+            if (sprite_enabled)
+                DrawModeSprite();
 
             if (Rendering != null)
                 Rendering();
