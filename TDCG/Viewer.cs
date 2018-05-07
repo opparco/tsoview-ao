@@ -795,6 +795,9 @@ namespace TDCG
             string thumbnail_file = GetModelThumbnailFileName();
             string dest_file = GetModelFileName();
 
+            Color bg_col = Color.FromArgb(136, 255, 156); // MODEL
+            DrawFigure(bg_col);
+            model_thumbnail.Snap(dev_surface);
             model_thumbnail.SaveToFile(thumbnail_file);
 
             PNGModelSaveWriter writer = new PNGModelSaveWriter();
@@ -817,6 +820,9 @@ namespace TDCG
             string thumbnail_file = GetSceneThumbnailFileName();
             string dest_file = GetSceneFileName();
 
+            Color bg_col = Color.FromArgb(253, 218, 112); // SCENE
+            DrawFigure(bg_col);
+            scene_thumbnail.Snap(dev_surface);
             scene_thumbnail.SaveToFile(thumbnail_file);
 
             PNGSceneSaveWriter writer = new PNGSceneSaveWriter();
@@ -2442,10 +2448,6 @@ namespace TDCG
                     DrawMain(); // main in:amb occ out:dev
                     break;
             }
-#if false
-            model_thumbnail.Snap(dev_surface);
-#endif
-            scene_thumbnail.Snap(dev_surface);
             if (sprite_enabled)
                 DrawModeSprite();
 
@@ -2560,7 +2562,7 @@ namespace TDCG
             return new Vector4(x, 0.0f, 0.0f, 0.0f);
         }
 
-        protected virtual void DrawTSO(Figure fig, TSOFile tso)
+        void DrawTSO(Figure fig, TSOFile tso)
         {
             tso.BeginRender();
 
@@ -2585,7 +2587,7 @@ namespace TDCG
             tso.EndRender();
         }
 
-        protected virtual void DrawFigure(Figure fig)
+        void DrawFigure(Figure fig)
         {
             {
                 Matrix world;
@@ -2606,7 +2608,7 @@ namespace TDCG
         /// <summary>
         /// フィギュアを描画します。
         /// </summary>
-        protected virtual void DrawFigure()
+        void DrawFigure(Color bg_col)
         {
             Debug.WriteLine("DrawFigure");
 
@@ -2614,7 +2616,7 @@ namespace TDCG
 
             device.SetRenderTarget(0, dev_surface);
             device.DepthStencilSurface = dev_zbuf;
-            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
+            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, bg_col, 1.0f, 0);
 
             device.VertexDeclaration = vd;
             effect.SetValue(handle_Ambient, Ambient);
@@ -2623,6 +2625,11 @@ namespace TDCG
 
             foreach (Figure fig in FigureList)
                 DrawFigure(fig);
+        }
+
+        void DrawFigure()
+        {
+            DrawFigure(ScreenColor);
         }
 
         void DrawShadow()
