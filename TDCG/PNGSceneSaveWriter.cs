@@ -87,12 +87,12 @@ namespace TDCG
             pw.WriteFIGU(figu);
         }
 
-        void WriteScne(PNGWriter pw, PNGSaveData save_data)
+        void WriteScne(PNGWriter pw, PNGSaveData savedata)
         {
             pw.WriteTDCG();
-            pw.WriteSCNE(save_data.figures.Length);
-            WriteCAMI(pw, save_data.CameraDescription);
-            foreach (Figure fig in save_data.figures)
+            pw.WriteSCNE(savedata.figures.Length);
+            WriteCAMI(pw, savedata.CameraDescription);
+            foreach (Figure fig in savedata.figures)
             {
                 WriteLGTA(pw, fig.LampRotation);
                 pw.WriteFTMO(fig.Tmo);
@@ -102,14 +102,14 @@ namespace TDCG
             }
         }
 
-        public void Save(string thumbnail_file, string dest_file, PNGSaveData save_data)
+        public void Save(string thumbnail_file, string dest_file, PNGSaveData savedata)
         {
             PNGFile png = new PNGFile();
 
             png.WriteTaOb += delegate(BinaryWriter bw)
             {
                 PNGWriter pw = new PNGWriter(bw);
-                WriteScne(pw, save_data);
+                WriteScne(pw, savedata);
             };
 
             png.Load(thumbnail_file);

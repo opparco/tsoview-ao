@@ -787,10 +787,10 @@ namespace TDCG
             if (fig == null)
                 return;
 
-            PNGSaveData save_data = new PNGSaveData();
+            PNGSaveData savedata = new PNGSaveData();
 
-            save_data.figures = new Figure[1];
-            save_data.figures[0] = fig;
+            savedata.figures = new Figure[1];
+            savedata.figures[0] = fig;
 
             string thumbnail_file = GetModelThumbnailFileName();
             string dest_file = GetModelFileName();
@@ -798,21 +798,21 @@ namespace TDCG
             model_thumbnail.SaveToFile(thumbnail_file);
 
             PNGModelSaveWriter writer = new PNGModelSaveWriter();
-            writer.Save(thumbnail_file, dest_file, save_data);
+            writer.Save(thumbnail_file, dest_file, savedata);
         }
 #endif
 
         public void SaveSceneToFile()
         {
-            PNGSaveData save_data = new PNGSaveData();
+            PNGSaveData savedata = new PNGSaveData();
 
             PNGSaveCameraDescription camera_desc = new PNGSaveCameraDescription();
             camera_desc.Translation = camera.Translation;
             camera_desc.Angle = camera.Angle;
-            save_data.CameraDescription = camera_desc;
+            savedata.CameraDescription = camera_desc;
 
-            save_data.figures = new Figure[FigureList.Count];
-            FigureList.CopyTo(save_data.figures);
+            savedata.figures = new Figure[FigureList.Count];
+            FigureList.CopyTo(savedata.figures);
 
             string thumbnail_file = GetSceneThumbnailFileName();
             string dest_file = GetSceneFileName();
@@ -820,7 +820,7 @@ namespace TDCG
             scene_thumbnail.SaveToFile(thumbnail_file);
 
             PNGSceneSaveWriter writer = new PNGSceneSaveWriter();
-            writer.Save(thumbnail_file, dest_file, save_data);
+            writer.Save(thumbnail_file, dest_file, savedata);
         }
 
         /// <summary>
@@ -1189,29 +1189,29 @@ namespace TDCG
         /// <param name="append">FigureListを消去せずに追加するか</param>
         public void LoadPNGFile(string source_file, bool append)
         {
-            PNGSaveData save_data = PNGSaveLoader.FromFile(source_file);
-            if (save_data.type == null)
+            PNGSaveData savedata = PNGSaveLoader.FromFile(source_file);
+            if (savedata.type == null)
             {
                 //not save file
                 return;
             }
-            if (save_data.CameraDescription != null)
+            if (savedata.CameraDescription != null)
             {
-                save_data.CameraDescription.Angle.Z = CameraConfig.Roll;
+                savedata.CameraDescription.Angle.Z = CameraConfig.Roll;
 
                 camera.Reset();
-                camera.Translation = save_data.CameraDescription.Translation;
-                camera.Angle = save_data.CameraDescription.Angle;
+                camera.Translation = savedata.CameraDescription.Translation;
+                camera.Angle = savedata.CameraDescription.Angle;
             }
-            if (save_data.type == "POSE")
+            if (savedata.type == "POSE")
             {
                 Figure fig;
                 if (TryGetFigure(out fig))
                 {
                     BeginSelectedFigurePoseCommand();
 
-                    fig.LampRotation = save_data.LampRotation;
-                    fig.Tmo = save_data.Tmo;
+                    fig.LampRotation = savedata.LampRotation;
+                    fig.Tmo = savedata.Tmo;
                     fig.UpdateNodeMapAndBoneMatrices();
 
                     EndSelectedFigurePoseCommand();
@@ -1220,9 +1220,9 @@ namespace TDCG
                     SetFigureIdx(sprite_renderer.scene_mode.SelectedIdx);
                 }
             }
-            if (save_data.type == "HSAV")
+            if (savedata.type == "HSAV")
             {
-                Figure fig = save_data.figures[0];
+                Figure fig = savedata.figures[0];
                 fig.OpenTSOFile(device, effect);
 
                 int len = FigureList.Count;
@@ -1265,13 +1265,13 @@ namespace TDCG
                     SetFigureIdx(len);
                 }
             }
-            if (save_data.type == "SCNE")
+            if (savedata.type == "SCNE")
             {
                 if (!append)
                     ClearFigureList();
 
                 int len = FigureList.Count;
-                foreach (Figure fig in save_data.figures)
+                foreach (Figure fig in savedata.figures)
                 {
                     fig.OpenTSOFile(device, effect);
                     //todo: override List#Add
