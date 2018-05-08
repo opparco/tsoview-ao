@@ -1396,7 +1396,9 @@ namespace TDCG
         int keySave = (int)Keys.Enter;
         int keySprite = (int)Keys.Home;
         int keyResetLamp = (int)Keys.D9;
+        int keyResetLamp2 = (int)Keys.Multiply;
         int keyResetNode = (int)Keys.D0;
+        int keyResetNode2 = (int)Keys.Subtract;
         int keyResetPose = (int)Keys.F12;
 
         /// <summary>
@@ -2169,9 +2171,24 @@ namespace TDCG
                 keysEnabled[keyResetLamp] = false;
                 this.ResetLamp();
             }
+            if (keysEnabled[keyResetLamp2] && keys[keyResetLamp2])
+            {
+                keysEnabled[keyResetLamp2] = false;
+                this.ResetLamp();
+            }
             if (keysEnabled[keyResetNode] && keys[keyResetNode])
             {
                 keysEnabled[keyResetNode] = false;
+                if (this.CanResetSelectedNode())
+                {
+                    BeginSelectedNodeCommand();
+                    this.ResetSelectedNode();
+                    EndSelectedNodeCommand();
+                }
+            }
+            if (keysEnabled[keyResetNode2] && keys[keyResetNode2])
+            {
+                keysEnabled[keyResetNode2] = false;
                 if (this.CanResetSelectedNode())
                 {
                     BeginSelectedNodeCommand();
