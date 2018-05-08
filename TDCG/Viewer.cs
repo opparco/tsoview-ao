@@ -2149,10 +2149,15 @@ namespace TDCG
                 string modename = sprite_renderer.CurrentModeName;
                 if (modename == "MODEL")
                     this.SaveModelToFile();
-                else if (modename == "POSE")
-                    this.SavePoseToFile();
                 else
-                    this.SaveSceneToFile();
+                {
+                    // CRTL 同時押しでシーンを保存; なければポーズを保存
+                    bool ctrl_p = (Control.ModifierKeys & Keys.Control) == Keys.Control;
+                    if (ctrl_p)
+                        this.SaveSceneToFile();
+                    else
+                        this.SavePoseToFile();
+                }
             }
             if (keysEnabled[keySprite] && keys[keySprite])
             {
