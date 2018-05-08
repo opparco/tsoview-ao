@@ -16,8 +16,7 @@ public class BMPSaveDataTest
 
         BMPSaveData data = new BMPSaveData();
 
-        using (Stream stream = File.OpenRead(source_file))
-            data.Read(stream);
+        data.Load(source_file);
 
         for (int i = 0; i < 32; i++)
         {
@@ -30,18 +29,18 @@ public class BMPSaveDataTest
         }
 #endif
 
-        Console.WriteLine(data.GetSliderValue(0)); // おっぱい
-        Console.WriteLine(BitConverter.ToUInt32(data.GetBytes(1), 0));
+        Console.WriteLine(data.GetSliderValue(0)); // Oppai おっぱい
+        Console.WriteLine(BitConverter.ToUInt32(data.GetBytes(1), 0)); // 3
         Console.WriteLine("0x{0:X8}", BitConverter.ToUInt32(data.GetBytes(2), 0)); // 固定
         Console.WriteLine("0x{0:X8}", BitConverter.ToUInt32(data.GetBytes(3), 0)); // key1
-        Console.WriteLine(data.GetSliderValue(4)); // 姉妹
-        Console.WriteLine(data.GetSliderValue(5));
-        Console.WriteLine(data.GetSliderValue(6));
-        Console.WriteLine(data.GetSliderValue(7)); // 胴まわり
-        Console.WriteLine(data.GetSliderValue(8));
+        Console.WriteLine(data.GetSliderValue(4)); // Age 姉妹
+        Console.WriteLine(data.GetSliderValue(5)); // Arm
+        Console.WriteLine(data.GetSliderValue(6)); // Leg
+        Console.WriteLine(data.GetSliderValue(7)); // Waist 胴まわり
+        Console.WriteLine(data.GetSliderValue(8)); // Eye
         Console.WriteLine("0x{0:X8}", BitConverter.ToUInt32(data.GetBytes(9), 0)); // 固定
         Console.WriteLine("0x{0:X8}", BitConverter.ToUInt32(data.GetBytes(10), 0)); // key2
-        Console.WriteLine(data.GetSliderValue(11));
+        Console.WriteLine(data.GetSliderValue(11)); // やわらか
         Console.WriteLine("0x{0:X8}", BitConverter.ToUInt32(data.GetBytes(12), 0)); // 固定
         Console.WriteLine("0x{0:X8}", BitConverter.ToUInt32(data.GetBytes(13), 0)); // key3
 

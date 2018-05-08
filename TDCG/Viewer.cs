@@ -178,9 +178,7 @@ namespace TDCG
         Texture snap_texture;
         Surface snap_surface;
 
-#if false
         ModelThumbnail model_thumbnail = new ModelThumbnail();
-#endif
         SceneThumbnail scene_thumbnail = new SceneThumbnail();
 
         SimpleCamera camera = new SimpleCamera();
@@ -780,7 +778,6 @@ namespace TDCG
             return ti_string + ".tdcgpose.png";
         }
 
-#if false
         public void SaveModelToFile()
         {
             Figure fig = GetSelectedFigure();
@@ -795,15 +792,46 @@ namespace TDCG
             string thumbnail_file = GetModelThumbnailFileName();
             string dest_file = GetModelFileName();
 
+
+            Blit(dev_surface, tmp_surface); // from:dev to:tmp
+            //TODO: fig.Tmo = SnapShotPose.tmo
+
             Color bg_col = Color.FromArgb(136, 255, 156); // MODEL
-            DrawFigure(bg_col);
+            DrawFigure(fig, bg_col);
             model_thumbnail.Snap(dev_surface);
             model_thumbnail.SaveToFile(thumbnail_file);
+            {
+                BMPSaveData data = new BMPSaveData();
+
+                data.Load(thumbnail_file);
+                for (int i = 0; i < 32; i++)
+                {
+                    data.SetFileName(i, "(none)");
+                }
+                SliderMatrix slider_matrix = fig.SliderMatrix;
+                data.SetSliderValue(0, slider_matrix.OppaiRatio);
+                data.SetBytes(1, BitConverter.GetBytes((uint)3));
+                data.SetBytes(2, BitConverter.GetBytes((uint)0x39AA5963));
+                //3: key1
+                data.SetSliderValue(4, slider_matrix.AgeRatio);
+                data.SetSliderValue(5, slider_matrix.ArmRatio);
+                data.SetSliderValue(6, slider_matrix.LegRatio);
+                data.SetSliderValue(7, slider_matrix.WaistRatio);
+                data.SetSliderValue(8, slider_matrix.EyeRatio);
+                data.SetBytes(9, BitConverter.GetBytes((uint)0x31415926));
+                //10: key2
+                data.SetSliderValue(11, 0.5f); // やわらか
+                data.SetBytes(12, BitConverter.GetBytes((uint)0x17320508));
+                //13: key3
+                data.Save(thumbnail_file);
+            }
+
+            //TODO: fig.Tmo = orig.tmo
+            Blit(tmp_surface, dev_surface); // from:tmp to:dev
 
             PNGModelSaveWriter writer = new PNGModelSaveWriter();
             writer.Save(thumbnail_file, dest_file, savedata);
         }
-#endif
 
         public void SaveSceneToFile()
         {
@@ -820,10 +848,14 @@ namespace TDCG
             string thumbnail_file = GetSceneThumbnailFileName();
             string dest_file = GetSceneFileName();
 
+            Blit(dev_surface, tmp_surface); // from:dev to:tmp
+
             Color bg_col = Color.FromArgb(253, 218, 112); // SCENE
-            DrawFigure(bg_col);
+            DrawFigureList(bg_col);
             scene_thumbnail.Snap(dev_surface);
             scene_thumbnail.SaveToFile(thumbnail_file);
+
+            Blit(tmp_surface, dev_surface); // from:tmp to:dev
 
             PNGSceneSaveWriter writer = new PNGSceneSaveWriter();
             writer.Save(thumbnail_file, dest_file, savedata);
@@ -1758,9 +1790,7 @@ namespace TDCG
             snap_texture = new Texture(device, 1024, 1024, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             snap_surface = snap_texture.GetSurfaceLevel(0);
 
-#if false
             model_thumbnail.Create(device);
-#endif
             scene_thumbnail.Create(device);
 
             lamp_renderer.Create(dev_rect, LampRadius);
@@ -2084,7 +2114,11 @@ namespace TDCG
             if (keysEnabled[keySave] && keys[keySave])
             {
                 keysEnabled[keySave] = false;
-                this.SaveSceneToFile();
+                string modename = sprite_renderer.CurrentModeName;
+                if (modename == "MODEL")
+                    this.SaveModelToFile();
+                else
+                    this.SaveSceneToFile();
             }
             if (keysEnabled[keySprite] && keys[keySprite])
             {
@@ -2404,7 +2438,7 @@ namespace TDCG
             switch (RenderMode)
             {
                 case RenderMode.Ambient:
-                    DrawFigure();
+                    DrawFigureList();
                     break;
                 case RenderMode.DepthMap:
                     DrawDepthNormalMap();
@@ -2425,7 +2459,7 @@ namespace TDCG
                     DrawOcclusion();
                     DrawGaussianBlur(1.0f);
 
-                    DrawFigure();
+                    DrawFigureList();
                     Blit(dev_surface, amb_surface); // from:dev to:amb
                     DrawMain(); // main in:amb occ out:dev
 
@@ -2435,7 +2469,7 @@ namespace TDCG
                     DrawScreen(); // screen in:amb occ out:dev
                     break;
                 case RenderMode.Shadow:
-                    DrawFigure();
+                    DrawFigureList();
                     DrawShadow();
                     break;
                 default:
@@ -2443,7 +2477,7 @@ namespace TDCG
                     DrawOcclusion();
                     DrawGaussianBlur(1.0f);
 
-                    DrawFigure();
+                    DrawFigureList();
                     Blit(dev_surface, amb_surface); // from:dev to:amb
                     DrawMain(); // main in:amb occ out:dev
                     break;
@@ -2608,9 +2642,30 @@ namespace TDCG
         /// <summary>
         /// フィギュアを描画します。
         /// </summary>
-        void DrawFigure(Color bg_col)
+        void DrawFigure(Figure fig, Color bg_col)
         {
             Debug.WriteLine("DrawFigure");
+
+            device.SetRenderState(RenderStates.AlphaBlendEnable, true);
+
+            device.SetRenderTarget(0, dev_surface);
+            device.DepthStencilSurface = dev_zbuf;
+            device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, bg_col, 1.0f, 0);
+
+            device.VertexDeclaration = vd;
+            effect.SetValue(handle_Ambient, Ambient);
+            effect.SetValue(handle_HohoAlpha, HohoAlpha);
+            effect.SetValue(handle_UVSCR, UVSCR());
+
+            DrawFigure(fig);
+        }
+
+        /// <summary>
+        /// フィギュアを描画します。
+        /// </summary>
+        void DrawFigureList(Color bg_col)
+        {
+            Debug.WriteLine("DrawFigureList");
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, true);
 
@@ -2627,9 +2682,9 @@ namespace TDCG
                 DrawFigure(fig);
         }
 
-        void DrawFigure()
+        void DrawFigureList()
         {
-            DrawFigure(ScreenColor);
+            DrawFigureList(ScreenColor);
         }
 
         void DrawShadow()

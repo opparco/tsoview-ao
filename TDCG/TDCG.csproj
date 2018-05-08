@@ -47,10 +47,12 @@
     <Compile Include="LampRenderer.cs" />
     <Compile Include="Manipulator.cs" />
     <Compile Include="ModelMode.cs" />
+    <Compile Include="ModelThumbnail.cs" />
     <Compile Include="Mode.cs" />
     <Compile Include="NodeLocationCollection.cs" />
     <Compile Include="NodeRenderer.cs" />
     <Compile Include="PNGFile.cs" />
+    <Compile Include="PNGModelSaveWriter.cs" />
     <Compile Include="PNGSaveLoader.cs" />
     <Compile Include="PNGSceneSaveWriter.cs" />
     <Compile Include="PNGWriter.cs" />

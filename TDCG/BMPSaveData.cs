@@ -257,7 +257,7 @@ namespace TDCG
         }
 
         /// key を更新します。
-        public void UpdateKey()
+        public void UpdateKeys()
         {
             SetKey(3, GenChecksum_1());
             SetKey(10, GenChecksum_2());
@@ -272,7 +272,7 @@ namespace TDCG
         {
             Bitmap bmp = bitmap;
             if (need_update)
-                UpdateKey();
+                UpdateKeys();
             AssignTo(bmp);
             bmp.Save(dest_file);
         }

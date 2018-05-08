@@ -8,6 +8,8 @@
 TDCG\Extensions\BinaryReaderMethods.cs
 TDCG\Extensions\BinaryWriterMethods.cs
 TDCG\Helper.cs
+TDCG\Shader.cs
 TDCG\TMOFile.cs
+TDCG\TSOFile.cs
 TDCG\PNGFile.cs
 TDCG\PNGWriter.cs
