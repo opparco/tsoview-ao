@@ -53,6 +53,7 @@
     <Compile Include="NodeRenderer.cs" />
     <Compile Include="PNGFile.cs" />
     <Compile Include="PNGModelSaveWriter.cs" />
+    <Compile Include="PNGPoseSaveWriter.cs" />
     <Compile Include="PNGSaveLoader.cs" />
     <Compile Include="PNGSceneSaveWriter.cs" />
     <Compile Include="PNGWriter.cs" />

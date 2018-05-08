@@ -833,6 +833,38 @@ namespace TDCG
             writer.Save(thumbnail_file, dest_file, savedata);
         }
 
+        public void SavePoseToFile()
+        {
+            Figure fig = GetSelectedFigure();
+            if (fig == null)
+                return;
+
+            PNGSaveData savedata = new PNGSaveData();
+
+            PNGSaveCameraDescription camera_desc = new PNGSaveCameraDescription();
+            camera_desc.Translation = camera.Translation;
+            camera_desc.Angle = camera.Angle;
+            savedata.CameraDescription = camera_desc;
+
+            savedata.figures = new Figure[1];
+            savedata.figures[0] = fig;
+
+            string thumbnail_file = GetSceneThumbnailFileName();
+            string dest_file = GetSceneFileName();
+
+            Blit(dev_surface, tmp_surface); // from:dev to:tmp
+
+            Color bg_col = Color.FromArgb(251, 198, 198); // POSE
+            DrawFigure(fig, bg_col);
+            scene_thumbnail.Snap(dev_surface);
+            scene_thumbnail.SaveToFile(thumbnail_file);
+
+            Blit(tmp_surface, dev_surface); // from:tmp to:dev
+
+            PNGPoseSaveWriter writer = new PNGPoseSaveWriter();
+            writer.Save(thumbnail_file, dest_file, savedata);
+        }
+
         public void SaveSceneToFile()
         {
             PNGSaveData savedata = new PNGSaveData();
@@ -2117,6 +2149,8 @@ namespace TDCG
                 string modename = sprite_renderer.CurrentModeName;
                 if (modename == "MODEL")
                     this.SaveModelToFile();
+                else if (modename == "POSE")
+                    this.SavePoseToFile();
                 else
                     this.SaveSceneToFile();
             }
