@@ -67,7 +67,7 @@ namespace TDCG
             int y16 = sprite_p.Y / 16;
             int x16 = sprite_p.X / 16;
 
-            for (int row = 0; row < 2; row++)
+            for (int row = 0; row < 4; row++)
             {
                 int y16_1 = row * 9;
                 if (y16 >= y16_1 + 5 && y16 < y16_1 + 11)
@@ -90,7 +90,7 @@ namespace TDCG
 
         void DrawCellSprite()
         {
-            for (int row = 0; row < 2; row++)
+            for (int row = 0; row < 4; row++)
             for (int col = 0; col < 6; col++)
             {
                 sprite.Draw(cell_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 9 + 5) * 16, (row * 9 + 5) * 16, 0), cell_col);
