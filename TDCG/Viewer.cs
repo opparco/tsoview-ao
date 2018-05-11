@@ -116,6 +116,7 @@ namespace TDCG
         LampRenderer lamp_renderer = null;
         NodeRenderer node_renderer = null;
         SpriteRenderer sprite_renderer = null;
+        NodeFilter node_filter = null;
 
         /// surface of device
         protected Surface dev_surface = null;
@@ -1396,9 +1397,11 @@ namespace TDCG
         int keySave = (int)Keys.Enter;
         int keySprite = (int)Keys.Home;
         int keyResetLamp = (int)Keys.D9;
-        int keyResetLamp2 = (int)Keys.Multiply;
+        int keyResetLamp2 = (int)Keys.Multiply; // alternative
         int keyResetNode = (int)Keys.D0;
-        int keyResetNode2 = (int)Keys.Subtract;
+        int keyResetNode2 = (int)Keys.Subtract; // alternative
+        int keyResetNotFace = (int)Keys.F5;
+        int keyResetFace = (int)Keys.F6;
         int keyResetPose = (int)Keys.F12;
 
         /// <summary>
@@ -1551,6 +1554,7 @@ namespace TDCG
             handle_UVSCR = effect.GetParameter(null, "UVSCR");
 
             sprite_renderer = new SpriteRenderer(device, sprite);
+            node_filter = new NodeFilter();
             camera.Update();
             manipulator.GrabNodeSpeed = GrabNodeSpeed;
             manipulator.RotateNodeSpeed = RotateNodeSpeed;
@@ -2001,10 +2005,8 @@ namespace TDCG
         }
 
         /// 選択フィギュアのポーズをリセットします。
-        public void ResetSelectedFigurePose()
+        void ResetFigurePose(Figure fig, TMONode[] nodes)
         {
-            Figure fig = GetSelectedFigure();
-
             //NOTE: W_Hipsの移動変位は維持される
             Vector3 w_hips_translation = Vector3.Empty;
 
@@ -2012,7 +2014,7 @@ namespace TDCG
                 w_hips_translation = fig.Tmo.w_hips_node.Translation;
 
             TSOFile tso = fig.TsoList[0];
-            foreach (TMONode tmo_node in fig.Tmo.nodes)
+            foreach (TMONode tmo_node in nodes)
             {
                 TSONode tso_node;
                 if (tso.nodemap.TryGetValue(tmo_node.Name, out tso_node))
@@ -2025,6 +2027,27 @@ namespace TDCG
                 fig.Tmo.w_hips_node.Translation = w_hips_translation;
 
             fig.UpdateBoneMatrices();
+        }
+
+        /// 選択フィギュアのポーズのうち顔以外をリセットします。
+        void ResetSelectedFigureNotFace()
+        {
+            Figure fig = GetSelectedFigure();
+            ResetFigurePose(fig, node_filter.GetNotFaceNodes(fig.Tmo));
+        }
+
+        /// 選択フィギュアのポーズのうち顔をリセットします。
+        void ResetSelectedFigureFace()
+        {
+            Figure fig = GetSelectedFigure();
+            ResetFigurePose(fig, node_filter.GetFaceNodes(fig.Tmo));
+        }
+
+        /// 選択フィギュアのポーズをリセットします。
+        void ResetSelectedFigurePose()
+        {
+            Figure fig = GetSelectedFigure();
+            ResetFigurePose(fig, fig.Tmo.nodes);
         }
 
         void form_OnKeyDown(object sender, KeyEventArgs e)
@@ -2203,6 +2226,26 @@ namespace TDCG
                 {
                     BeginSelectedFigurePoseCommand();
                     this.ResetSelectedFigurePose();
+                    EndSelectedFigurePoseCommand();
+                }
+            }
+            if (keysEnabled[keyResetNotFace] && keys[keyResetNotFace])
+            {
+                keysEnabled[keyResetNotFace] = false;
+                if (this.CanResetSelectedFigurePose())
+                {
+                    BeginSelectedFigurePoseCommand();
+                    this.ResetSelectedFigureNotFace();
+                    EndSelectedFigurePoseCommand();
+                }
+            }
+            if (keysEnabled[keyResetFace] && keys[keyResetFace])
+            {
+                keysEnabled[keyResetFace] = false;
+                if (this.CanResetSelectedFigurePose())
+                {
+                    BeginSelectedFigurePoseCommand();
+                    this.ResetSelectedFigureFace();
                     EndSelectedFigurePoseCommand();
                 }
             }

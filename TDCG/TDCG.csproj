@@ -49,6 +49,7 @@
     <Compile Include="ModelMode.cs" />
     <Compile Include="ModelThumbnail.cs" />
     <Compile Include="Mode.cs" />
+    <Compile Include="NodeFilter.cs" />
     <Compile Include="NodeLocationCollection.cs" />
     <Compile Include="NodeRenderer.cs" />
     <Compile Include="PNGFile.cs" />
