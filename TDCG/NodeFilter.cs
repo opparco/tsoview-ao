@@ -23,12 +23,12 @@ namespace TDCG
 
         static string GetNotFaceNodesPath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\not-face-nodes.txt");
+            return Path.Combine(Application.StartupPath, @"resources\not-facenodes.txt");
         }
 
         static string GetFaceNodesPath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\face-nodes.txt");
+            return Path.Combine(Application.StartupPath, @"resources\facenodes.txt");
         }
 
         void LoadNotFaceNodes()
