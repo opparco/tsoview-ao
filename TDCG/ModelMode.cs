@@ -63,7 +63,7 @@ namespace TDCG
             base.Create(device_rect);
 
             cell_texture = TextureLoader.FromFile(device, GetCellTexturePath(), 96, 128, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
-            characters_texture = TextureLoader.FromFile(device, GetCharactersTexturePath(), 768, 32, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            characters_texture = TextureLoader.FromFile(device, GetCharactersTexturePath(), 768, 128, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
             cursor_texture = TextureLoader.FromFile(device, GetCursorTexturePath(), 96, 96, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
             dotted_texture = TextureLoader.FromFile(device, GetDottedTexturePath(), 96, 96, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
         }
@@ -108,7 +108,7 @@ namespace TDCG
             {
                 int col = idx%8;
                 int row = idx/8;
-                sprite.Draw(characters_texture, new Rectangle(idx * 24, 0, 24, 32), new Vector3(0, 0, 0), new Vector3((col * 7 + 4) * 16 + 36, (row * 9 + 5) * 16 + 96, 0), cell_col);
+                sprite.Draw(characters_texture, new Rectangle(col * 96, row * 32, 96, 32), new Vector3(0, 0, 0), new Vector3((col * 7 + 4) * 16, (row * 9 + 5) * 16 + 96, 0), cell_col);
             }
         }
 
