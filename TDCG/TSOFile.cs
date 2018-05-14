@@ -723,7 +723,7 @@ namespace TDCG
         /// </summary>
         public byte[] data;
 
-        internal Texture d3d_tex;
+        internal Texture d3d_tex = null;
 
         /// <summary>
         /// 名称
@@ -1261,6 +1261,9 @@ namespace TDCG
         /// </summary>
         public Dictionary<string, TSONode> nodemap;
 
+        /// shader設定上の texture name と d3d texture を関連付ける辞書
+        public Dictionary<string, Texture> d3d_texturemap;
+
         /// <summary>
         /// 指定パスに保存します。
         /// </summary>
@@ -1445,6 +1448,14 @@ namespace TDCG
             }
         }
 
+        internal void GenerateDirect3dTexturemap()
+        {
+            d3d_texturemap = new Dictionary<string, Texture>();
+
+            foreach (TSOTexture tex in textures)
+                d3d_texturemap.Add(tex.name, tex.d3d_tex);
+        }
+
         /// <summary>
         /// tmoを生成します。
         /// </summary>
@@ -1472,18 +1483,6 @@ namespace TDCG
             return tmo;
         }
 
-        internal Device device;
-        internal Effect effect;
-
-        EffectHandle[] techniques;
-        internal Dictionary<string, EffectHandle> techmap;
-
-        private EffectHandle handle_ShadeTex_texture;
-        private EffectHandle handle_ColorTex_texture;
-        internal Dictionary<string, TSOTexture> texmap;
-
-        private EffectHandle handle_LightDir;
-
         /// <summary>
         /// 指定device上で開きます。
         /// </summary>
@@ -1491,148 +1490,15 @@ namespace TDCG
         /// <param name="effect">effect</param>
         public void Open(Device device, Effect effect)
         {
-            this.device = device;
-            this.effect = effect;
-
             foreach (TSOMesh mesh in meshes)
             foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
                 sub_mesh.WriteBuffer(device);
 
-            texmap = new Dictionary<string, TSOTexture>();
-
             foreach (TSOTexture tex in textures)
             {
                 tex.Open(device);
-                texmap[tex.name] = tex;
             }
-
-            handle_ShadeTex_texture = effect.GetParameter(null, "ShadeTex_texture");
-            handle_ColorTex_texture = effect.GetParameter(null, "ColorTex_texture");
-
-            handle_LightDir = effect.GetParameter(null, "LightDir");
-
-            techmap = new Dictionary<string, EffectHandle>();
-
-            int ntech = effect.Description.Techniques;
-            techniques = new EffectHandle[ntech];
-
-            //Console.WriteLine("Techniques:");
-
-            for (int i = 0; i < ntech; i++)
-            {
-                techniques[i] = effect.GetTechnique(i);
-                string tech_name = effect.GetTechniqueDescription(techniques[i]).Name;
-                techmap[tech_name] = techniques[i];
-
-                //Console.WriteLine(i + " " + tech_name);
-            }
-        }
-
-        internal Shader current_shader = null;
-
-        /// <summary>
-        /// レンダリング開始時に呼びます。
-        /// </summary>
-        public void BeginRender()
-        {
-            current_shader = null;
-        }
-
-        /// <summary>
-        /// シェーダ設定を切り替えます。
-        /// </summary>
-        /// <param name="shader">シェーダ設定</param>
-        public void SwitchShader(Shader shader)
-        {
-            if (shader == current_shader)
-                return;
-            current_shader = shader;
-
-            try
-            {
-                effect.Technique = techmap[shader.technique];
-            }
-            catch (KeyNotFoundException)
-            {
-                Console.WriteLine("Error: shader technique not found. " + shader.technique);
-                return;
-            }
-            effect.ValidateTechnique(effect.Technique);
-
-            foreach (ShaderParameter p in shader.shader_parameters)
-            {
-                if (p.system_p)
-                    continue;
-
-                switch (p.type)
-                {
-                case ShaderParameterType.String:
-                    effect.SetValue(p.name, p.GetString());
-                    break;
-                case ShaderParameterType.Float:
-                case ShaderParameterType.Float3:
-                case ShaderParameterType.Float4:
-                    effect.SetValue(p.name, new float[]{ p.F1, p.F2, p.F3, p.F4 });
-                    break;
-                    /*
-                case ShaderParameter.Type.Texture:
-                    effect.SetValue(p.name, p.GetTexture());
-                    break;
-                    */
-                }
-            }
-            effect.SetValue(handle_LightDir, shader.LightDir);
-
-            TSOTexture shadeTex;
-            if (shader.ShadeTexName != null && texmap.TryGetValue(shader.ShadeTexName, out shadeTex))
-                effect.SetValue(handle_ShadeTex_texture, shadeTex.d3d_tex);
-
-            TSOTexture colorTex;
-            if (shader.ColorTexName != null && texmap.TryGetValue(shader.ColorTexName, out colorTex))
-                effect.SetValue(handle_ColorTex_texture, colorTex.d3d_tex);
-        }
-
-        /// <summary>
-        /// シェーダ設定を切り替えます。
-        /// </summary>
-        /// <param name="sub_mesh">切り替え対象となるサブメッシュ</param>
-        public void SwitchShader(TSOSubMesh sub_mesh)
-        {
-            Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
-            SwitchShader(sub_scripts[sub_mesh.spec].shader);
-        }
-
-        /// <summary>
-        /// シェーダ設定を切り替えます。色テクスチャのみ切り替えます。
-        /// </summary>
-        /// <param name="shader">シェーダ設定</param>
-        public void SwitchShaderColorTex(Shader shader)
-        {
-            if (shader == current_shader)
-                return;
-            current_shader = shader;
-
-            TSOTexture colorTex;
-            if (shader.ColorTexName != null && texmap.TryGetValue(shader.ColorTexName, out colorTex))
-                effect.SetValue(handle_ColorTex_texture, colorTex.d3d_tex);
-        }
-
-        /// <summary>
-        /// シェーダ設定を切り替えます。色テクスチャのみ切り替えます。
-        /// </summary>
-        /// <param name="sub_mesh">切り替え対象となるサブメッシュ</param>
-        public void SwitchShaderColorTex(TSOSubMesh sub_mesh)
-        {
-            Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
-            SwitchShaderColorTex(sub_scripts[sub_mesh.spec].shader);
-        }
-
-        /// <summary>
-        /// レンダリング終了時に呼びます。
-        /// </summary>
-        public void EndRender()
-        {
-            current_shader = null;
+            GenerateDirect3dTexturemap();
         }
 
         /// <summary>
@@ -1641,6 +1507,8 @@ namespace TDCG
         public void Dispose()
         {
             Debug.WriteLine("TSOFile.Dispose");
+
+            d3d_texturemap.Clear();
 
             foreach (TSOMesh mesh in meshes)
                 mesh.Dispose();

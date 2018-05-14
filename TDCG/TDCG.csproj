@@ -71,6 +71,7 @@
     <Compile Include="SliderMatrix.cs" />
     <Compile Include="SpriteRenderer.cs" />
     <Compile Include="TMOFile.cs" />
+    <Compile Include="ToonShader.cs" />
     <Compile Include="TSOFile.cs" />
     <Compile Include="Viewer.cs" />
   </ItemGroup>

@@ -111,6 +111,7 @@ namespace TDCG
         /// </summary>
         public bool ShadowMapEnabled { get { return shadow_map_enabled; } }
 
+        ToonShader toon_shader = null;
         Screen screen = null;
         Sprite sprite = null;
         LampRenderer lamp_renderer = null;
@@ -1504,6 +1505,8 @@ namespace TDCG
             sw.Stop();
             Console.WriteLine(toonshader_filename + " read time: " + sw.Elapsed);
 
+            toon_shader = new ToonShader(effect);
+
             if (!LoadEffect(@"effects\clear.fx", out effect_clear))
                 return false;
 
@@ -2697,7 +2700,7 @@ namespace TDCG
 
         void DrawTSO(Figure fig, TSOFile tso)
         {
-            tso.BeginRender();
+            toon_shader.current_shader = null;
 
             foreach (TSOMesh mesh in tso.meshes)
                 foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
@@ -2705,7 +2708,8 @@ namespace TDCG
                     //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
                     device.SetStreamSource(0, sub_mesh.vb, 0, 52);
 
-                    tso.SwitchShader(sub_mesh);
+                    Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < tso.sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
+                    toon_shader.SwitchShader(tso.sub_scripts[sub_mesh.spec].shader, tso.d3d_texturemap);
                     effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh));
 
                     int npass = effect.Begin(0);
@@ -2717,7 +2721,7 @@ namespace TDCG
                     }
                     effect.End();
                 }
-            tso.EndRender();
+            toon_shader.current_shader = null;
         }
 
         void DrawFigure(Figure fig)
@@ -2864,7 +2868,7 @@ namespace TDCG
                 }
                 foreach (TSOFile tso in fig.TsoList)
                 {
-                    tso.BeginRender();
+                    toon_shader.current_shader = null;
 
                     foreach (TSOMesh mesh in tso.meshes)
                         foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
@@ -2877,7 +2881,8 @@ namespace TDCG
                             //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
                             device.SetStreamSource(0, sub_mesh.vb, 0, 52);
 
-                            tso.SwitchShaderColorTex(shader);
+                            Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < tso.sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
+                            toon_shader.SwitchShaderColorTex(tso.sub_scripts[sub_mesh.spec].shader, tso.d3d_texturemap);
                             effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh)); // shared
 
                             int npass = effect_dnmap.Begin(0);
@@ -2889,7 +2894,7 @@ namespace TDCG
                             }
                             effect_dnmap.End();
                         }
-                    tso.EndRender();
+                    toon_shader.current_shader = null;
                 }
             }
             device.SetRenderTarget(1, null); // attention!
