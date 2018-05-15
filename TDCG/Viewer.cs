@@ -2705,11 +2705,13 @@ namespace TDCG
             foreach (TSOMesh mesh in tso.meshes)
                 foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
                 {
+                    Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < tso.sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
+                    Shader shader = tso.sub_scripts[sub_mesh.spec].shader;
+
                     //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
                     device.SetStreamSource(0, sub_mesh.vb, 0, 52);
 
-                    Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < tso.sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
-                    toon_shader.SwitchShader(tso.sub_scripts[sub_mesh.spec].shader, tso.d3d_texturemap);
+                    toon_shader.SwitchShader(shader, tso.d3d_texturemap);
                     effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh));
 
                     int npass = effect.Begin(0);
@@ -2873,6 +2875,7 @@ namespace TDCG
                     foreach (TSOMesh mesh in tso.meshes)
                         foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
                         {
+                            Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < tso.sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
                             Shader shader = tso.sub_scripts[sub_mesh.spec].shader;
 
                             if (HiddenTechnique(shader.technique))
@@ -2881,8 +2884,7 @@ namespace TDCG
                             //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
                             device.SetStreamSource(0, sub_mesh.vb, 0, 52);
 
-                            Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < tso.sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
-                            toon_shader.SwitchShaderColorTex(tso.sub_scripts[sub_mesh.spec].shader, tso.d3d_texturemap);
+                            toon_shader.SwitchShaderColorTex(shader, tso.d3d_texturemap);
                             effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh)); // shared
 
                             int npass = effect_dnmap.Begin(0);
