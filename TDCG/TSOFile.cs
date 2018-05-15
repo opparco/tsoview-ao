@@ -1487,8 +1487,7 @@ namespace TDCG
         /// 指定device上で開きます。
         /// </summary>
         /// <param name="device">device</param>
-        /// <param name="effect">effect</param>
-        public void Open(Device device, Effect effect)
+        public void Open(Device device)
         {
             foreach (TSOMesh mesh in meshes)
             foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)

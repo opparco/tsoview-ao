@@ -289,17 +289,6 @@ public class Figure : IDisposable
     }
 
     /// <summary>
-    /// TSOFileを指定device上で開きます。
-    /// </summary>
-    /// <param name="device">device</param>
-    /// <param name="effect">effect</param>
-    public void OpenTSOFile(Device device, Effect effect)
-    {
-        foreach (TSOFile tso in TsoList)
-            tso.Open(device, effect);
-    }
-
-    /// <summary>
     /// スキン変形行列の配列を得ます。
     /// </summary>
     /// <param name="sub_mesh">サブメッシュ</param>

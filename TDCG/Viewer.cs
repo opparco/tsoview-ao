@@ -1003,7 +1003,7 @@ namespace TDCG
             Figure fig = new Figure();
             foreach (TSOFile tso in tso_list)
             {
-                tso.Open(device, effect);
+                tso.Open(device);
                 fig.TsoList.Add(tso);
             }
             int len = FigureList.Count;
@@ -1131,7 +1131,7 @@ namespace TDCG
                 Console.WriteLine("Error: " + ex);
             }
 
-            tso.Open(device, effect);
+            tso.Open(device);
 
             Figure fig = GetSelectedFigure();
             int idx = sprite_renderer.scene_mode.SelectedIdx;
@@ -1295,7 +1295,8 @@ namespace TDCG
             if (savedata.type == "HSAV")
             {
                 Figure fig = savedata.figures[0];
-                fig.OpenTSOFile(device, effect);
+                foreach (TSOFile tso in fig.TsoList)
+                    tso.Open(device);
 
                 int len = FigureList.Count;
                 int idx = sprite_renderer.scene_mode.SelectedIdx;
@@ -1345,7 +1346,9 @@ namespace TDCG
                 int len = FigureList.Count;
                 foreach (Figure fig in savedata.figures)
                 {
-                    fig.OpenTSOFile(device, effect);
+                    foreach (TSOFile tso in fig.TsoList)
+                        tso.Open(device);
+
                     //todo: override List#Add
                     FigureList.Add(fig);
                     fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
