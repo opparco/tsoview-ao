@@ -16,8 +16,6 @@ namespace TDCG
         EffectHandle handle_ShadeTex_texture;
         EffectHandle handle_ColorTex_texture;
 
-        EffectHandle handle_LightDir;
-
         public Shader current_shader = null;
 
         public ToonShader(Effect effect)
@@ -26,8 +24,6 @@ namespace TDCG
 
             handle_ShadeTex_texture = effect.GetParameter(null, "ShadeTex_texture");
             handle_ColorTex_texture = effect.GetParameter(null, "ColorTex_texture");
-
-            handle_LightDir = effect.GetParameter(null, "LightDir");
 
             techmap = new Dictionary<string, EffectHandle>();
 
@@ -58,11 +54,11 @@ namespace TDCG
 
             try
             {
-                effect.Technique = techmap[shader.technique];
+                effect.Technique = techmap[shader.Technique];
             }
             catch (KeyNotFoundException)
             {
-                Console.WriteLine("Error: shader technique not found. " + shader.technique);
+                Console.WriteLine("Error: shader technique not found. " + shader.Technique);
                 return;
             }
             effect.ValidateTechnique(effect.Technique);
@@ -89,7 +85,6 @@ namespace TDCG
                     */
                 }
             }
-            effect.SetValue(handle_LightDir, shader.LightDir);
 
             AssignTexture(shader.ShadeTexName, handle_ShadeTex_texture, d3d_texturemap);
             AssignTexture(shader.ColorTexName, handle_ColorTex_texture, d3d_texturemap);

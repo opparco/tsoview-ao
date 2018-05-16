@@ -73,9 +73,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="toonshader.cgfx" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="FigureForm.resx">
       <DependentUpon>FigureForm.cs</DependentUpon>
     </EmbeddedResource>

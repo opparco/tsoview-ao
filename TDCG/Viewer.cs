@@ -2881,7 +2881,7 @@ namespace TDCG
                             Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < tso.sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
                             Shader shader = tso.sub_scripts[sub_mesh.spec].shader;
 
-                            if (HiddenTechnique(shader.technique))
+                            if (HiddenTechnique(shader.Technique))
                                 continue;
 
                             //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);

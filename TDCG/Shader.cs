@@ -331,30 +331,20 @@ namespace TDCG
 
         //internal string     description;     // = "TA ToonShader v0.50"
         //internal string     shader;          // = "TAToonshade_050.cgfx"
-        internal string     technique;       // = "ShadowOn"
-        internal float      lightDirX;       // = [-0.00155681]
-        internal float      lightDirY;       // = [-0.0582338]
-        internal float      lightDirZ;       // = [-0.998302]
-        internal float      lightDirW;       // = [0]
+        string     technique;       // = "ShadowOn"
         //internal Vector4    shadowColor;     // = [0, 0, 0, 1]
-        internal ShaderParameter shadeTex;        // = Ninjya_Ribbon_Toon_Tex
+        ShaderParameter shadeTex;        // = Ninjya_Ribbon_Toon_Tex
         //internal float      highLight;       // = [0]
         //internal float      colorBlend;      // = [10]
         //internal float      highLightBlend;  // = [10]
         //internal Vector4    penColor;        // = [0.166, 0.166, 0.166, 1]
         //internal float      ambient;         // = [38]
-        internal ShaderParameter colorTex;        // = file24
+        ShaderParameter colorTex;        // = file24
         //internal float      thickness;       // = [0.018]
         //internal float      shadeBlend;      // = [10]
         //internal float      highLightPower;  // = [100]
 
-        /// <summary>
-        /// 光源方向ベクトル
-        /// </summary>
-        public Vector4 LightDir
-        {
-            get { return new Vector4(lightDirX, lightDirY, lightDirZ, lightDirW); }
-        }
+        public string Technique { get { return technique; } }
 
         /// <summary>
         /// 陰テクスチャのファイル名
@@ -409,29 +399,11 @@ namespace TDCG
                         technique = p.GetString();
                         break;
                     case "LightDirX":
-                        p.system_p = true;
-                        lightDirX = p.GetFloat();
-                        break;
                     case "LightDirY":
-                        p.system_p = true;
-                        lightDirY = p.GetFloat();
-                        break;
                     case "LightDirZ":
-                        p.system_p = true;
-                        lightDirZ = p.GetFloat();
-                        break;
                     case "LightDirW":
-                        p.system_p = true;
-                        lightDirW = p.GetFloat();
-                        break;
                     case "LightDir":
                         p.system_p = true;
-                    {
-                        Vector3 v = p.GetFloat3();
-                        lightDirX = v.X;
-                        lightDirY = v.Y;
-                        lightDirZ = v.Z;
-                    }
                         break;
                     case "ShadeTex":
                         p.system_p = true;
