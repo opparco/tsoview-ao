@@ -42,7 +42,6 @@ namespace TDCG
     /// <summary>
     /// シェーダ設定パラメータ
     /// </summary>
-    [TypeConverter(typeof(ExpandableObjectConverter))]
     public class ShaderParameter
     {
         internal ShaderParameterType type;

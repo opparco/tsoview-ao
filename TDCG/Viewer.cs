@@ -1990,8 +1990,8 @@ namespace TDCG
         {
             Figure fig = GetSelectedFigure();
             TSOFile tso = fig.TsoList[0];
-            TSONode tso_node;
-            if (tso.nodemap.TryGetValue(selected_node.Name, out tso_node))
+            TSONode tso_node = tso.FindNodeByName(selected_node.Name);
+            if (tso_node != null)
             {
                 selected_node.TransformationMatrix = tso_node.TransformationMatrix;
             }
@@ -2022,8 +2022,8 @@ namespace TDCG
             TSOFile tso = fig.TsoList[0];
             foreach (TMONode tmo_node in nodes)
             {
-                TSONode tso_node;
-                if (tso.nodemap.TryGetValue(tmo_node.Name, out tso_node))
+                TSONode tso_node = tso.FindNodeByName(tmo_node.Name);
+                if (tso_node != null)
                 {
                     tmo_node.TransformationMatrix = tso_node.TransformationMatrix;
                 }

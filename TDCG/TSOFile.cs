@@ -1448,6 +1448,20 @@ namespace TDCG
             }
         }
 
+        /// <summary>
+        /// 指定名称の短い形式を持つnodeを検索します。
+        /// </summary>
+        /// <param name="name">名称の短い形式</param>
+        /// <returns></returns>
+        public TSONode FindNodeByName(string name)
+        {
+            TSONode node;
+            if (nodemap.TryGetValue(name, out node))
+                return node;
+            else
+                return null;
+        }
+
         internal void GenerateDirect3dTexturemap()
         {
             d3d_texturemap = new Dictionary<string, Texture>();

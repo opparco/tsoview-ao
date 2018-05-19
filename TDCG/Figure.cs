@@ -62,14 +62,7 @@ public class Figure : IDisposable
     /// <summary>
     /// tmo
     /// </summary>
-    public TMOFile Tmo
-    {
-        get { return tmo; }
-        set
-        {
-            tmo = value;
-        }
-    }
+    public TMOFile Tmo { get { return tmo; } set { tmo = value; } }
 
     /// tso nodeからtmo nodeを導出する辞書
     public Dictionary<TSONode, TMONode> nodemap;
