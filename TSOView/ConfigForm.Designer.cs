@@ -63,6 +63,7 @@
             this.rbRenderDF = new System.Windows.Forms.RadioButton();
             this.rbRenderAO = new System.Windows.Forms.RadioButton();
             this.btnCapture = new System.Windows.Forms.Button();
+            this.rbRenderShadow = new System.Windows.Forms.RadioButton();
             this.gbDepthMap.SuspendLayout();
             this.gbAmbientOcclusion.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbAORadius)).BeginInit();
@@ -449,7 +450,7 @@
             // 
             // btnCapture
             // 
-            this.btnCapture.Location = new System.Drawing.Point(295, 110);
+            this.btnCapture.Location = new System.Drawing.Point(295, 140);
             this.btnCapture.Name = "btnCapture";
             this.btnCapture.Size = new System.Drawing.Size(110, 83);
             this.btnCapture.TabIndex = 22;
@@ -457,11 +458,24 @@
             this.btnCapture.UseVisualStyleBackColor = true;
             this.btnCapture.Click += new System.EventHandler(this.btnCapture_Click);
             // 
+            // rbRenderShadow
+            // 
+            this.rbRenderShadow.Appearance = System.Windows.Forms.Appearance.Button;
+            this.rbRenderShadow.Location = new System.Drawing.Point(295, 110);
+            this.rbRenderShadow.Name = "rbRenderShadow";
+            this.rbRenderShadow.Size = new System.Drawing.Size(52, 24);
+            this.rbRenderShadow.TabIndex = 23;
+            this.rbRenderShadow.Text = "Shadow";
+            this.rbRenderShadow.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.rbRenderShadow.UseVisualStyleBackColor = true;
+            this.rbRenderShadow.CheckedChanged += new System.EventHandler(this.rbRenderShadow_CheckedChanged);
+            // 
             // ConfigForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(434, 411);
+            this.Controls.Add(this.rbRenderShadow);
             this.Controls.Add(this.btnCapture);
             this.Controls.Add(this.rbRenderOcc);
             this.Controls.Add(this.rbRenderAmb);
@@ -532,5 +546,6 @@
         private System.Windows.Forms.Button btnCapture;
         private System.Windows.Forms.RadioButton rbPersp;
         private System.Windows.Forms.RadioButton rbOrtho;
+        private System.Windows.Forms.RadioButton rbRenderShadow;
     }
 }

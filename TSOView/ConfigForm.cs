@@ -152,6 +152,9 @@ namespace TSOView
                 case RenderMode.Diffusion:
                     rbRenderDF.Checked = true;
                     break;
+                case RenderMode.Shadow:
+                    rbRenderShadow.Checked = true;
+                    break;
             }
             this.rbRenderOcc.CheckedChanged += new System.EventHandler(this.rbRenderOcc_CheckedChanged);
             this.rbRenderAmb.CheckedChanged += new System.EventHandler(this.rbRenderAmb_CheckedChanged);
@@ -226,6 +229,11 @@ namespace TSOView
         private void rbRenderOcc_CheckedChanged(object sender, EventArgs e)
         {
             viewer.RenderMode = RenderMode.Occlusion;
+        }
+
+        private void rbRenderShadow_CheckedChanged(object sender, EventArgs e)
+        {
+            viewer.RenderMode = RenderMode.Shadow;
         }
 
         private void tbznearPlane_TextChanged(object sender, EventArgs e)
