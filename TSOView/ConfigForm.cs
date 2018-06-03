@@ -284,6 +284,7 @@ namespace TSOView
 
         private void btnCapture_Click(object sender, EventArgs e)
         {
+            viewer.Draw();
             viewer.SaveToPng();
         }
     }

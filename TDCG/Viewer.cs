@@ -2523,23 +2523,8 @@ namespace TDCG
                 DrawSpritesOnSceneMode();
         }
 
-        /// <summary>
-        /// シーンをレンダリングします。
-        /// </summary>
-        public void Render()
+        public void Draw()
         {
-            if (!need_render)
-                return;
-
-            need_render = false;
-
-            Debug.WriteLine("-- device BeginScene --");
-            device.BeginScene();
-
-            AssignWorldViewProjection();
-
-            if (sprite_enabled)
-                Snap();
             switch (RenderMode)
             {
                 case RenderMode.Ambient:
@@ -2587,6 +2572,26 @@ namespace TDCG
                     DrawMain(); // main in:amb occ out:dev
                     break;
             }
+        }
+
+        /// <summary>
+        /// シーンをレンダリングします。
+        /// </summary>
+        public void Render()
+        {
+            if (!need_render)
+                return;
+
+            need_render = false;
+
+            Debug.WriteLine("-- device BeginScene --");
+            device.BeginScene();
+
+            AssignWorldViewProjection();
+
+            if (sprite_enabled)
+                Snap();
+            Draw();
             if (sprite_enabled)
                 DrawModeSprite();
 
