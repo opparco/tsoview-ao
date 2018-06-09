@@ -222,6 +222,7 @@ namespace TDCG
             LoadTechMap();
 
             manipulator = new Manipulator(camera);
+            command_man = new CommandManager();
         }
 
         int swap_row = -1;
@@ -650,74 +651,6 @@ namespace TDCG
             need_render = true;
         }
 
-        /// 操作リスト
-        public List<ICommand> commands = new List<ICommand>();
-        int command_id = 0;
-
-        /// 操作を消去します。
-        public void ClearCommands()
-        {
-            commands.Clear();
-            command_id = 0;
-        }
-
-        /// ひとつ前の操作による変更を元に戻せるか。
-        public bool CanUndo()
-        {
-            return (command_id > 0);
-        }
-
-        /// ひとつ前の操作による変更を元に戻します。
-        public void Undo()
-        {
-            if (!CanUndo())
-                return;
-
-            command_id--;
-            Undo(commands[command_id]);
-        }
-
-        /// 指定操作による変更を元に戻します。
-        public void Undo(ICommand command)
-        {
-            command.Undo();
-        }
-
-        /// ひとつ前の操作による変更をやり直せるか。
-        public bool CanRedo()
-        {
-            return (command_id < commands.Count);
-        }
-
-        /// ひとつ前の操作による変更をやり直します。
-        public void Redo()
-        {
-            if (!CanRedo())
-                return;
-
-            Redo(commands[command_id]);
-            command_id++;
-        }
-
-        /// 指定操作による変更をやり直します。
-        public void Redo(ICommand command)
-        {
-            command.Redo();
-        }
-
-        /// 指定操作を実行します。
-        public void Execute(ICommand command)
-        {
-            if (command.Execute())
-            {
-                if (command_id == commands.Count)
-                    commands.Add(command);
-                else
-                    commands[command_id] = command;
-                command_id++;
-            }
-        }
-
         NodeCommand node_command = null;
 
         public void BeginSelectedNodeCommand()
@@ -728,7 +661,7 @@ namespace TDCG
         public void EndSelectedNodeCommand()
         {
             if (node_command != null)
-                Execute(node_command);
+                command_man.Execute(node_command);
 
             node_command = null;
         }
@@ -743,7 +676,7 @@ namespace TDCG
         public void EndSelectedFigurePoseCommand()
         {
             if (pose_command != null)
-                Execute(pose_command);
+                command_man.Execute(pose_command);
 
             pose_command = null;
         }
@@ -1375,6 +1308,7 @@ namespace TDCG
         }
 
         Manipulator manipulator;
+        CommandManager command_man;
 
         // キー入力を保持
         bool[] keys = new bool[256];
@@ -2159,12 +2093,12 @@ namespace TDCG
             if (keysEnabled[keyUndo] && keys[keyUndo])
             {
                 keysEnabled[keyUndo] = false;
-                this.Undo();
+                command_man.Undo();
             }
             if (keysEnabled[keyRedo] && keys[keyRedo])
             {
                 keysEnabled[keyRedo] = false;
-                this.Redo();
+                command_man.Redo();
             }
             if (keysEnabled[keySave] && keys[keySave])
             {

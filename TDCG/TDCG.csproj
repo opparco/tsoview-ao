@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="BMPSaveData.cs" />
     <Compile Include="Circle.cs" />
+    <Compile Include="CommandManager.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Figure.cs" />
     <Compile Include="Helper.cs" />

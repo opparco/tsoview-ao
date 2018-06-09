@@ -5,19 +5,6 @@ using Microsoft.DirectX;
 
 namespace TDCG
 {
-    /// 操作を扱います。
-    public interface ICommand
-    {
-        /// 元に戻す。
-        void Undo();
-
-        /// やり直す。
-        void Redo();
-
-        /// 実行する。
-        bool Execute();
-    }
-
     struct TMONodeData
     {
         public Vector3  Scaling;
