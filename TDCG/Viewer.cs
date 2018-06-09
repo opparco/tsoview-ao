@@ -2837,6 +2837,53 @@ namespace TDCG
             return techmap.ContainsKey(technique);
         }
 
+        void DrawTSO_dnmap(Figure fig, TSOFile tso)
+        {
+            toon_shader.current_shader = null;
+
+            foreach (TSOMesh mesh in tso.meshes)
+                foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
+                {
+                    Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < tso.sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
+                    Shader shader = tso.sub_scripts[sub_mesh.spec].shader;
+
+                    if (HiddenTechnique(shader.Technique))
+                        continue;
+
+                    //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
+                    device.SetStreamSource(0, sub_mesh.vb, 0, 52);
+
+                    toon_shader.SwitchShaderColorTex(shader, tso.d3d_texturemap);
+                    effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh)); // shared
+
+                    int npass = effect_dnmap.Begin(0);
+                    for (int ipass = 0; ipass < npass; ipass++)
+                    {
+                        effect_dnmap.BeginPass(ipass);
+                        device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, sub_mesh.vertices.Length - 2);
+                        effect_dnmap.EndPass();
+                    }
+                    effect_dnmap.End();
+                }
+            toon_shader.current_shader = null;
+        }
+
+        void DrawFigure_dnmap(Figure fig)
+        {
+            {
+                Matrix world;
+                fig.GetWorldMatrix(out world);
+
+                Matrix world_view_matrix = world * Transform_View;
+                Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+                effect.SetValue("wld", world);
+                effect.SetValue("wv", world_view_matrix);
+                effect.SetValue("wvp", world_view_projection_matrix);
+            }
+            foreach (TSOFile tso in fig.TsoList)
+                DrawTSO_dnmap(fig, tso);
+        }
+
         // draw depthmap and normalmap
         // out dmap_surface
         // out nmap_surface
@@ -2857,48 +2904,8 @@ namespace TDCG
             device.VertexDeclaration = vd;
 
             foreach (Figure fig in FigureList)
-            {
-                {
-                    Matrix world;
-                    fig.GetWorldMatrix(out world);
+                DrawFigure_dnmap(fig);
 
-                    Matrix world_view_matrix = world * Transform_View;
-                    Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-                    effect.SetValue("wld", world);
-                    effect.SetValue("wv", world_view_matrix);
-                    effect.SetValue("wvp", world_view_projection_matrix);
-                }
-                foreach (TSOFile tso in fig.TsoList)
-                {
-                    toon_shader.current_shader = null;
-
-                    foreach (TSOMesh mesh in tso.meshes)
-                        foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
-                        {
-                            Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < tso.sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
-                            Shader shader = tso.sub_scripts[sub_mesh.spec].shader;
-
-                            if (HiddenTechnique(shader.Technique))
-                                continue;
-
-                            //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
-                            device.SetStreamSource(0, sub_mesh.vb, 0, 52);
-
-                            toon_shader.SwitchShaderColorTex(shader, tso.d3d_texturemap);
-                            effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh)); // shared
-
-                            int npass = effect_dnmap.Begin(0);
-                            for (int ipass = 0; ipass < npass; ipass++)
-                            {
-                                effect_dnmap.BeginPass(ipass);
-                                device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, sub_mesh.vertices.Length - 2);
-                                effect_dnmap.EndPass();
-                            }
-                            effect_dnmap.End();
-                        }
-                    toon_shader.current_shader = null;
-                }
-            }
             device.SetRenderTarget(1, null); // attention!
         }
 
