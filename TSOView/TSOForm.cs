@@ -68,7 +68,7 @@ namespace TSOView
             configForm.DiffusionConfig = diffusion_config;
             configForm.ConfigConnect();
 
-            if (viewer.InitializeApplication(this, true))
+            if (viewer.InitializeApplication(this))
             {
                 viewer.ConfigConnect();
                 configForm.SetViewer(viewer);

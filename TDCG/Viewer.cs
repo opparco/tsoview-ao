@@ -105,12 +105,6 @@ namespace TDCG
         /// </summary>
         protected EffectHandle handle_UVSCR;
 
-        bool shadow_map_enabled;
-        /// <summary>
-        /// シャドウマップを作成するか
-        /// </summary>
-        public bool ShadowMapEnabled { get { return shadow_map_enabled; } }
-
         ToonShader toon_shader = null;
         Screen screen = null;
         Sprite sprite = null;
@@ -1425,11 +1419,9 @@ namespace TDCG
         /// deviceを作成します。
         /// </summary>
         /// <param name="control">レンダリング先となるcontrol</param>
-        /// <param name="shadow_map_enabled">シャドウマップを作成するか</param>
         /// <returns>deviceの作成に成功したか</returns>
-        public bool InitializeApplication(Control control, bool shadow_map_enabled = false)
+        public bool InitializeApplication(Control control)
         {
-            this.shadow_map_enabled = shadow_map_enabled;
             SetControl(control);
 
             PresentParameters pp = new PresentParameters();
