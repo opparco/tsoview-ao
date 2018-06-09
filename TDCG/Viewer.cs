@@ -2746,7 +2746,7 @@ namespace TDCG
                 effect.SetValue("wv", world_view_matrix);
                 effect.SetValue("wvp", world_view_projection_matrix);
             }
-            effect.SetValue(handle_LightDirForced, fig.LightDirForced());
+            effect.SetValue(handle_LightDirForced, fig.LightDirForced);
 
             foreach (TSOFile tso in fig.TsoList)
                 DrawTSO(fig, tso);

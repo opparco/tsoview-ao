@@ -314,14 +314,18 @@ public class Figure : IDisposable
         get { return Vector3.TransformCoordinate(new Vector3(0.0f, 0.0f, -1.0f), Matrix.RotationQuaternion(lamp_rotation)); }
     }
 
+    Vector4 ToVector4(Vector3 v)
+    {
+        return new Vector4(v.X, v.Y, v.Z, 0.0f);
+    }
+
     /// <summary>
     /// 光源方向ベクトルを得ます。
     /// </summary>
     /// <returns></returns>
-    public Vector4 LightDirForced()
+    public Vector4 LightDirForced
     {
-        Vector3 v = LightDirection;
-        return new Vector4(v.X, v.Y, v.Z, 0.0f);
+        get { return ToVector4(LightDirection); }
     }
 
 
