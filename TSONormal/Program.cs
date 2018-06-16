@@ -76,6 +76,7 @@ namespace TSONormal
                     }
                 }
 
+            // tmo.nodesをtso.nodesに代入
             foreach (TSONode tso_node in tso.nodes)
             {
                 TMONode tmo_node;
@@ -86,6 +87,29 @@ namespace TSONormal
             tso.Save(@"out.tso");
         }
 
+        // DONE:
+        // mqo_mesh.CreateVerticesAndFaces();
+        // 頂点を集約する。
+        //      create MqoVert[] from Vertex[]
+        // 面を作成する。
+        //      create MqoFace[]
+        //
+        // TODO:
+        // .tmoを元に頂点位置を更新する。
+        //      update MqoVert#position
+        //
+        // 頂点位置を元に面法線を計算する。
+        //      update MqoFace#normal
+        //
+        // 面法線を元に頂点法線を計算する。
+        //      update MqoVert#normal
+        //
+        // 頂点法線を.tsoに保存する。
+        //      update Vertex#normal
+
+        // 頂点の位置と法線を更新する。
+        // v: 対象とする頂点
+        // bone_matrices: 変形行列リスト
         public static void CalcSkindeform(ref Vertex v, Matrix[] bone_matrices)
         {
             Vector3 pos = Vector3.Empty;

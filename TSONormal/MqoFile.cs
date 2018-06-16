@@ -20,6 +20,11 @@ namespace TDCG
         /// </summary>
         public MqoVert[] vertices;
 
+        /// <summary>
+        /// 面配列
+        /// </summary>
+        public MqoFace[] faces;
+
         TSOMesh mesh = null;
 
         static Dictionary<TSOMesh, MqoMesh> meshmap = new Dictionary<TSOMesh, MqoMesh>();
@@ -31,7 +36,7 @@ namespace TDCG
                 return mqo_mesh;
 
             mqo_mesh = new MqoMesh(mesh);
-            mqo_mesh.CreateVertices();
+            mqo_mesh.CreateVerticesAndFaces();
             meshmap[mesh] = mqo_mesh;
             
             return mqo_mesh;
@@ -42,10 +47,10 @@ namespace TDCG
             this.mesh = mesh;
         }
 
-        internal void CreateVertices()
+        internal void CreateVerticesAndFaces()
         {
             Heap<MqoVert> mh = new Heap<MqoVert>();
-
+            List<MqoFace> faces = new List<MqoFace>();
             foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
             {
                 int cnt = 0;
@@ -90,11 +95,12 @@ namespace TDCG
 
                     if (a != b && b != c && c != a)
                     {
-                        //todo: create MqoFace
+                        faces.Add(new MqoFace(a, b, c));
                     }
                 }
             }
-            vertices = mh.ary.ToArray();
+            this.vertices = mh.ary.ToArray();
+            this.faces = faces.ToArray();
         }
 
         internal void CalcSkindeform(Matrix [] clipped_boneMatrices)
@@ -253,6 +259,22 @@ namespace TDCG
         public int CompareTo(object obj)
         {
             return -weight.CompareTo(((MqoSkinWeight)obj).weight);
+        }
+    }
+
+    public class MqoFace
+    {
+        public ushort a, b, c;
+
+        public MqoFace()
+        {
+        }
+
+        public MqoFace(ushort a, ushort b, ushort c)
+        {
+            this.a = a;
+            this.b = b;
+            this.c = c;
         }
     }
 }
