@@ -27,17 +27,12 @@ namespace TDCG
 
         TSOMesh mesh = null;
 
-        static Dictionary<TSOMesh, MqoMesh> meshmap = new Dictionary<TSOMesh, MqoMesh>();
-
         internal static MqoMesh FromTSOMesh(TSOMesh mesh)
         {
             MqoMesh mqo_mesh;
-            if (meshmap.TryGetValue(mesh, out mqo_mesh))
-                return mqo_mesh;
 
             mqo_mesh = new MqoMesh(mesh);
             mqo_mesh.CreateVerticesAndFaces();
-            meshmap[mesh] = mqo_mesh;
             
             return mqo_mesh;
         }
@@ -47,6 +42,10 @@ namespace TDCG
             this.mesh = mesh;
         }
 
+        // 頂点を集約する。
+        //      create MqoVert[] from Vertex[]
+        // 面を作成する。
+        //      create MqoFace[]
         internal void CreateVerticesAndFaces()
         {
             Heap<MqoVert> mh = new Heap<MqoVert>();
@@ -54,7 +53,6 @@ namespace TDCG
             foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
             {
                 int cnt = 0;
-                ushort a, b = 0, c = 0;
                 MqoVert ma, mb = new MqoVert(), mc = new MqoVert();
 
                 foreach (Vertex v in sub_mesh.vertices)
@@ -81,9 +79,6 @@ namespace TDCG
                     m.rel.Add(new TSOPair(v, sub_mesh));
 
                     cnt++;
-                    a = b;
-                    b = c;
-                    c = i;
                     ma = mb;
                     mb = mc;
                     mc = m;
@@ -93,9 +88,12 @@ namespace TDCG
                     if (cnt < 3)
                         continue;
 
-                    if (a != b && b != c && c != a)
+                    if (ma != mb && mb != mc && mc != ma)
                     {
-                        faces.Add(new MqoFace(a, b, c));
+                        if (cnt % 2 == 0)
+                            faces.Add(new MqoFace(ma, mb, mc));
+                        else
+                            faces.Add(new MqoFace(ma, mc, mb));
                     }
                 }
             }
@@ -116,6 +114,37 @@ namespace TDCG
         {
             foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
                 sub_mesh.WriteBuffer();
+        }
+
+        // 頂点位置を元に面法線を計算する。
+        //      update MqoFace#normal
+        //
+        // 面法線を元に頂点法線を計算する。
+        //      update MqoVert#normal
+        //
+        public void UpdateVerticesNormal()
+        {
+            foreach (MqoVert v in vertices)
+            {
+                v.normal = Vector3.Empty;
+            }
+
+            foreach (MqoFace face in faces)
+            {
+                // 面法線を計算する。
+                Vector3 v1 = face.mb.position - face.ma.position;
+                Vector3 v2 = face.mc.position - face.mb.position;
+                Vector3 v3 = Vector3.Cross(v1, v2);
+                Vector3 n = Vector3.Normalize(v3);
+
+                // 頂点法線に加算する。
+                face.ma.normal -= n;
+                face.mb.normal -= n;
+                face.mc.normal -= n;
+            }
+
+            foreach (MqoVert v in vertices)
+                v.normal = Vector3.Normalize(v.normal);
         }
     }
 
@@ -264,17 +293,17 @@ namespace TDCG
 
     public class MqoFace
     {
-        public ushort a, b, c;
+        public MqoVert ma, mb, mc;
 
         public MqoFace()
         {
         }
 
-        public MqoFace(ushort a, ushort b, ushort c)
+        public MqoFace(MqoVert ma, MqoVert mb, MqoVert mc)
         {
-            this.a = a;
-            this.b = b;
-            this.c = c;
+            this.ma = ma;
+            this.mb = mb;
+            this.mc = mc;
         }
     }
 }

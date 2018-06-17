@@ -65,73 +65,36 @@ namespace TSONormal
             else
                 fig.UpdateBoneMatricesWithoutSlider(true);
 
-            foreach (TSOMesh mesh in tso.meshes)
-                foreach (TSOSubMesh sub in mesh.sub_meshes)
-                {
-                    Matrix[] clipped_bone_matrices = fig.ClipBoneMatrices(sub);
+            Matrix[] bone_matrices = fig.ClipBoneMatrices(tso);
 
-                    for (int i = 0; i < sub.vertices.Length; i++)
-                    {
-                        CalcSkindeform(ref sub.vertices[i], clipped_bone_matrices);
-                    }
+            MqoMesh[] meshes = new MqoMesh[tso.meshes.Length];
+            for (int i = 0; i < tso.meshes.Length; i++)
+            {
+                meshes[i] = MqoMesh.FromTSOMesh(tso.meshes[i]);
+            }
+
+            foreach (MqoMesh mesh in meshes)
+            {
+                // mqo: 頂点位置を更新する。
+                foreach (MqoVert v in mesh.vertices)
+                {
+                    v.position = v.CalcSkindeformPosition(bone_matrices);
                 }
 
-            // tmo.nodesをtso.nodesに代入
-            foreach (TSONode tso_node in tso.nodes)
-            {
-                TMONode tmo_node;
-                if (fig.nodemap.TryGetValue(tso_node, out tmo_node))
-                    tso_node.TransformationMatrix = tmo_node.TransformationMatrix;
+                // mqo: 頂点法線を更新する。
+                mesh.UpdateVerticesNormal();
+
+                // tso: 頂点法線を更新する。
+                foreach (MqoVert v in mesh.vertices)
+                {
+                    foreach (TSOPair pair in v.rel)
+                    {
+                        pair.a.normal = v.normal;
+                    }
+                }
             }
 
             tso.Save(@"out.tso");
-        }
-
-        // DONE:
-        // mqo_mesh.CreateVerticesAndFaces();
-        // 頂点を集約する。
-        //      create MqoVert[] from Vertex[]
-        // 面を作成する。
-        //      create MqoFace[]
-        //
-        // TODO:
-        // .tmoを元に頂点位置を更新する。
-        //      update MqoVert#position
-        //
-        // 頂点位置を元に面法線を計算する。
-        //      update MqoFace#normal
-        //
-        // 面法線を元に頂点法線を計算する。
-        //      update MqoVert#normal
-        //
-        // 頂点法線を.tsoに保存する。
-        //      update Vertex#normal
-
-        // 頂点の位置と法線を更新する。
-        // v: 対象とする頂点
-        // bone_matrices: 変形行列リスト
-        public static void CalcSkindeform(ref Vertex v, Matrix[] bone_matrices)
-        {
-            Vector3 pos = Vector3.Empty;
-            for (int i = 0; i < 4; i++)
-            {
-                Matrix m = bone_matrices[v.skin_weights[i].bone_index];
-                float w = v.skin_weights[i].weight;
-                pos += Vector3.TransformCoordinate(v.position, m) * w;
-            }
-            v.position = pos;
-
-            Vector3 nor = Vector3.Empty;
-            for (int i = 0; i < 4; i++)
-            {
-                Matrix m = bone_matrices[v.skin_weights[i].bone_index];
-                m.M41 = 0;
-                m.M42 = 0;
-                m.M43 = 0;
-                float w = v.skin_weights[i].weight;
-                nor += Vector3.TransformCoordinate(v.normal, m) * w;
-            }
-            v.normal = Vector3.Normalize(nor);
         }
 
         static List<float> ReadFloats(string dest_file)
