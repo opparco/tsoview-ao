@@ -13,10 +13,7 @@ namespace TDCG
     {
         public ModelMode(Device device, Sprite sprite) : base(device, sprite, "MODEL", "0-model.png")
         {
-            for (int i=0; i<hidden.Length; i++)
-            {
-                hidden[i] = false;
-            }
+            ClearHidden();
         }
 
         static string GetCellTexturePath()
@@ -100,6 +97,14 @@ namespace TDCG
         }
 
         bool[] hidden = new bool[32];
+
+        public void ClearHidden()
+        {
+            for (int i=0; i<hidden.Length; i++)
+            {
+                hidden[i] = false;
+            }
+        }
 
         public bool GetHidden(int idx)
         {

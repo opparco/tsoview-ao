@@ -1503,6 +1503,8 @@ namespace TDCG
                     selected_node = fig.Tmo.nodes[0]; // W_Hips
                     sprite_renderer.pose_mode.SelectedNodeName = selected_node.Name;
                 }
+                UpdateFiguresHidden();
+                UpdateTsosHidden();
                 need_render = true;
             };
 
@@ -1865,6 +1867,17 @@ namespace TDCG
             }
         }
 
+        void UpdateFiguresHidden()
+        {
+            sprite_renderer.scene_mode.ClearHidden();
+            int idx = 0;
+            foreach (Figure fig in FigureList)
+            {
+                sprite_renderer.scene_mode.SetHidden(idx, fig.Hidden);
+                idx++;
+            }
+        }
+
         /// 選択 tso を削除します。
         public void RemoveSelectedTSO()
         {
@@ -1900,6 +1913,19 @@ namespace TDCG
                     need_render = true;
 
                     sprite_renderer.model_mode.SetHidden(sprite_renderer.model_mode.SelectedIdx, tso.Hidden);
+                }
+            }
+        }
+
+        void UpdateTsosHidden()
+        {
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                sprite_renderer.model_mode.ClearHidden();
+                foreach (TSOFile tso in fig.TsoList)
+                {
+                    sprite_renderer.model_mode.SetHidden(tso.Row, tso.Hidden);
                 }
             }
         }
