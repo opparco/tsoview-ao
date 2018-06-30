@@ -13,6 +13,10 @@ namespace TDCG
     {
         public SceneMode(Device device, Sprite sprite) : base(device, sprite, "SCENE", "2-scene.png")
         {
+            for (int i=0; i<hidden.Length; i++)
+            {
+                hidden[i] = false;
+            }
         }
 
         static string GetCellTexturePath()
@@ -86,14 +90,28 @@ namespace TDCG
             return false;
         }
 
+        bool[] hidden = new bool[24];
+
+        public bool GetHidden(int idx)
+        {
+            return hidden[idx];
+        }
+
+        public void SetHidden(int idx, bool value)
+        {
+            hidden[idx] = value;
+        }
+
         Color cell_col = Color.FromArgb(0xCC, Color.White);
+        Color hide_col = Color.FromArgb(0xCC, Color.Black);
 
         void DrawCellSprite()
         {
             for (int row = 0; row < 4; row++)
             for (int col = 0; col < 6; col++)
             {
-                sprite.Draw(cell_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 9 + 5) * 16, (row * 9 + 5) * 16, 0), cell_col);
+                int idx = col + row * 6;
+                sprite.Draw(cell_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3((col * 9 + 5) * 16, (row * 9 + 5) * 16, 0), GetHidden(idx) ? hide_col : cell_col);
             }
         }
 

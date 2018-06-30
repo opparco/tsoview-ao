@@ -12,8 +12,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PNGDiecut", "PNGDiecut\PNGDiecut.csproj", "{78B6F928-0982-4BDB-B941-BDC2DCBD48C6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSODeform", "TSODeform\TSODeform.csproj", "{A18D0631-5871-4A2D-A6BD-08198C4E2849}"
+	ProjectSection(ProjectDependencies) = postProject
+		{30D26679-E876-46FC-B8C0-E55146316C8C} = {30D26679-E876-46FC-B8C0-E55146316C8C}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSONormal", "TSONormal\TSONormal.csproj", "{4DFD779A-4E55-4F43-9BD8-BFE56FDB677B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{30D26679-E876-46FC-B8C0-E55146316C8C} = {30D26679-E876-46FC-B8C0-E55146316C8C}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

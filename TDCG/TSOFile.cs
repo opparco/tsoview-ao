@@ -1539,5 +1539,15 @@ namespace TDCG
         {
             return Row.CompareTo(((TSOFile)obj).Row);
         }
+
+        bool hidden;
+        /// 隠すか
+        public bool Hidden { get { return hidden; } }
+
+        /// 隠すかを切り替えます。
+        public void SwitchHidden()
+        {
+            hidden = ! hidden;
+        }
     }
 }

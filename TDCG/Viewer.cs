@@ -1316,6 +1316,7 @@ namespace TDCG
 
         int keyFigure = (int)Keys.Tab;
         int keyDelete = (int)Keys.Delete;
+        int keyHide = (int)Keys.E;
         int keyCamera1 = (int)Keys.D1;
         int keyCamera2 = (int)Keys.D2;
         int keyCamera3 = (int)Keys.D3;
@@ -1849,6 +1850,21 @@ namespace TDCG
             Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
         }
 
+        /// <summary>
+        /// 選択フィギュアを隠します。
+        /// </summary>
+        public void HideSelectedFigure()
+        {
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                fig.SwitchHidden();
+                need_render = true;
+
+                sprite_renderer.scene_mode.SetHidden(sprite_renderer.scene_mode.SelectedIdx, fig.Hidden);
+            }
+        }
+
         /// 選択 tso を削除します。
         public void RemoveSelectedTSO()
         {
@@ -1869,6 +1885,23 @@ namespace TDCG
             fig = null;
             // free meshes and textures.
             Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
+        }
+
+        /// 選択 tso を隠します。
+        public void HideSelectedTSO()
+        {
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                TSOFile tso;
+                if (TryGetTSOFile(out tso))
+                {
+                    tso.SwitchHidden();
+                    need_render = true;
+
+                    sprite_renderer.model_mode.SetHidden(sprite_renderer.model_mode.SelectedIdx, tso.Hidden);
+                }
+            }
         }
 
         bool sprite_enabled = true;
@@ -2052,6 +2085,16 @@ namespace TDCG
                     this.RemoveSelectedTSO();
                 else
                     this.RemoveSelectedFigure();
+            }
+            if (keysEnabled[keyHide] && keys[keyHide])
+            {
+                keysEnabled[keyHide] = false;
+
+                string modename = sprite_renderer.CurrentModeName;
+                if (modename == "MODEL")
+                    this.HideSelectedTSO();
+                else
+                    this.HideSelectedFigure();
             }
             if (keysEnabled[keyCamera1] && keys[keyCamera1])
             {
@@ -2675,7 +2718,11 @@ namespace TDCG
             effect.SetValue(handle_LightDirForced, fig.LightDirForced);
 
             foreach (TSOFile tso in fig.TsoList)
+            {
+                if (tso.Hidden)
+                    continue;
                 DrawTSO(fig, tso);
+            }
         }
 
         /// <summary>
@@ -2718,7 +2765,11 @@ namespace TDCG
             effect.SetValue(handle_UVSCR, UVSCR());
 
             foreach (Figure fig in FigureList)
+            {
+                if (fig.Hidden)
+                    continue;
                 DrawFigure(fig);
+            }
         }
 
         void DrawFigureList()
@@ -2815,7 +2866,11 @@ namespace TDCG
                 effect.SetValue("wvp", world_view_projection_matrix);
             }
             foreach (TSOFile tso in fig.TsoList)
+            {
+                if (tso.Hidden)
+                    continue;
                 DrawTSO_dnmap(fig, tso);
+            }
         }
 
         // draw depthmap and normalmap
@@ -2838,7 +2893,11 @@ namespace TDCG
             device.VertexDeclaration = vd;
 
             foreach (Figure fig in FigureList)
+            {
+                if (fig.Hidden)
+                    continue;
                 DrawFigure_dnmap(fig);
+            }
 
             device.SetRenderTarget(1, null); // attention!
         }

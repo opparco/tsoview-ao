@@ -369,5 +369,15 @@ public class Figure : IDisposable
         foreach (TSOFile tso in TsoList)
             tso.Dispose();
     }
+
+    bool hidden;
+    /// 隠すか
+    public bool Hidden { get { return hidden; } }
+
+    /// 隠すかを切り替えます。
+    public void SwitchHidden()
+    {
+        hidden = ! hidden;
+    }
 }
 }
