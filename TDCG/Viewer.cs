@@ -990,18 +990,20 @@ namespace TDCG
         static int DetectRowFromFileName(string file)
         {
             int row = 0x19;
-            string filename = Path.GetFileNameWithoutExtension(file);
-            switch (filename.Length)
+            string basename = Path.GetFileNameWithoutExtension(file);
+            switch (basename.Length)
             {
                 case 2:
                     //ex. filename = "00"
-                    row = int.Parse(filename, NumberStyles.AllowHexSpecifier);
+                    int num;
+                    if (int.TryParse(basename, NumberStyles.AllowHexSpecifier, null, out num) && num < 0x1E)
+                        row = num;
                     break;
                 case 12:
                     //ex. filename = "N001BODY_A00"
                     //A: 0x00 .. Z: 0x19
                     //0: 0x1A .. 3: 0x1D
-                    char c = filename[9];
+                    char c = basename[9];
                     byte b = (byte)c;
                     //Console.WriteLine("b: {0:X2}", b);
                     if (b >= 0x41 && b < 0x5B)
