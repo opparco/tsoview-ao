@@ -1463,6 +1463,19 @@ namespace TDCG
             if (!LoadEffect(@"effects\screen.fx", out effect_screen, macros))
                 return false;
 
+            /// toonshader.cgfx に渡す頂点要素
+            VertexElement[] ve = new VertexElement[]
+            {
+                new VertexElement(0,  0, DeclarationType.Float3, DeclarationMethod.Default, DeclarationUsage.Position, 0),
+                new VertexElement(0, 12, DeclarationType.Float4, DeclarationMethod.Default, DeclarationUsage.TextureCoordinate, 3),
+                new VertexElement(0, 28, DeclarationType.Ubyte4, DeclarationMethod.Default, DeclarationUsage.TextureCoordinate, 4),
+                new VertexElement(0, 32, DeclarationType.Float3, DeclarationMethod.Default, DeclarationUsage.Normal, 0),
+                new VertexElement(0, 44, DeclarationType.Float2, DeclarationMethod.Default, DeclarationUsage.TextureCoordinate, 0),
+                    VertexElement.VertexDeclarationEnd
+            };
+
+            vd = new VertexDeclaration(device, ve);
+
             screen = new Screen(device);
             sprite = new Sprite(device);
 
@@ -1812,8 +1825,6 @@ namespace TDCG
             device.SetRenderState(RenderStates.AlphaTestEnable, true);
             device.SetRenderState(RenderStates.ReferenceAlpha, 0x08);
             device.SetRenderState(RenderStates.AlphaFunction, (int)Compare.GreaterEqual);
-
-            vd = new VertexDeclaration(device, TSOSubMesh.ve);
 
             //device.RenderState.IndexedVertexBlendEnable = true;
         }

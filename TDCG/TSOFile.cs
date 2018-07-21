@@ -208,17 +208,6 @@ namespace TDCG
             get { return vertices.Length; }
         }
 
-        /// toonshader.cgfx に渡す頂点要素
-        public static VertexElement[] ve = new VertexElement[]
-        {
-            new VertexElement(0,  0, DeclarationType.Float3, DeclarationMethod.Default, DeclarationUsage.Position, 0),
-            new VertexElement(0, 12, DeclarationType.Float4, DeclarationMethod.Default, DeclarationUsage.TextureCoordinate, 3),
-            new VertexElement(0, 28, DeclarationType.Ubyte4, DeclarationMethod.Default, DeclarationUsage.TextureCoordinate, 4),
-            new VertexElement(0, 32, DeclarationType.Float3, DeclarationMethod.Default, DeclarationUsage.Normal, 0),
-            new VertexElement(0, 44, DeclarationType.Float2, DeclarationMethod.Default, DeclarationUsage.TextureCoordinate, 0),
-                VertexElement.VertexDeclarationEnd
-        };
-
         /// <summary>
         /// 頂点をDirect3Dバッファに書き込みます。
         /// </summary>
