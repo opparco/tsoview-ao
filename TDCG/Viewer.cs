@@ -1690,8 +1690,6 @@ namespace TDCG
             if (lamp_renderer != null)
                 lamp_renderer.Dispose();
 
-            if (sprite != null)
-                sprite.Dispose();
             if (screen != null)
                 screen.Dispose();
 
@@ -3141,27 +3139,6 @@ namespace TDCG
             foreach (Figure fig in FigureList)
                 fig.Dispose();
 
-            if (vd != null)
-                vd.Dispose();
-
-            if (effect_screen != null)
-                effect_screen.Dispose();
-            if (effect_main != null)
-                effect_main.Dispose();
-            if (effect_gb != null)
-                effect_gb.Dispose();
-            if (effect_ao != null)
-                effect_ao.Dispose();
-            if (effect_depth != null)
-                effect_depth.Dispose();
-            if (effect_dnmap != null)
-                effect_dnmap.Dispose();
-            if (effect_dnclear != null)
-                effect_dnclear.Dispose();
-            if (effect_clear != null)
-                effect_clear.Dispose();
-            if (effect != null)
-                effect.Dispose();
             if (device != null)
                 device.Dispose();
         }

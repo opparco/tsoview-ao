@@ -36,11 +36,6 @@ namespace TDCG
                 pole.Dispose();
             if (circle != null)
                 circle.Dispose();
-
-            if (effect_pole != null)
-                effect_pole.Dispose();
-            if (effect_circle != null)
-                effect_circle.Dispose();
         }
 
         // on device reset
