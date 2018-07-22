@@ -493,6 +493,8 @@ namespace TDCG
             }
         }
 
+        bool camera_manipulated;
+
         /// マウスボタンを押したときに実行するハンドラ
         protected virtual void form_OnMouseDown(object sender, MouseEventArgs e)
         {
@@ -537,6 +539,7 @@ namespace TDCG
                     break;
                 case MouseButtons.Middle:
                     manipulator.BeginGrabCamera();
+                    camera_manipulated = false;
                     break;
                 case MouseButtons.Right:
                     Debug.WriteLine("form_OnMouseDown RMB");
@@ -584,7 +587,7 @@ namespace TDCG
                     manipulator.WhileRotateCamera(dx, dy);
                     break;
                 case MouseButtons.Middle:
-                    manipulator.WhileGrabCamera(dx, dy);
+                    camera_manipulated = manipulator.WhileGrabCamera(dx, dy);
                     break;
                 case MouseButtons.Right:
                     if (manipulator.WhileGrabNode(dx, dy))
@@ -613,8 +616,11 @@ namespace TDCG
                     break;
                 case MouseButtons.Middle:
                     manipulator.EndGrabCamera();
-                    manipulator.NodePower = 0.0f;
-                    need_render = true; // draw manipulator.NodePower
+                    if (!camera_manipulated)
+                    {
+                        manipulator.NodePower = 0.0f;
+                        need_render = true; // draw manipulator.NodePower
+                    }
                     break;
                 case MouseButtons.Right:
                     if (manipulator.EndGrabNode(ManipulatorDeviceType.Mouse))
