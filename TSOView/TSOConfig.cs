@@ -20,6 +20,13 @@ public class TSOConfig
         get { return ColorTranslator.ToHtml(screen_color); }
         set { screen_color = ColorTranslator.FromHtml(value); }
     }
+    Color font_color;
+    public Color FontColor { get { return font_color; } }
+    public string FontColorName
+    {
+        get { return ColorTranslator.ToHtml(font_color); }
+        set { font_color = ColorTranslator.FromHtml(value); }
+    }
     public Microsoft.DirectX.Vector4 Ambient { get; set; }
     public float HohoAlpha { get; set; }
     public bool XRGBDepth { get; set; }
@@ -49,6 +56,7 @@ public class TSOConfig
         this.Windowed = true;
         this.DeviceSize = new Size(0, 0);
         screen_color = Color.LightGray;
+        font_color = Color.Black;
         this.Ambient = new Microsoft.DirectX.Vector4(1, 1, 1, 1);
         this.HohoAlpha = 1.0f;
         this.XRGBDepth = true;

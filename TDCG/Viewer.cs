@@ -113,6 +113,8 @@ namespace TDCG
         SpriteRenderer sprite_renderer = null;
         NodeFilter node_filter = null;
 
+        protected Direct3D.Font font = null;
+
         /// surface of device
         protected Surface dev_surface = null;
         /// zbuffer of device
@@ -203,6 +205,7 @@ namespace TDCG
             DeviceSize = new Size(0, 0);
             SetFieldOfViewY(30.0f);
             ScreenColor = Color.LightGray;
+            FontColor = Color.Black;
             Ambient = new Vector4(1, 1, 1, 1);
             HohoAlpha = 1.0f;
             XRGBDepth = true;
@@ -611,6 +614,7 @@ namespace TDCG
                 case MouseButtons.Middle:
                     manipulator.EndGrabCamera();
                     manipulator.NodePower = 0.0f;
+                    need_render = true; // draw manipulator.NodePower
                     break;
                 case MouseButtons.Right:
                     if (manipulator.EndGrabNode(ManipulatorDeviceType.Mouse))
@@ -628,6 +632,7 @@ namespace TDCG
 
             const float delta_scale = 1.0f / (120.0f * 4.0f);
             manipulator.NodePower += e.Delta * delta_scale;
+            need_render = true; // draw manipulator.NodePower
 
             Debug.WriteLine("leave form_OnMouseWheel");
         }
@@ -1514,6 +1519,9 @@ namespace TDCG
 
             sprite_renderer = new SpriteRenderer(device, sprite);
             node_filter = new NodeFilter();
+            Direct3D.FontDescription fd = new Direct3D.FontDescription();
+            fd.FaceName = "Consolas";
+            font = new Direct3D.Font(device, fd);
             camera.Update();
             manipulator.GrabNodeSpeed = GrabNodeSpeed;
             manipulator.RotateNodeSpeed = RotateNodeSpeed;
@@ -2510,6 +2518,11 @@ namespace TDCG
                     lamp_renderer.Render(fig, ref position, ref world);
                 }
             }
+            // draw manipulator.NodePower
+            sprite.Transform = Matrix.Scaling(dev_rect.Width / 1024.0f, dev_rect.Height / 768.0f, 1.0f);
+            sprite.Begin(SpriteFlags.AlphaBlend);
+            font.DrawText(sprite, string.Format("manipulator.NodePower:{0}", manipulator.NodePower), 48, 768-48, FontColor);
+            sprite.End();
         }
 
         void DrawSpritesOnSceneMode()
@@ -2644,6 +2657,9 @@ namespace TDCG
 
         /// config: スクリーン塗りつぶし色
         public Color ScreenColor { get; set; }
+
+        /// config: 文字色
+        public Color FontColor { get; set; }
 
         /// config: 環境光
         public Vector4 Ambient { get; set; }

@@ -30,6 +30,7 @@ namespace TSOView
             viewer.Windowed = tso_config.Windowed;
             viewer.DeviceSize = tso_config.DeviceSize;
             viewer.ScreenColor = tso_config.ScreenColor;
+            viewer.FontColor = tso_config.FontColor;
             viewer.Ambient = tso_config.Ambient;
             viewer.HohoAlpha = tso_config.HohoAlpha;
             viewer.XRGBDepth = tso_config.XRGBDepth;
