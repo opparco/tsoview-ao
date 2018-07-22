@@ -329,6 +329,10 @@ namespace TDCG
                 foreach (TMONode node in GetDrawableNodes(fig.Tmo))
                 {
                     Vector3 position = Vector3.TransformCoordinate(node.GetWorldPosition(), world);
+
+                    if (Vector3.TransformCoordinate(position, Transform_View).Z >-1.0f)
+                        continue;
+
                     Vector3 screen_position = WorldToScreen(position);
 
                     int dx = location.X - (int)screen_position.X;
@@ -338,7 +342,7 @@ namespace TDCG
 
                     if (dx * dx + dy * dy < radius * radius)
                     {
-                        //近傍なら候補に入れる
+                        // 近傍なら候補に入れる
                         close_nodes[node] = screen_position.Z;
                     }
                 }
@@ -348,15 +352,18 @@ namespace TDCG
                     return false;
                 }
 
-                //近傍のうち最小z値を持つnodeを選択する
+                // 近傍のうち最小z値を持つnodeを選択する
                 float min_z = 1.0f;
 
                 foreach (var pair in close_nodes)
                 {
-                    if (pair.Value < min_z)
+                    TMONode node = pair.Key;
+                    float z = pair.Value;
+
+                    if (z < min_z)
                     {
-                        min_z = pair.Value;
-                        selected_node = pair.Key;
+                        min_z = z;
+                        selected_node = node;
                     }
                 }
                 return true;
@@ -3284,16 +3291,6 @@ namespace TDCG
         public Vector3 WorldToScreen(Vector3 v)
         {
             return WorldToScreen(v, device.Viewport, Transform_View, Transform_Projection);
-        }
-
-        public static Vector3 ViewToScreen(Vector3 v, Viewport viewport, Matrix proj)
-        {
-            return Vector3.TransformCoordinate(v, proj * CreateViewportMatrix(viewport));
-        }
-
-        public Vector3 ViewToScreen(Vector3 v)
-        {
-            return ViewToScreen(v, device.Viewport, Transform_Projection);
         }
     }
 }
