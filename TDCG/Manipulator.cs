@@ -30,6 +30,7 @@ namespace TDCG
 
         float grab_node_speed = 0.0125f;
         float rotate_node_speed = 0.0125f;
+        float node_power = 0.0f;
         float exp_node_power = 1.0f;
 
         float grab_camera_speed = 0.125f;
@@ -38,11 +39,11 @@ namespace TDCG
         //最終的な速度を speed * exp(power) で算出する
 
         //ボーン移動操作の速度
-        public float GrabNodeSpeed { get { return grab_node_speed; } set { grab_node_speed = value * exp_node_power; } }
+        public float GrabNodeSpeed { get { return grab_node_speed; } set { grab_node_speed = value; } }
         //ボーン回転操作の速度
-        public float RotateNodeSpeed { get { return rotate_node_speed; } set { rotate_node_speed = value * exp_node_power; } }
+        public float RotateNodeSpeed { get { return rotate_node_speed; } set { rotate_node_speed = value; } }
         //ボーン操作の感度
-        public float NodePower { get { return (float)Math.Log(exp_node_power); } set { exp_node_power = (float)Math.Exp(value); } }
+        public float NodePower { get { return node_power; } set { node_power = value; exp_node_power = (float)Math.Exp(value); } }
 
         //カメラ移動操作の速度
         public float GrabCameraSpeed { get { return grab_camera_speed; } set { grab_camera_speed = value; } }
@@ -70,7 +71,8 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            Vector3 translation = new Vector3(dx * grab_node_speed, -dy * grab_node_speed, 0.0f);
+            float scale = grab_node_speed * exp_node_power;
+            Vector3 translation = new Vector3(dx * scale, -dy * scale, 0.0f);
 
             Quaternion world_rotation = Quaternion.Identity;
             TMONode parent_node = selected_node.parent;
@@ -92,7 +94,8 @@ namespace TDCG
             if (dx == 0 && dy == 0 & dz == 0)
                 return false;
 
-            Vector3 translation = new Vector3(dx * grab_node_speed, -dy * grab_node_speed, dz * grab_node_speed);
+            float scale = grab_node_speed * exp_node_power;
+            Vector3 translation = new Vector3(dx * scale, -dy * scale, dz * scale);
 
             selected_node.Translation += translation;
 
@@ -122,7 +125,8 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * rotate_node_speed, dy * rotate_node_speed, 0.0f);
+            float scale = rotate_node_speed * exp_node_power;
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * scale, dy * scale, 0.0f);
 
             Quaternion q = camera.RotationQuaternion;
             Quaternion q_1 = Quaternion.Conjugate(q);
@@ -153,7 +157,8 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * rotate_node_speed, dy * rotate_node_speed, 0.0f);
+            float scale = rotate_node_speed * exp_node_power;
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * scale, dy * scale, 0.0f);
 
             Quaternion world_rotation = Quaternion.Identity;
             TMONode parent_node = selected_node.parent;

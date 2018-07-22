@@ -610,6 +610,7 @@ namespace TDCG
                     break;
                 case MouseButtons.Middle:
                     manipulator.EndGrabCamera();
+                    manipulator.NodePower = 0.0f;
                     break;
                 case MouseButtons.Right:
                     if (manipulator.EndGrabNode(ManipulatorDeviceType.Mouse))
@@ -619,6 +620,16 @@ namespace TDCG
             }
 
             Debug.WriteLine("leave form_OnMouseUp");
+        }
+
+        protected virtual void form_OnMouseWheel(object sender, MouseEventArgs e)
+        {
+            Debug.WriteLine("enter form_OnMouseWheel");
+
+            const float delta_scale = 1.0f / (120.0f * 4.0f);
+            manipulator.NodePower += e.Delta * delta_scale;
+
+            Debug.WriteLine("leave form_OnMouseWheel");
         }
 
         protected virtual void form_OnDragOver(object sender, DragEventArgs e)
@@ -1533,6 +1544,7 @@ namespace TDCG
             control.MouseDown += new MouseEventHandler(form_OnMouseDown);
             control.MouseMove += new MouseEventHandler(form_OnMouseMove);
             control.MouseUp += new MouseEventHandler(form_OnMouseUp);
+            control.MouseWheel += new MouseEventHandler(form_OnMouseWheel);
 
             control.DragDrop += new DragEventHandler(form_OnDragDrop);
             control.DragOver += new DragEventHandler(form_OnDragOver);
