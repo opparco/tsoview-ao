@@ -181,7 +181,8 @@ namespace TDCG
             if (dx == 0 && dy == 0 && dz == 0)
                 return false;
 
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * rotate_node_speed, dy * rotate_node_speed, dz * rotate_node_speed);
+            float scale = rotate_node_speed * exp_node_power;
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * scale, dy * scale, dz * scale);
 
             selected_node.Rotation = Quaternion.Normalize(selected_node.Rotation * rotation);
 
