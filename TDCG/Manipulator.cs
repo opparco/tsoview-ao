@@ -28,22 +28,30 @@ namespace TDCG
         bool rotate_camera = false;
         ManipulatorDeviceType device_type;
 
-        //ボーン移動操作の感度
-        public float GrabNodeSpeed { get; set; }
-        //ボーン回転操作の感度
-        public float RotateNodeSpeed { get; set; }
-        //カメラ移動操作の感度
-        public float GrabCameraSpeed { get; set; }
-        //カメラ回転操作の感度
-        public float RotateCameraSpeed { get; set; }
+        float grab_node_speed = 0.0125f;
+        float rotate_node_speed = 0.0125f;
+        float exp_node_power = 1.0f;
+
+        float grab_camera_speed = 0.125f;
+        float rotate_camera_speed = 0.01f;
+
+        //最終的な速度を speed * exp(power) で算出する
+
+        //ボーン移動操作の速度
+        public float GrabNodeSpeed { get { return grab_node_speed; } set { grab_node_speed = value * exp_node_power; } }
+        //ボーン回転操作の速度
+        public float RotateNodeSpeed { get { return rotate_node_speed; } set { rotate_node_speed = value * exp_node_power; } }
+        //ボーン操作の感度
+        public float NodePower { get { return (float)Math.Log(exp_node_power); } set { exp_node_power = (float)Math.Exp(value); } }
+
+        //カメラ移動操作の速度
+        public float GrabCameraSpeed { get { return grab_camera_speed; } set { grab_camera_speed = value; } }
+        //カメラ回転操作の速度
+        public float RotateCameraSpeed { get { return rotate_camera_speed; } set { rotate_camera_speed = value; } }
 
         public Manipulator(SimpleCamera camera)
         {
             this.camera = camera;
-            GrabNodeSpeed = 0.0125f;
-            RotateNodeSpeed = 0.0125f;
-            GrabCameraSpeed = 0.125f;
-            RotateCameraSpeed = 0.01f;
         }
 
         public void BeginGrabNode(ManipulatorDeviceType device_type, TMONode selected_node)
@@ -62,7 +70,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            Vector3 translation = new Vector3(dx * GrabNodeSpeed, -dy * GrabNodeSpeed, 0.0f);
+            Vector3 translation = new Vector3(dx * grab_node_speed, -dy * grab_node_speed, 0.0f);
 
             Quaternion world_rotation = Quaternion.Identity;
             TMONode parent_node = selected_node.parent;
@@ -84,7 +92,7 @@ namespace TDCG
             if (dx == 0 && dy == 0 & dz == 0)
                 return false;
 
-            Vector3 translation = new Vector3(dx * GrabNodeSpeed, -dy * GrabNodeSpeed, dz * GrabNodeSpeed);
+            Vector3 translation = new Vector3(dx * grab_node_speed, -dy * grab_node_speed, dz * grab_node_speed);
 
             selected_node.Translation += translation;
 
@@ -114,7 +122,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * RotateNodeSpeed, dy * RotateNodeSpeed, 0.0f);
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * rotate_node_speed, dy * rotate_node_speed, 0.0f);
 
             Quaternion q = camera.RotationQuaternion;
             Quaternion q_1 = Quaternion.Conjugate(q);
@@ -145,7 +153,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * RotateNodeSpeed, dy * RotateNodeSpeed, 0.0f);
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * rotate_node_speed, dy * rotate_node_speed, 0.0f);
 
             Quaternion world_rotation = Quaternion.Identity;
             TMONode parent_node = selected_node.parent;
@@ -168,7 +176,7 @@ namespace TDCG
             if (dx == 0 && dy == 0 && dz == 0)
                 return false;
 
-            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * RotateNodeSpeed, dy * RotateNodeSpeed, dz * RotateNodeSpeed);
+            Quaternion rotation = Quaternion.RotationYawPitchRoll(dx * rotate_node_speed, dy * rotate_node_speed, dz * rotate_node_speed);
 
             selected_node.Rotation = Quaternion.Normalize(selected_node.Rotation * rotation);
 
@@ -196,7 +204,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            camera.MoveView(-dx * GrabCameraSpeed, dy * GrabCameraSpeed, 0.0f);
+            camera.MoveView(-dx * grab_camera_speed, dy * grab_camera_speed, 0.0f);
 
             return true;
         }
@@ -209,7 +217,7 @@ namespace TDCG
             if (dy == 0)
                 return false;
 
-            camera.MoveView(0.0f, 0.0f, -dy * GrabCameraSpeed);
+            camera.MoveView(0.0f, 0.0f, -dy * grab_camera_speed);
 
             return true;
         }
@@ -232,7 +240,7 @@ namespace TDCG
             if (dx == 0 && dy == 0)
                 return false;
 
-            camera.Move(dx * RotateCameraSpeed, -dy * RotateCameraSpeed);
+            camera.Move(dx * rotate_camera_speed, -dy * rotate_camera_speed);
 
             return true;
         }
