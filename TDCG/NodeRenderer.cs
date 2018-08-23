@@ -39,7 +39,7 @@ namespace TDCG
         }
 
         // on device reset
-        public void Create(Rectangle device_rect, int node_radius, int selected_node_radius)
+        public void Create(Rectangle device_rect, float node_radius, float selected_node_radius)
         {
             circle.Create();
             pole.Create();

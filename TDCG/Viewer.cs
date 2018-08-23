@@ -260,17 +260,12 @@ namespace TDCG
             Figure fig;
             if (TryGetFigure(out fig))
             {
-                Matrix world;
-                fig.GetWorldMatrix(out world);
+                int dx = location.X - lamp_center_on_device.X;
+                int dy = location.Y - lamp_center_on_device.Y;
 
-                {
-                    int dx = location.X - lamp_center_on_device.X;
-                    int dy = location.Y - lamp_center_on_device.Y;
+                float radius = lamp_radius_on_device;
 
-                    float radius = lamp_radius_on_device;
-
-                    return (dx * dx + dy * dy < radius * radius);
-                }
+                return (dx * dx + dy * dy < radius * radius);
             }
             return false;
         }
@@ -294,7 +289,7 @@ namespace TDCG
                 int dx = location.X - (int)screen_position.X;
                 int dy = location.Y - (int)screen_position.Y;
 
-                float radius = SelectedNodeRadius;
+                float radius = selected_node_radius_on_device;
 
                 return (dx * dx + dy * dy < radius * radius);
             }
@@ -326,7 +321,7 @@ namespace TDCG
                     int dx = location.X - (int)screen_position.X;
                     int dy = location.Y - (int)screen_position.Y;
 
-                    float radius = NodeRadius;
+                    float radius = node_radius_on_device;
 
                     if (dx * dx + dy * dy < radius * radius)
                     {
@@ -1810,9 +1805,11 @@ namespace TDCG
             ScaleToScreen(ref lamp_center_on_device);
 
             lamp_radius_on_device = ScaleToScreen(LampRadius);
+            node_radius_on_device = ScaleToScreen(NodeRadius);
+            selected_node_radius_on_device = ScaleToScreen(SelectedNodeRadius);
 
             lamp_renderer.Create(dev_rect, lamp_radius_on_device, lamp_center_on_device);
-            node_renderer.Create(dev_rect, NodeRadius, SelectedNodeRadius);
+            node_renderer.Create(dev_rect, node_radius_on_device, selected_node_radius_on_device);
             sprite_renderer.Create(dev_rect);
 
             effect_depth.SetValue("DepthMap_texture", dmap_texture); // in
@@ -2743,9 +2740,11 @@ namespace TDCG
 
         /// ボーン選択円の半径
         public int NodeRadius { get; set; }
+        float node_radius_on_device;
 
         /// ボーン操作円の半径
         public int SelectedNodeRadius { get; set; }
+        float selected_node_radius_on_device;
 
         /// <summary>
         /// UVSCR値を得ます。
