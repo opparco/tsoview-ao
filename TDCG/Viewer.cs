@@ -217,6 +217,7 @@ namespace TDCG
             RotateNodeSpeed = 0.0125f;
             GrabCameraSpeed = 0.125f;
             RotateCameraSpeed = 0.01f;
+            LampCenter = new Point(944, 96);
             LampRadius = 18;
             NodeRadius = 6;
             SelectedNodeRadius = 18;
@@ -256,26 +257,17 @@ namespace TDCG
 
         bool CloseToLamp(Point location)
         {
-            int screen_center_y = dev_rect.Height / 2;
-
             Figure fig;
             if (TryGetFigure(out fig))
             {
                 Matrix world;
                 fig.GetWorldMatrix(out world);
 
-                TMONode node = fig.Tmo.FindNodeByName("face_oya");
-                if (node != null)
                 {
-                    Vector3 world_position = node.GetWorldPosition();
-                    world_position.Y += 5.0f;
-                    Vector3 position = Vector3.TransformCoordinate(world_position, world);
-                    Vector3 screen_position = WorldToScreen(position);
+                    int dx = location.X - lamp_center_on_device.X;
+                    int dy = location.Y - lamp_center_on_device.Y;
 
-                    int dx = location.X - (int)screen_position.X;
-                    int dy = location.Y - (int)screen_position.Y;
-
-                    float radius = LampRadius;
+                    float radius = lamp_radius_on_device;
 
                     return (dx * dx + dy * dy < radius * radius);
                 }
@@ -289,8 +281,6 @@ namespace TDCG
         {
             if (selected_node == null)
                 return false;
-
-            int screen_center_y = dev_rect.Height / 2;
 
             Figure fig;
             if (TryGetFigure(out fig))
@@ -316,8 +306,6 @@ namespace TDCG
         // location 座標系: device 生成時の screen 座標系
         bool SelectNode(Point location)
         {
-            int screen_center_y = dev_rect.Height / 2;
-
             Figure fig;
             if (TryGetFigure(out fig))
             {
@@ -369,6 +357,12 @@ namespace TDCG
                 return true;
             }
             return false;
+        }
+
+        float ScaleToScreen(int x)
+        {
+            Size client_size = control.ClientSize;
+            return x * dev_rect.Width / client_size.Width;
         }
 
         void ScaleToScreen(ref Point location)
@@ -1812,7 +1806,12 @@ namespace TDCG
             model_thumbnail.Create(device);
             scene_thumbnail.Create(device);
 
-            lamp_renderer.Create(dev_rect, LampRadius);
+            lamp_center_on_device = LampCenter;
+            ScaleToScreen(ref lamp_center_on_device);
+
+            lamp_radius_on_device = ScaleToScreen(LampRadius);
+
+            lamp_renderer.Create(dev_rect, lamp_radius_on_device, lamp_center_on_device);
             node_renderer.Create(dev_rect, NodeRadius, SelectedNodeRadius);
             sprite_renderer.Create(dev_rect);
 
@@ -2734,8 +2733,13 @@ namespace TDCG
         /// config: カメラ回転の速度
         public float RotateCameraSpeed { get; set; }
 
+        /// ライト操作円の中心位置
+        public Point LampCenter { get; set; }
+        Point lamp_center_on_device;
+
         /// ライト操作円の半径
         public int LampRadius { get; set; }
+        float lamp_radius_on_device;
 
         /// ボーン選択円の半径
         public int NodeRadius { get; set; }

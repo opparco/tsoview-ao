@@ -45,6 +45,7 @@ public class TSOConfig
     public float RotateNodeSpeed { get; set; }
     public float GrabCameraSpeed { get; set; }
     public float RotateCameraSpeed { get; set; }
+    public Point LampCenter { get; set; }
     public int LampRadius { get; set; }
     public int NodeRadius { get; set; }
     public int SelectedNodeRadius { get; set; }
@@ -75,6 +76,7 @@ public class TSOConfig
         RotateNodeSpeed = 0.0125f;
         GrabCameraSpeed = 0.125f;
         RotateCameraSpeed = 0.01f;
+        this.LampCenter = new Point(944, 96);
         this.LampRadius = 18;
         this.NodeRadius = 6;
         this.SelectedNodeRadius = 18;

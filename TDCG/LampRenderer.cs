@@ -18,7 +18,12 @@ namespace TDCG
         Circle circle = null;
         Pole pole = null;
 
+        Rectangle device_rect;
+        float lamp_radius;
+        Point lamp_center;
+#if false
         float lamp_circle_scale;
+#endif
 
         public LampRenderer(Device device, Sprite sprite)
         {
@@ -38,12 +43,17 @@ namespace TDCG
         }
 
         // on device reset
-        public void Create(Rectangle device_rect, int lamp_radius)
+        public void Create(Rectangle device_rect, float lamp_radius, Point lamp_center)
         {
             circle.Create();
             pole.Create();
 
+            this.device_rect = device_rect;
+            this.lamp_radius = lamp_radius;
+            this.lamp_center = lamp_center;
+#if false
             lamp_circle_scale = lamp_radius * 2.0f / device_rect.Height;
+#endif
         }
 
         ProjectionMode projection_mode = ProjectionMode.Perspective;
@@ -89,12 +99,25 @@ namespace TDCG
 
         void DrawLampPole(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
         {
+#if false
             float scale = lamp_circle_scale;
             Matrix world_view_matrix;
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
             Matrix world_view_projection_matrix = world_view_matrix * transform_projection;
+#endif
+            float scale = lamp_radius;
+            Matrix lamp_scaling = Matrix.Scaling(scale, scale, scale);
+
+            Matrix world_view_matrix = world_rotation * Matrix.Invert(camera_rotation);
+            world_view_matrix.M43 = -1.0f;
+            world_view_matrix = world_view_matrix * lamp_scaling;
+            world_view_matrix.M41 = -device_rect.Width / 2 + lamp_center.X;
+            world_view_matrix.M42 = device_rect.Height / 2 - lamp_center.Y;
+
+            Matrix proj = Matrix.OrthoRH(device_rect.Width, device_rect.Height, 1.0f, 500.0f);
+            Matrix world_view_projection_matrix = world_view_matrix * proj;
 
             effect_pole.SetValue("wvp", world_view_projection_matrix);
             effect_pole.SetValue("col", new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -104,12 +127,25 @@ namespace TDCG
 
         void DrawLampCircleW(ref Vector3 world_position, ref Matrix world)
         {
+#if false
             float scale = lamp_circle_scale;
             Matrix world_view_matrix;
             GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
             GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
             Matrix world_view_projection_matrix = world_view_matrix * transform_projection;
+#endif
+            float scale = lamp_radius;
+            Matrix lamp_scaling = Matrix.Scaling(scale, scale, scale);
+
+            Matrix world_view_matrix = Matrix.Identity;
+            world_view_matrix.M43 = -1.0f;
+            world_view_matrix = world_view_matrix * lamp_scaling;
+            world_view_matrix.M41 = -device_rect.Width / 2 + lamp_center.X;
+            world_view_matrix.M42 = device_rect.Height / 2 - lamp_center.Y;
+
+            Matrix proj = Matrix.OrthoRH(device_rect.Width, device_rect.Height, 1.0f, 500.0f);
+            Matrix world_view_projection_matrix = world_view_matrix * proj;
 
             effect_circle.SetValue("wvp", world_view_projection_matrix);
             effect_circle.SetValue("col", new Vector4(1.0f, 1.0f, 0.0f, 1.0f));

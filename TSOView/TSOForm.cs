@@ -46,6 +46,7 @@ namespace TSOView
             viewer.RotateNodeSpeed = tso_config.RotateNodeSpeed;
             viewer.GrabCameraSpeed = tso_config.GrabCameraSpeed;
             viewer.RotateCameraSpeed = tso_config.RotateCameraSpeed;
+            viewer.LampCenter = tso_config.LampCenter;
             viewer.LampRadius = tso_config.LampRadius;
             viewer.NodeRadius = tso_config.NodeRadius;
             viewer.SelectedNodeRadius = tso_config.SelectedNodeRadius;
