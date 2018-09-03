@@ -1252,11 +1252,16 @@ namespace TDCG
                 {
                     //更新する
                     //元のライトとポーズを維持する
-                    Figure orig_fig = FigureList[idx];
-                    fig.LampRotation = orig_fig.LampRotation;
-                    fig.Tmo = orig_fig.Tmo;
+                    {
+                        Figure orig_fig = FigureList[idx];
+                        fig.LampRotation = orig_fig.LampRotation;
+                        fig.Tmo = orig_fig.Tmo;
+                        orig_fig.Dispose();
+                    }
+                    // free meshes and textures.
+                    Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
 
-                    FigureList[idx] = fig;
+                    FigureList[idx] = fig;  //置換
                     fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
                     {
                         if (GetSelectedFigure() == sender)
