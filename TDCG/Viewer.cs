@@ -2636,8 +2636,8 @@ namespace TDCG
         /// config: enhance depth precision on Format.X8A8G8B8
         public bool XRGBDepth { get; set; }
 
-        public Format dmap_format = Format.X8R8G8B8;
-        public Format nmap_format = Format.X8R8G8B8;
+        Format dmap_format = Format.X8R8G8B8;
+        Format nmap_format = Format.X8R8G8B8;
 
         /// config: depthmap format name
         public void SetDepthMapFormat(string name)
