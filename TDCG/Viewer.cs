@@ -1353,15 +1353,15 @@ namespace TDCG
         /// <summary>
         /// world行列
         /// </summary>
-        protected Matrix world_matrix = Matrix.Identity;
+        Matrix world_matrix = Matrix.Identity;
         /// <summary>
         /// view変換行列
         /// </summary>
-        protected Matrix Transform_View = Matrix.Identity;
+        Matrix Transform_View = Matrix.Identity;
         /// <summary>
         /// projection変換行列
         /// </summary>
-        protected Matrix Transform_Projection = Matrix.Identity;
+        Matrix Transform_Projection = Matrix.Identity;
 
         /// <summary>
         /// deviceを作成します。
@@ -1652,6 +1652,9 @@ namespace TDCG
 
         void AssignProjection()
         {
+            //
+            // update Transform_Projection
+            //
             float aspect = (float)device.Viewport.Width / (float)device.Viewport.Height;
             float d;
             if (projection_mode == ProjectionMode.Ortho)
@@ -2354,6 +2357,9 @@ namespace TDCG
             {
                 camera.Update();
 
+                //
+                // update Transform_View
+                //
                 Transform_View = camera.ViewMatrix;
                 // xxx: for w-buffering
                 device.Transform.View = Transform_View;
@@ -2375,8 +2381,8 @@ namespace TDCG
 
         void AssignWorldViewProjection()
         {
-            Matrix world_view_matrix = world_matrix * Transform_View;
-            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+            Matrix world_view_matrix = world_matrix * device.Transform.View;
+            Matrix world_view_projection_matrix = world_view_matrix * device.Transform.Projection;
 
             effect.SetValue("wld", world_matrix);
             effect.SetValue("wv", world_view_matrix);
@@ -2478,7 +2484,7 @@ namespace TDCG
                 fig.GetWorldMatrix(out world);
 
                 Matrix camera_rotation = camera.RotationMatrix;
-                node_renderer.SetTransform(projection_mode, ref camera_rotation, ref Transform_View, ref Transform_Projection);
+                node_renderer.SetTransform(projection_mode, ref camera_rotation);
                 node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
 
                 TMONode node = fig.Tmo.FindNodeByName("face_oya");
@@ -2486,7 +2492,7 @@ namespace TDCG
                 {
                     Vector3 position = node.GetWorldPosition();
                     position.Y += 5.0f;
-                    lamp_renderer.SetTransform(projection_mode, ref camera_rotation, ref Transform_View, ref Transform_Projection);
+                    lamp_renderer.SetTransform(projection_mode, ref camera_rotation);
                     lamp_renderer.Render(fig, ref position, ref world);
                 }
             }
@@ -2845,7 +2851,6 @@ namespace TDCG
 
             device.VertexDeclaration = vd;
 
-            dnmap_renderer.SetTransform(ref Transform_View, ref Transform_Projection);
             dnmap_renderer.Draw(FigureList);
 
             // restore

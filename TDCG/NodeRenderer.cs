@@ -12,6 +12,8 @@ namespace TDCG
     /// モデル上に重ねてボーンを描画する
     public class NodeRenderer
     {
+        Device device;
+
         public Effect effect_circle;
         public Effect effect_pole;
 
@@ -23,6 +25,8 @@ namespace TDCG
 
         public NodeRenderer(Device device, Sprite sprite)
         {
+            this.device = device;
+
             circle = new Circle(device);
             pole = new Pole(device);
         }
@@ -53,18 +57,10 @@ namespace TDCG
         /// camera回転行列
         Matrix camera_rotation = Matrix.Identity;
 
-        /// view変換行列
-        Matrix transform_view = Matrix.Identity;
-
-        /// projection変換行列
-        Matrix transform_projection = Matrix.Identity;
-
-        public void SetTransform(ProjectionMode projection_mode, ref Matrix camera_rotation, ref Matrix view, ref Matrix proj)
+        public void SetTransform(ProjectionMode projection_mode, ref Matrix camera_rotation)
         {
             this.projection_mode = projection_mode;
             this.camera_rotation = camera_rotation;
-            this.transform_view = view;
-            this.transform_projection = proj;
         }
 
         void GetWorldViewMatrix(float scale, ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world, out Matrix world_view_matrix)
@@ -76,7 +72,7 @@ namespace TDCG
             world_matrix.M42 = world_position.Y;
             world_matrix.M43 = world_position.Z;
 
-            world_view_matrix = world_matrix * world * transform_view;
+            world_view_matrix = world_matrix * world * device.Transform.View;
         }
 
         float UnprojectScaling(ref Matrix world_view_matrix)
@@ -86,7 +82,7 @@ namespace TDCG
                 d = 1.0f;
             else
                 d = -world_view_matrix.M43;
-            return d / transform_projection.M22;
+            return d / device.Transform.Projection.M22;
         }
 
         void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
@@ -96,7 +92,7 @@ namespace TDCG
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
-            Matrix world_view_projection_matrix = world_view_matrix * transform_projection;
+            Matrix world_view_projection_matrix = world_view_matrix * device.Transform.Projection;
 
             effect_pole.SetValue("wvp", world_view_projection_matrix);
             effect_pole.SetValue("col", new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
@@ -112,7 +108,7 @@ namespace TDCG
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation_x, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation_x, ref world, out world_view_matrix);
-            Matrix world_view_projection_matrix = world_view_matrix * transform_projection;
+            Matrix world_view_projection_matrix = world_view_matrix * device.Transform.Projection;
 
             effect_pole.SetValue("wvp", world_view_projection_matrix);
             effect_pole.SetValue("col", new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
@@ -128,7 +124,7 @@ namespace TDCG
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation_y, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
             GetWorldViewMatrix(scale, ref world_position, ref world_rotation_y, ref world, out world_view_matrix);
-            Matrix world_view_projection_matrix = world_view_matrix * transform_projection;
+            Matrix world_view_projection_matrix = world_view_matrix * device.Transform.Projection;
 
             effect_pole.SetValue("wvp", world_view_projection_matrix);
             effect_pole.SetValue("col", new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -143,7 +139,7 @@ namespace TDCG
             GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
             GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
-            Matrix world_view_projection_matrix = world_view_matrix * transform_projection;
+            Matrix world_view_projection_matrix = world_view_matrix * device.Transform.Projection;
 
             effect_circle.SetValue("wvp", world_view_projection_matrix);
             effect_circle.SetValue("col", new Vector4(0.5f, 0.5f, 0.5f, 1.0f));
@@ -158,7 +154,7 @@ namespace TDCG
             GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
             GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
-            Matrix world_view_projection_matrix = world_view_matrix * transform_projection;
+            Matrix world_view_projection_matrix = world_view_matrix * device.Transform.Projection;
 
             effect_circle.SetValue("wvp", world_view_projection_matrix);
             effect_circle.SetValue("col", new Vector4(0.0f, 1.0f, 1.0f, 1.0f));

@@ -131,22 +131,10 @@ namespace TDCG
             dnmap_shader.current_shader = null;
         }
 
-        /// view変換行列
-        Matrix transform_view = Matrix.Identity;
-
-        /// projection変換行列
-        Matrix transform_projection = Matrix.Identity;
-
-        public void SetTransform(ref Matrix view, ref Matrix proj)
-        {
-            this.transform_view = view;
-            this.transform_projection = proj;
-        }
-
         void AssignWorldViewProjection(ref Matrix world)
         {
-            Matrix world_view_matrix = world * transform_view;
-            Matrix world_view_projection_matrix = world_view_matrix * transform_projection;
+            Matrix world_view_matrix = world * device.Transform.View;
+            Matrix world_view_projection_matrix = world_view_matrix * device.Transform.Projection;
 
             effect_dnmap.SetValue("wld", world); // shared
             effect_dnmap.SetValue("wv", world_view_matrix); // shared
