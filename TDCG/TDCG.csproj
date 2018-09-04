@@ -70,6 +70,7 @@
     <Compile Include="Extensions\BinaryReaderMethods.cs" />
     <Compile Include="Extensions\BinaryWriterMethods.cs" />
     <Compile Include="SliderMatrix.cs" />
+    <Compile Include="SnapRenderer.cs" />
     <Compile Include="SpriteRenderer.cs" />
     <Compile Include="TMOFile.cs" />
     <Compile Include="ToonShader.cs" />

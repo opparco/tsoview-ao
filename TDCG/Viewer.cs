@@ -110,6 +110,7 @@ namespace TDCG
         Sprite sprite = null;
         LampRenderer lamp_renderer = null;
         NodeRenderer node_renderer = null;
+        SnapRenderer snap_renderer = null;
         SpriteRenderer sprite_renderer = null;
         NodeFilter node_filter = null;
 
@@ -171,10 +172,6 @@ namespace TDCG
 
         /// zbuffer of render target
         Surface tex_zbuf;
-
-        //snap:
-        Texture snap_texture;
-        Surface snap_surface;
 
         ModelThumbnail model_thumbnail = new ModelThumbnail();
         SceneThumbnail scene_thumbnail = new SceneThumbnail();
@@ -1524,7 +1521,9 @@ namespace TDCG
             handle_HohoAlpha = effect.GetParameter(null, "HohoAlpha");
             handle_UVSCR = effect.GetParameter(null, "UVSCR");
 
+            snap_renderer = new SnapRenderer(device, sprite);
             sprite_renderer = new SpriteRenderer(device, sprite);
+
             node_filter = new NodeFilter();
             Direct3D.FontDescription fd = new Direct3D.FontDescription();
             fd.FaceName = "Consolas";
@@ -1712,6 +1711,8 @@ namespace TDCG
 
             if (sprite_renderer != null)
                 sprite_renderer.Dispose();
+            if (snap_renderer != null)
+                snap_renderer.Dispose();
             if (node_renderer != null)
                 node_renderer.Dispose();
             if (lamp_renderer != null)
@@ -1722,12 +1723,6 @@ namespace TDCG
 
             if (scene_thumbnail != null)
                 scene_thumbnail.Dispose();
-
-            //snap:
-            if (snap_surface != null)
-                snap_surface.Dispose();
-            if (snap_texture != null)
-                snap_texture.Dispose();
 
             if (tex_zbuf != null)
                 tex_zbuf.Dispose();
@@ -1799,10 +1794,6 @@ namespace TDCG
 
             tex_zbuf = device.CreateDepthStencilSurface(devw, devh, DepthFormat.D16, MultiSampleType.None, 0, false);
 
-            //snap:
-            snap_texture = new Texture(device, 1024, 1024, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
-            snap_surface = snap_texture.GetSurfaceLevel(0);
-
             model_thumbnail.Create(device);
             scene_thumbnail.Create(device);
 
@@ -1815,6 +1806,7 @@ namespace TDCG
 
             lamp_renderer.Create(dev_rect, lamp_radius_on_device, lamp_center_on_device);
             node_renderer.Create(dev_rect, node_radius_on_device, selected_node_radius_on_device);
+            snap_renderer.Create(dev_rect);
             sprite_renderer.Create(dev_rect);
 
             effect_depth.SetValue("DepthMap_texture", dmap_texture); // in
@@ -2431,9 +2423,6 @@ namespace TDCG
         {
             device.SetRenderState(RenderStates.AlphaBlendEnable, true);
 
-            device.SetRenderTarget(0, dev_surface);
-            device.DepthStencilSurface = dev_zbuf;
-
             device.VertexDeclaration = vd;
             effect.SetValue(handle_Ambient, Ambient);
             effect.SetValue(handle_HohoAlpha, HohoAlpha);
@@ -2449,7 +2438,7 @@ namespace TDCG
                     device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
 
                     DrawTSO(fig, tso);
-                    SnapTSO(idx);
+                    snap_renderer.SnapTSO(idx);
                 }
             }
         }
@@ -2457,9 +2446,6 @@ namespace TDCG
         void SnapFiguresOnSceneMode()
         {
             device.SetRenderState(RenderStates.AlphaBlendEnable, true);
-
-            device.SetRenderTarget(0, dev_surface);
-            device.DepthStencilSurface = dev_zbuf;
 
             device.VertexDeclaration = vd;
             effect.SetValue(handle_Ambient, Ambient);
@@ -2472,7 +2458,7 @@ namespace TDCG
                 device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
 
                 DrawFigure(fig);
-                SnapFigure(idx);
+                snap_renderer.SnapFigure(idx);
 
                 idx++;
             }
@@ -2489,7 +2475,11 @@ namespace TDCG
 
         void DrawSpritesOnModelMode()
         {
-            DrawSpriteSnapTSO();
+            Figure fig;
+            if (TryGetFigure(out fig))
+            {
+                snap_renderer.DrawSpriteSnapTSO(fig);
+            }
             if (swap_row != -1)
                 sprite_renderer.model_mode.DrawDottedSprite(sprite_renderer.model_mode.SelectedIdx);
             else
@@ -2502,9 +2492,6 @@ namespace TDCG
             if (TryGetFigure(out fig))
             {
                 device.SetRenderState(RenderStates.AlphaBlendEnable, true);
-
-                device.SetRenderTarget(0, dev_surface);
-                device.DepthStencilSurface = dev_zbuf;
 
                 Matrix world;
                 fig.GetWorldMatrix(out world);
@@ -2531,7 +2518,7 @@ namespace TDCG
 
         void DrawSpritesOnSceneMode()
         {
-            DrawSpriteSnapFigure();
+            snap_renderer.DrawSpriteSnapFigure(FigureList);
             if (swap_idx != -1)
                 sprite_renderer.scene_mode.DrawDottedSprite(sprite_renderer.scene_mode.SelectedIdx);
             else
@@ -2542,9 +2529,6 @@ namespace TDCG
         {
             {
                 device.SetRenderState(RenderStates.AlphaBlendEnable, true);
-
-                device.SetRenderTarget(0, dev_surface);
-                device.DepthStencilSurface = dev_zbuf;
 
                 sprite_renderer.Render();
             }
@@ -2807,8 +2791,6 @@ namespace TDCG
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, true);
 
-            device.SetRenderTarget(0, dev_surface);
-            device.DepthStencilSurface = dev_zbuf;
             device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, bg_col, 1.0f, 0);
 
             device.VertexDeclaration = vd;
@@ -2828,8 +2810,6 @@ namespace TDCG
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, true);
 
-            device.SetRenderTarget(0, dev_surface);
-            device.DepthStencilSurface = dev_zbuf;
             device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, bg_col, 1.0f, 0);
 
             device.VertexDeclaration = vd;
@@ -2957,7 +2937,6 @@ namespace TDCG
 
             device.SetRenderTarget(0, dmap_surface);
             device.SetRenderTarget(1, nmap_surface);
-
             device.DepthStencilSurface = tex_zbuf;
             device.Clear(ClearFlags.ZBuffer, Color.White, 1.0f, 0);
 
@@ -2972,7 +2951,10 @@ namespace TDCG
                 DrawFigure_dnmap(fig);
             }
 
+            // restore
+            device.SetRenderTarget(0, dev_surface);
             device.SetRenderTarget(1, null); // attention!
+            device.DepthStencilSurface = dev_zbuf;
         }
 
         void DrawSprite(Texture src_texture)
@@ -2981,8 +2963,6 @@ namespace TDCG
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
-            device.SetRenderTarget(0, dev_surface);
-            device.DepthStencilSurface = dev_zbuf;
             device.Clear(ClearFlags.Target, Color.Black, 1.0f, 0);
 
             sprite.Transform = Matrix.Identity;
@@ -2997,81 +2977,6 @@ namespace TDCG
             Debug.WriteLine("Blit");
 
             device.StretchRectangle(source, dev_rect, dest, dev_rect, TextureFilter.Point);
-        }
-
-        void DrawSpriteSnapTSO()
-        {
-            Debug.WriteLine("DrawSpriteSnapTSO");
-
-            device.SetRenderState(RenderStates.AlphaBlendEnable, false);
-
-            device.SetRenderTarget(0, dev_surface);
-            device.DepthStencilSurface = dev_zbuf;
-
-            sprite.Transform = Matrix.Scaling(dev_rect.Width / 1024.0f * 0.75f, dev_rect.Height / 768.0f * 0.75f, 1.0f);
-
-            Figure fig;
-            if (TryGetFigure(out fig))
-            {
-                sprite.Begin(0);
-
-                foreach (TSOFile tso in fig.TsoList)
-                {
-                    int idx = tso.Row;
-                    int x16 = (idx%8)*7 + 4;
-                    int y16 = (idx/8)*9 + 5;
-
-                    sprite.Draw(snap_texture, new Rectangle((idx%8)*128, (idx/8)*128, 128, 128), new Vector3(0, 0, 0), new Vector3(x16 * 16 / 0.75f, y16 * 16 / 0.75f, 0), Color.White);
-                }
-                sprite.End();
-            }
-        }
-
-        void DrawSpriteSnapFigure()
-        {
-            Debug.WriteLine("DrawSpriteSnapFigure");
-
-            device.SetRenderState(RenderStates.AlphaBlendEnable, false);
-
-            device.SetRenderTarget(0, dev_surface);
-            device.DepthStencilSurface = dev_zbuf;
-
-            sprite.Transform = Matrix.Scaling(dev_rect.Width / 2048.0f, dev_rect.Height / 1536.0f, 1.0f);
-
-            sprite.Begin(0);
-            int idx = 0;
-            foreach (Figure fig in FigureList)
-            {
-                int x16 = (idx%6)*9 + 5;
-                int y16 = (idx/6)*9 + 5;
-
-                sprite.Draw(snap_texture, new Rectangle((idx%4)*256, (idx/4)*192, 256, 192), new Vector3(0, 0, 0), new Vector3(x16 * 32, y16 * 32, 0), Color.White);
-
-                idx++;
-            }
-            sprite.End();
-        }
-
-        void SnapTSO(int idx)
-        {
-            Debug.WriteLine("SnapTSO");
-
-            int w = dev_rect.Width;
-            int h = dev_rect.Height;
-            Rectangle square_rect;
-            if (h < w)
-                square_rect = new Rectangle((w-h)/2, 0, h, h);
-            else
-                square_rect = new Rectangle(0, (h-w)/2, w, w);
-
-            device.StretchRectangle(dev_surface, square_rect, snap_surface, new Rectangle((idx%8)*128, (idx/8)*128, 128, 128), TextureFilter.Point);
-        }
-
-        void SnapFigure(int idx)
-        {
-            Debug.WriteLine("SnapFigure");
-
-            device.StretchRectangle(dev_surface, dev_rect, snap_surface, new Rectangle((idx%4)*256, (idx/4)*192, 256, 192), TextureFilter.Point);
         }
 
         // draw Gaussian Blur
@@ -3100,6 +3005,10 @@ namespace TDCG
 
             effect_gb.SetValue("dir", new Vector4(0, extent / (float)dev_rect.Height, 0, 0));
             screen.Draw(effect_gb);
+
+            // restore
+            device.SetRenderTarget(0, dev_surface);
+            device.DepthStencilSurface = dev_zbuf;
         }
 
         // draw Ambient Occlusion
@@ -3116,6 +3025,10 @@ namespace TDCG
             device.DepthStencilSurface = tex_zbuf;
 
             screen.Draw(effect_ao);
+
+            // restore
+            device.SetRenderTarget(0, dev_surface);
+            device.DepthStencilSurface = dev_zbuf;
         }
 
         // draw depth
@@ -3126,9 +3039,6 @@ namespace TDCG
             Debug.WriteLine("DrawDepth");
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, false);
-
-            device.SetRenderTarget(0, dev_surface); // out
-            device.DepthStencilSurface = dev_zbuf;
 
             screen.Draw(effect_depth);
         }
@@ -3143,9 +3053,6 @@ namespace TDCG
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
-            device.SetRenderTarget(0, dev_surface); // out
-            device.DepthStencilSurface = dev_zbuf;
-
             screen.Draw(effect_main);
         }
 
@@ -3158,9 +3065,6 @@ namespace TDCG
             Debug.WriteLine("DrawScreen");
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, false);
-
-            device.SetRenderTarget(0, dev_surface); // out
-            device.DepthStencilSurface = dev_zbuf;
 
             screen.Draw(effect_screen);
         }
