@@ -2400,16 +2400,6 @@ namespace TDCG
         /// </summary>
         public bool NeedRender { get { return need_render; } }
 
-        /// <summary>
-        /// レンダリングするのに用いるデリゲート型
-        /// </summary>
-        public delegate void RenderingHandler();
-
-        /// <summary>
-        /// レンダリングするハンドラ
-        /// </summary>
-        public RenderingHandler Rendering;
-
         public void AssignWorldViewProjection()
         {
             Matrix world_view_matrix = world_matrix * Transform_View;
@@ -2639,9 +2629,6 @@ namespace TDCG
             Draw();
             if (sprite_enabled)
                 DrawModeSprite();
-
-            if (Rendering != null)
-                Rendering();
 
             Debug.WriteLine("-- device EndScene --");
             device.EndScene();
