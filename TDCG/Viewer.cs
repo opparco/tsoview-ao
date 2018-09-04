@@ -62,9 +62,6 @@ namespace TDCG
         /// </summary>
         protected Effect effect;
         Effect effect_clear;
-        Effect effect_dnclear;
-        Effect effect_dnmap;
-        Effect effect_depth;
         Effect effect_ao;
         Effect effect_gb;
         Effect effect_main;
@@ -108,6 +105,7 @@ namespace TDCG
         ToonShader toon_shader = null;
         Screen screen = null;
         Sprite sprite = null;
+        DepthNormalMapRenderer dnmap_renderer = null;
         LampRenderer lamp_renderer = null;
         NodeRenderer node_renderer = null;
         SnapRenderer snap_renderer = null;
@@ -158,15 +156,11 @@ namespace TDCG
         public DiffusionConfig DiffusionConfig = null;
 
         Texture amb_texture;
-        Texture dmap_texture;
-        Texture nmap_texture;
         Texture randommap_texture;
         Texture occ_texture;
         Texture tmp_texture;
 
         Surface amb_surface;
-        Surface dmap_surface;
-        Surface nmap_surface;
         Surface occ_surface;
         Surface tmp_surface;
 
@@ -218,9 +212,6 @@ namespace TDCG
             LampRadius = 18;
             NodeRadius = 6;
             SelectedNodeRadius = 18;
-
-            techmap = new Dictionary<string, bool>();
-            LoadTechMap();
 
             manipulator = new Manipulator(camera);
             command_man = new CommandManager();
@@ -1462,15 +1453,6 @@ namespace TDCG
             if (!LoadEffect(@"effects\clear.fx", out effect_clear))
                 return false;
 
-            if (!LoadEffect(@"effects\dnclear.fx", out effect_dnclear))
-                return false;
-
-            if (!LoadEffect(@"effects\dnmap.fx", out effect_dnmap, macros, effect_pool))
-                return false;
-
-            if (!LoadEffect(@"effects\depth.fx", out effect_depth, macros))
-                return false;
-
             if (!LoadEffect(@"effects\ao.fx", out effect_ao, macros))
                 return false;
 
@@ -1498,6 +1480,17 @@ namespace TDCG
 
             screen = new Screen(device);
             sprite = new Sprite(device);
+
+            dnmap_renderer = new DepthNormalMapRenderer(device);
+
+            if (!LoadEffect(@"effects\dnclear.fx", out dnmap_renderer.effect_dnclear))
+                return false;
+
+            if (!LoadEffect(@"effects\dnmap.fx", out dnmap_renderer.effect_dnmap, macros, effect_pool))
+                return false;
+
+            if (!LoadEffect(@"effects\depth.fx", out dnmap_renderer.effect_depth, macros))
+                return false;
 
             lamp_renderer = new LampRenderer(device, sprite);
 
@@ -1695,7 +1688,7 @@ namespace TDCG
                 zp = new Vector4(zn / w, zn / h, zn, zd);
             Vector4 vp = new Vector4(device.Viewport.Width, device.Viewport.Height, 0, 0);
 
-            effect_dnmap.SetValue("zp", zp); // in
+            dnmap_renderer.effect_dnmap.SetValue("zp", zp); // in
             effect_ao.SetValue("zp", zp); // in
             effect_ao.SetValue("vp", vp); // in
 
@@ -1717,6 +1710,8 @@ namespace TDCG
                 node_renderer.Dispose();
             if (lamp_renderer != null)
                 lamp_renderer.Dispose();
+            if (dnmap_renderer != null)
+                dnmap_renderer.Dispose();
 
             if (screen != null)
                 screen.Dispose();
@@ -1729,10 +1724,6 @@ namespace TDCG
 
             if (amb_surface != null)
                 amb_surface.Dispose();
-            if (dmap_surface != null)
-                dmap_surface.Dispose();
-            if (nmap_surface != null)
-                nmap_surface.Dispose();
             if (occ_surface != null)
                 occ_surface.Dispose();
             if (tmp_surface != null)
@@ -1740,10 +1731,6 @@ namespace TDCG
 
             if (amb_texture != null)
                 amb_texture.Dispose();
-            if (dmap_texture != null)
-                dmap_texture.Dispose();
-            if (nmap_texture != null)
-                nmap_texture.Dispose();
             if (randommap_texture != null)
                 randommap_texture.Dispose();
             if (occ_texture != null)
@@ -1778,12 +1765,6 @@ namespace TDCG
             amb_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             amb_surface = amb_texture.GetSurfaceLevel(0);
 
-            dmap_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, dmap_format, Pool.Default);
-            dmap_surface = dmap_texture.GetSurfaceLevel(0);
-
-            nmap_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, nmap_format, Pool.Default);
-            nmap_surface = nmap_texture.GetSurfaceLevel(0);
-
             randommap_texture = TextureLoader.FromFile(device, GetRandomTexturePath());
 
             occ_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
@@ -1797,6 +1778,8 @@ namespace TDCG
             model_thumbnail.Create(device);
             scene_thumbnail.Create(device);
 
+            dnmap_renderer.Create(dev_rect, dmap_format, nmap_format);
+
             lamp_center_on_device = LampCenter;
             ScaleToScreen(ref lamp_center_on_device);
 
@@ -1809,16 +1792,14 @@ namespace TDCG
             snap_renderer.Create(dev_rect);
             sprite_renderer.Create(dev_rect);
 
-            effect_depth.SetValue("DepthMap_texture", dmap_texture); // in
-
-            effect_ao.SetValue("DepthMap_texture", dmap_texture); // in
-            effect_ao.SetValue("NormalMap_texture", nmap_texture); // in
+            effect_ao.SetValue("DepthMap_texture", dnmap_renderer.dmap_texture); // in
+            effect_ao.SetValue("NormalMap_texture", dnmap_renderer.nmap_texture); // in
             effect_ao.SetValue("RandomMap_texture", randommap_texture); // in
 
             effect_main.SetValue("Ambient_texture", amb_texture); // in
             effect_main.SetValue("Occlusion_texture", occ_texture); // in
 
-            effect_screen.SetValue("DepthMap_texture", dmap_texture); // in
+            effect_screen.SetValue("DepthMap_texture", dnmap_renderer.dmap_texture); // in
             effect_screen.SetValue("Ambient_texture", amb_texture); // in
             effect_screen.SetValue("Occlusion_texture", occ_texture); // in
 
@@ -1827,8 +1808,8 @@ namespace TDCG
             AssignProjection();
 
             screen.AssignWorldViewProjection(effect_clear);
-            screen.AssignWorldViewProjection(effect_dnclear);
-            screen.AssignWorldViewProjection(effect_depth);
+            screen.AssignWorldViewProjection(dnmap_renderer.effect_dnclear);
+            screen.AssignWorldViewProjection(dnmap_renderer.effect_depth);
             screen.AssignWorldViewProjection(effect_ao);
             screen.AssignWorldViewProjection(effect_gb);
             screen.AssignWorldViewProjection(effect_main);
@@ -2392,7 +2373,7 @@ namespace TDCG
         /// </summary>
         public bool NeedRender { get { return need_render; } }
 
-        public void AssignWorldViewProjection()
+        void AssignWorldViewProjection()
         {
             Matrix world_view_matrix = world_matrix * Transform_View;
             Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
@@ -2555,7 +2536,7 @@ namespace TDCG
                     break;
                 case RenderMode.NormalMap:
                     DrawDepthNormalMap();
-                    DrawSprite(nmap_texture);
+                    DrawSprite(dnmap_renderer.nmap_texture);
                     break;
                 case RenderMode.Occlusion:
                     DrawDepthNormalMap();
@@ -2655,8 +2636,8 @@ namespace TDCG
         /// config: enhance depth precision on Format.X8A8G8B8
         public bool XRGBDepth { get; set; }
 
-        Format dmap_format = Format.X8R8G8B8;
-        Format nmap_format = Format.X8R8G8B8;
+        public Format dmap_format = Format.X8R8G8B8;
+        public Format nmap_format = Format.X8R8G8B8;
 
         /// config: depthmap format name
         public void SetDepthMapFormat(string name)
@@ -2760,17 +2741,23 @@ namespace TDCG
             toon_shader.current_shader = null;
         }
 
+        void AssignWorldViewProjection(ref Matrix world)
+        {
+            Matrix world_view_matrix = world * Transform_View;
+            Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
+
+            effect.SetValue("wld", world);
+            effect.SetValue("wv", world_view_matrix);
+            effect.SetValue("wvp", world_view_projection_matrix);
+        }
+
         void DrawFigure(Figure fig)
         {
             {
                 Matrix world;
                 fig.GetWorldMatrix(out world);
 
-                Matrix world_view_matrix = world * Transform_View;
-                Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-                effect.SetValue("wld", world);
-                effect.SetValue("wv", world_view_matrix);
-                effect.SetValue("wvp", world_view_projection_matrix);
+                AssignWorldViewProjection(ref world);
             }
             effect.SetValue(handle_LightDirForced, fig.LightDirForced);
 
@@ -2838,118 +2825,28 @@ namespace TDCG
             screen.Draw(effect_clear);
         }
 
-        static string GetHideTechsPath()
-        {
-            return Path.Combine(Application.StartupPath, @"resources\hidetechs.txt");
-        }
-
         static string GetRandomTexturePath()
         {
             return Path.Combine(Application.StartupPath, @"resources\rand.png");
         }
 
-        Dictionary<string, bool> techmap;
-
-        void LoadTechMap()
-        {
-            char[] delim = { ' ' };
-            using (StreamReader source = new StreamReader(File.OpenRead(GetHideTechsPath())))
-            {
-                string line;
-                while ((line = source.ReadLine()) != null)
-                {
-                    string[] tokens = line.Split(delim);
-                    string op = tokens[0];
-                    if (op == "hide")
-                    {
-                        Debug.Assert(tokens.Length == 2, "tokens length should be 2");
-                        string techname = tokens[1];
-                        techmap[techname] = true;
-                    }
-                }
-            }
-        }
-
-        bool HiddenTechnique(string technique)
-        {
-            return techmap.ContainsKey(technique);
-        }
-
-        void DrawTSO_dnmap(Figure fig, TSOFile tso)
-        {
-            toon_shader.current_shader = null;
-
-            foreach (TSOMesh mesh in tso.meshes)
-                foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
-                {
-                    Debug.Assert(sub_mesh.spec >= 0 && sub_mesh.spec < tso.sub_scripts.Length, string.Format("mesh.spec out of range: {0}", sub_mesh.spec));
-                    Shader shader = tso.sub_scripts[sub_mesh.spec].shader;
-
-                    if (HiddenTechnique(shader.Technique))
-                        continue;
-
-                    //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
-                    device.SetStreamSource(0, sub_mesh.vb, 0, 52);
-
-                    toon_shader.SwitchShaderColorTex(shader, tso.d3d_texturemap);
-                    effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh)); // shared
-
-                    int npass = effect_dnmap.Begin(0);
-                    for (int ipass = 0; ipass < npass; ipass++)
-                    {
-                        effect_dnmap.BeginPass(ipass);
-                        device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, sub_mesh.vertices.Length - 2);
-                        effect_dnmap.EndPass();
-                    }
-                    effect_dnmap.End();
-                }
-            toon_shader.current_shader = null;
-        }
-
-        void DrawFigure_dnmap(Figure fig)
-        {
-            {
-                Matrix world;
-                fig.GetWorldMatrix(out world);
-
-                Matrix world_view_matrix = world * Transform_View;
-                Matrix world_view_projection_matrix = world_view_matrix * Transform_Projection;
-                effect.SetValue("wld", world);
-                effect.SetValue("wv", world_view_matrix);
-                effect.SetValue("wvp", world_view_projection_matrix);
-            }
-            foreach (TSOFile tso in fig.TsoList)
-            {
-                if (tso.Hidden)
-                    continue;
-                DrawTSO_dnmap(fig, tso);
-            }
-        }
-
-        // draw depthmap and normalmap
-        // out dmap_surface
-        // out nmap_surface
         void DrawDepthNormalMap()
         {
             Debug.WriteLine("DrawDepthNormalMap");
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
-            device.SetRenderTarget(0, dmap_surface);
-            device.SetRenderTarget(1, nmap_surface);
+            device.SetRenderTarget(0, dnmap_renderer.dmap_surface);
+            device.SetRenderTarget(1, dnmap_renderer.nmap_surface);
             device.DepthStencilSurface = tex_zbuf;
             device.Clear(ClearFlags.ZBuffer, Color.White, 1.0f, 0);
 
-            screen.Draw(effect_dnclear);
+            screen.Draw(dnmap_renderer.effect_dnclear);
 
             device.VertexDeclaration = vd;
 
-            foreach (Figure fig in FigureList)
-            {
-                if (fig.Hidden)
-                    continue;
-                DrawFigure_dnmap(fig);
-            }
+            dnmap_renderer.SetTransform(ref Transform_View, ref Transform_Projection);
+            dnmap_renderer.Draw(FigureList);
 
             // restore
             device.SetRenderTarget(0, dev_surface);
@@ -3040,7 +2937,7 @@ namespace TDCG
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
-            screen.Draw(effect_depth);
+            screen.Draw(dnmap_renderer.effect_depth);
         }
 
         // draw main
@@ -3082,8 +2979,6 @@ namespace TDCG
             if (device != null)
                 device.Dispose();
         }
-
-        
 
         /// <summary>
         /// バックバッファをBMP形式でファイルに保存します。

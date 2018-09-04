@@ -90,19 +90,6 @@ namespace TDCG
             AssignTexture(shader.ColorTexName, handle_ColorTex_texture, d3d_texturemap);
         }
 
-        /// <summary>
-        /// シェーダ設定を切り替えます。色テクスチャのみ切り替えます。
-        /// </summary>
-        /// <param name="shader">シェーダ設定</param>
-        public void SwitchShaderColorTex(Shader shader, Dictionary<string, Texture> d3d_texturemap)
-        {
-            if (shader == current_shader)
-                return;
-            current_shader = shader;
-
-            AssignTexture(shader.ColorTexName, handle_ColorTex_texture, d3d_texturemap);
-        }
-
         void AssignTexture(string name, EffectHandle handle, Dictionary<string, Texture> d3d_texturemap)
         {
             Texture d3d_tex;
