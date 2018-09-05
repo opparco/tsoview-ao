@@ -5,12 +5,27 @@ using System.Drawing;
 using System.IO;
 using Microsoft.DirectX;
 
+using TDCG.Extensions;
+
 namespace TDCG
 {
     public class PNGSaveCameraDescription
     {
         public Vector3 Translation = Vector3.Empty;
         public Vector3 Angle = Vector3.Empty;
+
+        public void Read(Stream dest)
+        {
+            Vector4 translation = new Vector4();
+            Vector4 angle = new Vector4(); // (x,y,z,w) = (yaw,pitch,roll,0)
+            using (BinaryReader reader = new BinaryReader(dest))
+            {
+                reader.ReadVector4(ref translation);
+                reader.ReadVector4(ref angle);
+            }
+            Translation = new Vector3(-translation.X, -translation.Y, -translation.Z);
+            Angle = new Vector3(-angle.Y, -angle.X, -angle.Z);
+        }
 
         static List<float> ReadFloats(string file)
         {
@@ -62,7 +77,7 @@ namespace TDCG
     public class PNGSaveLoader
     {
         /// <summary>
-        /// 指定パスからPNGFileを読み込みフィギュアを作成します。
+        /// 指定パスからPNGFileを読み込みセーブファイルの内容を得ます。
         /// </summary>
         /// <param name="source_file">PNGFileのパス</param>
         static public PNGSaveData FromFile(string source_file)
@@ -92,53 +107,16 @@ namespace TDCG
                 };
                 png.Cami += delegate (Stream dest, int extract_length)
                 {
-                    byte[] buf = new byte[extract_length];
-                    dest.Read(buf, 0, extract_length);
-
-                    List<float> factor = new List<float>();
-                    for (int offset = 0; offset < extract_length; offset += sizeof(float))
-                    {
-                        float flo = BitConverter.ToSingle(buf, offset);
-                        factor.Add(flo);
-                    }
-
                     savedata.CameraDescription = new PNGSaveCameraDescription();
-                    savedata.CameraDescription.Translation = new Vector3(-factor[0], -factor[1], -factor[2]);
-                    savedata.CameraDescription.Angle = new Vector3(-factor[5], -factor[4], -factor[6]);
+                    savedata.CameraDescription.Read(dest);
                 };
                 png.Lgta += delegate (Stream dest, int extract_length)
                 {
-                    byte[] buf = new byte[extract_length];
-                    dest.Read(buf, 0, extract_length);
-
-                    List<float> factor = new List<float>();
-                    for (int offset = 0; offset < extract_length; offset += sizeof(float))
+                    Matrix m = new Matrix();
+                    using (BinaryReader reader = new BinaryReader(dest))
                     {
-                        float flo = BitConverter.ToSingle(buf, offset);
-                        factor.Add(flo);
+                        reader.ReadMatrix(ref m);
                     }
-
-                    Matrix m;
-                    m.M11 = factor[0];
-                    m.M12 = factor[1];
-                    m.M13 = factor[2];
-                    m.M14 = factor[3];
-
-                    m.M21 = factor[4];
-                    m.M22 = factor[5];
-                    m.M23 = factor[6];
-                    m.M24 = factor[7];
-
-                    m.M31 = factor[8];
-                    m.M32 = factor[9];
-                    m.M33 = factor[10];
-                    m.M34 = factor[11];
-
-                    m.M41 = factor[12];
-                    m.M42 = factor[13];
-                    m.M43 = factor[14];
-                    m.M44 = factor[15];
-
                     savedata.LampRotation = Quaternion.RotationMatrix(m);
                 };
                 png.Ftmo += delegate (Stream dest, int extract_length)

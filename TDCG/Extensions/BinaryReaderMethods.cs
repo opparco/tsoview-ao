@@ -67,5 +67,18 @@ namespace TDCG.Extensions
             v.Y = reader.ReadSingle();
             v.Z = reader.ReadSingle();
         }
+
+        /// <summary>
+        /// Vector4を読みとります。
+        /// </summary>
+        /// <param name="reader">BinaryReader</param>
+        /// <param name="v">Vector4</param>
+        public static void ReadVector4(this BinaryReader reader, ref Vector4 v)
+        {
+            v.X = reader.ReadSingle();
+            v.Y = reader.ReadSingle();
+            v.Z = reader.ReadSingle();
+            v.W = reader.ReadSingle();
+        }
     }
 }

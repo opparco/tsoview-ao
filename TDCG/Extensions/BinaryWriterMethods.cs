@@ -26,10 +26,10 @@ namespace TDCG.Extensions
         }
 
         /// <summary>
-        /// 指定ライタにベクトルを書き出します。
+        /// 指定ライタにVector3を書き出します。
         /// </summary>
         /// <param name="bw">BinaryWriter</param>
-        /// <param name="v">ベクトル</param>
+        /// <param name="v">Vector3</param>
         public static void Write(this BinaryWriter bw, ref Vector3 v)
         {
             bw.Write(v.X);
@@ -38,10 +38,23 @@ namespace TDCG.Extensions
         }
 
         /// <summary>
-        /// 指定ライタに行列を書き出します。
+        /// 指定ライタにVector4を書き出します。
         /// </summary>
         /// <param name="bw">BinaryWriter</param>
-        /// <param name="m">行列</param>
+        /// <param name="v">Vector4</param>
+        public static void Write(this BinaryWriter bw, ref Vector4 v)
+        {
+            bw.Write(v.X);
+            bw.Write(v.Y);
+            bw.Write(v.Z);
+            bw.Write(v.W);
+        }
+
+        /// <summary>
+        /// 指定ライタにMatrixを書き出します。
+        /// </summary>
+        /// <param name="bw">BinaryWriter</param>
+        /// <param name="m">Matrix</param>
         public static void Write(this BinaryWriter bw, ref Matrix m)
         {
             bw.Write(m.M11); bw.Write(m.M12); bw.Write(m.M13); bw.Write(m.M14);
