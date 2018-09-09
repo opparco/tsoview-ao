@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Drawing;
 
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
@@ -46,7 +47,14 @@ public class NormalMapContainer
                     return null;
             }
 
-            d3d_tex = TextureLoader.FromFile(device, source_file);
+            using (Bitmap bitmap = new Bitmap(source_file))
+            using (MemoryStream ms = new MemoryStream())
+            {
+                bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                ms.Seek(0, SeekOrigin.Begin);
+                d3d_tex = TextureLoader.FromStream(device, ms);
+            }
             d3d_texturemap[name] = d3d_tex;
             return d3d_tex;
         }

@@ -958,7 +958,7 @@ namespace TDCG
             */
             if (data.Length == 0)
                 return;
-            MemoryStream ms = new MemoryStream();
+            using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
                 TARGA_HEADER header;
