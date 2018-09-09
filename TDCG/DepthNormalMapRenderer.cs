@@ -53,7 +53,7 @@ namespace TDCG
                 nmap_texture.Dispose();
         }
 
-        public void Create(Rectangle device_rect, Format dmap_format, Format nmap_format)
+        public void Create(Rectangle device_rect, Format dmap_format, Format nmap_format, NormalMapContainer nmap_container)
         {
             dmap_texture = new Texture(device, device_rect.Width, device_rect.Height, 1, Usage.RenderTarget, dmap_format, Pool.Default);
             dmap_surface = dmap_texture.GetSurfaceLevel(0);
@@ -66,6 +66,10 @@ namespace TDCG
             handle_LocalBoneMats = effect_dnmap.GetParameter(null, "LocalBoneMats"); // shared
 
             dnmap_shader = new DepthNormalMapShader(effect_dnmap);
+            dnmap_shader.FetchNormalMap += delegate (string name)
+            {
+                return nmap_container.GetDirect3DTexture(name);
+            };
         }
 
         static string GetHideTechsPath()

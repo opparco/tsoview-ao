@@ -155,6 +155,8 @@ namespace TDCG
         /// diffusion 設定を保持する
         public DiffusionConfig DiffusionConfig = null;
 
+        NormalMapContainer nmap_container;
+
         Texture amb_texture;
         Texture randommap_texture;
         Texture occ_texture;
@@ -1240,16 +1242,16 @@ namespace TDCG
                 {
                     //更新する
                     //元のライトとポーズを維持する
-                    {
-                        Figure orig_fig = FigureList[idx];
-                        fig.LampRotation = orig_fig.LampRotation;
-                        fig.Tmo = orig_fig.Tmo;
-                        orig_fig.Dispose();
-                    }
+                    Figure orig_fig = FigureList[idx];
+                    FigureList[idx] = fig;  //置換
+                    fig.LampRotation = orig_fig.LampRotation;
+                    fig.Tmo = orig_fig.Tmo;
+                    orig_fig.Dispose();
+                    orig_fig = null;
+
                     // free meshes and textures.
                     Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
 
-                    FigureList[idx] = fig;  //置換
                     fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
                     {
                         if (GetSelectedFigure() == sender)
@@ -1449,6 +1451,10 @@ namespace TDCG
             Console.WriteLine(toonshader_filename + " read time: " + sw.Elapsed);
 
             toon_shader = new ToonShader(effect);
+            toon_shader.FetchNormalMap += delegate (string name)
+            {
+                return nmap_container.GetDirect3DTexture(name);
+            };
 
             if (!LoadEffect(@"effects\clear.fx", out effect_clear))
                 return false;
@@ -1741,6 +1747,9 @@ namespace TDCG
             if (tmp_texture != null)
                 tmp_texture.Dispose();
 
+            if (nmap_container != null)
+                nmap_container.Dispose();
+
             if (dev_zbuf != null)
                 dev_zbuf.Dispose();
             if (dev_surface != null)
@@ -1765,6 +1774,8 @@ namespace TDCG
 
             dev_zbuf = device.DepthStencilSurface;
 
+            nmap_container = new NormalMapContainer(device, Path.Combine(Application.StartupPath, @"resources"));
+
             amb_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             amb_surface = amb_texture.GetSurfaceLevel(0);
 
@@ -1781,7 +1792,7 @@ namespace TDCG
             model_thumbnail.Create(device);
             scene_thumbnail.Create(device);
 
-            dnmap_renderer.Create(dev_rect, dmap_format, nmap_format);
+            dnmap_renderer.Create(dev_rect, dmap_format, nmap_format, nmap_container);
 
             lamp_center_on_device = LampCenter;
             ScaleToScreen(ref lamp_center_on_device);

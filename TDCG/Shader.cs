@@ -330,49 +330,34 @@ namespace TDCG
 
         //internal string     description;     // = "TA ToonShader v0.50"
         //internal string     shader;          // = "TAToonshade_050.cgfx"
-        string     technique;       // = "ShadowOn"
+        string technique;       // = "ShadowOn"
         //internal Vector4    shadowColor;     // = [0, 0, 0, 1]
-        ShaderParameter shadeTex;        // = Ninjya_Ribbon_Toon_Tex
+        string shade_tex;        // = Ninjya_Ribbon_Toon_Tex
         //internal float      highLight;       // = [0]
         //internal float      colorBlend;      // = [10]
         //internal float      highLightBlend;  // = [10]
         //internal Vector4    penColor;        // = [0.166, 0.166, 0.166, 1]
         //internal float      ambient;         // = [38]
-        ShaderParameter colorTex;        // = file24
+        string color_tex;        // = file24
         //internal float      thickness;       // = [0.018]
         //internal float      shadeBlend;      // = [10]
         //internal float      highLightPower;  // = [100]
+        string normal_map = "nmap";
 
         public string Technique { get { return technique; } }
 
         /// <summary>
         /// 陰テクスチャのファイル名
         /// </summary>
-        public string ShadeTexName
-        {
-            get
-            {
-                return shadeTex != null ? shadeTex.GetTexture() : null;
-            }
-            set
-            {
-                shadeTex.SetTexture(value);
-            }
-        }
+        public string ShadeTex { get { return shade_tex; } }
         /// <summary>
         /// 色テクスチャのファイル名
         /// </summary>
-        public string ColorTexName
-        {
-            get
-            {
-                return colorTex != null ? colorTex.GetTexture() : null;
-            }
-            set
-            {
-                colorTex.SetTexture(value);
-            }
-        }
+        public string ColorTex { get { return color_tex; } }
+        /// <summary>
+        /// 法線マップのファイル名
+        /// </summary>
+        public string NormalMap { get { return normal_map; } }
 
         /// <summary>
         /// シェーダ設定を読み込みます。
@@ -406,11 +391,15 @@ namespace TDCG
                         break;
                     case "ShadeTex":
                         p.system_p = true;
-                        shadeTex = p;
+                        shade_tex = p.GetString();
                         break;
                     case "ColorTex":
                         p.system_p = true;
-                        colorTex = p;
+                        color_tex = p.GetString();
+                        break;
+                    case "NormalMap":
+                        p.system_p = true;
+                        normal_map = p.GetString();
                         break;
                 }
                 shader_parameters[i++] = p;

@@ -55,6 +55,7 @@
     <Compile Include="NodeFilter.cs" />
     <Compile Include="NodeLocationCollection.cs" />
     <Compile Include="NodeRenderer.cs" />
+    <Compile Include="NormalMapContainer.cs" />
     <Compile Include="PNGFile.cs" />
     <Compile Include="PNGModelSaveWriter.cs" />
     <Compile Include="PNGPoseSaveWriter.cs" />
