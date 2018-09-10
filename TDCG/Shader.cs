@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.ComponentModel;
+using System.Windows.Forms;
+
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
@@ -344,6 +346,50 @@ namespace TDCG
         //internal float      highLightPower;  // = [100]
         string normal_map = "nmap";
 
+        static string GetAssumedTechsPath()
+        {
+            return Path.Combine(Application.StartupPath, @"resources\assumed-techs.txt");
+        }
+
+        static Dictionary<string, string> techmap;
+
+        static void LoadTechMap()
+        {
+            char[] delim = { ' ' };
+            using (StreamReader source = new StreamReader(File.OpenRead(GetAssumedTechsPath())))
+            {
+                string line;
+                while ((line = source.ReadLine()) != null)
+                {
+                    if (line.StartsWith("#"))
+                        continue;
+
+                    string[] tokens = line.Split(delim);
+                    {
+                        Debug.Assert(tokens.Length == 2, "tokens length should be 2");
+                        string name = tokens[0];
+                        string assumed_name = tokens[1];
+                        techmap[name] = assumed_name;
+                    }
+                }
+            }
+        }
+
+        static Shader()
+        {
+            techmap = new Dictionary<string, string>();
+            LoadTechMap();
+        }
+
+        static string RenameTechnique(string name)
+        {
+            string assumed_name;
+            if (techmap.TryGetValue(name, out assumed_name))
+                return assumed_name;
+            else
+                return name;
+        }
+
         public string Technique { get { return technique; } }
 
         /// <summary>
@@ -380,7 +426,7 @@ namespace TDCG
                         break;
                     case "technique":
                         p.system_p = true;
-                        technique = p.GetString();
+                        technique = RenameTechnique(p.GetString());
                         break;
                     case "LightDirX":
                     case "LightDirY":
