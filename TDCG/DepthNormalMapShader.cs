@@ -13,8 +13,7 @@ namespace TDCG
         EffectHandle handle_ColorTex_texture;
         EffectHandle handle_NormalMap_texture;
 
-        public delegate Texture FetchNormalMapHandler(string name);
-        public FetchNormalMapHandler FetchNormalMap;
+        public Func<string, Texture> FetchNormalMap;
 
         public Shader current_shader = null;
 
