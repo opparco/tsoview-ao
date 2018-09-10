@@ -2743,7 +2743,7 @@ namespace TDCG
                     //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
                     device.SetStreamSource(0, sub_mesh.vb, 0, 52);
 
-                    toon_shader.SwitchShader(shader, tso.d3d_texturemap);
+                    toon_shader.SwitchShader(shader, tso.GetDirect3dTextureByName);
                     effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh));
 
                     int npass = effect.Begin(0);

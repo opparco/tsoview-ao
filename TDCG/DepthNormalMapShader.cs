@@ -31,14 +31,19 @@ namespace TDCG
         /// 色テクスチャのみ切り替えます。
         /// </summary>
         /// <param name="shader">シェーダ設定</param>
-        public void SwicthShader(Shader shader, Dictionary<string, Texture> d3d_texturemap)
+        public void SwicthShader(Shader shader, Func<string, Texture> fetch_d3d_texture)
         {
             if (shader == current_shader)
                 return;
             current_shader = shader;
 
-            AssignTexture(shader.ColorTex, handle_ColorTex_texture, d3d_texturemap);
-
+            {
+                Texture d3d_tex = fetch_d3d_texture(shader.ColorTex);
+                if (d3d_tex != null)
+                {
+                    effect.SetValue(handle_ColorTex_texture, d3d_tex);
+                }
+            }
             if (FetchNormalMap != null)
             {
                 Texture d3d_tex = FetchNormalMap(shader.NormalMap);

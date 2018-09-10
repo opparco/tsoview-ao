@@ -1251,7 +1251,16 @@ namespace TDCG
         public Dictionary<string, TSONode> nodemap;
 
         /// shader設定上の texture name と d3d texture を関連付ける辞書
-        public Dictionary<string, Texture> d3d_texturemap;
+        Dictionary<string, Texture> d3d_texturemap;
+
+        public Texture GetDirect3dTextureByName(string name)
+        {
+            Texture d3d_tex;
+            if (name != null && d3d_texturemap.TryGetValue(name, out d3d_tex))
+                return d3d_tex;
+            else
+                return null;
+        }
 
         /// <summary>
         /// 指定パスに保存します。

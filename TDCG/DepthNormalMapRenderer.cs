@@ -74,7 +74,7 @@ namespace TDCG
 
         static string GetHideTechsPath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\hidetechs.txt");
+            return Path.Combine(Application.StartupPath, @"resources\dnmap-hidetechs.txt");
         }
 
         Dictionary<string, bool> techmap;
@@ -120,7 +120,7 @@ namespace TDCG
                     //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
                     device.SetStreamSource(0, sub_mesh.vb, 0, 52);
 
-                    dnmap_shader.SwicthShader(shader, tso.d3d_texturemap);
+                    dnmap_shader.SwicthShader(shader, tso.GetDirect3dTextureByName);
                     effect_dnmap.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh)); // shared
 
                     int npass = effect_dnmap.Begin(0);

@@ -51,7 +51,7 @@ namespace TDCG
         /// シェーダ設定を切り替えます。
         /// </summary>
         /// <param name="shader">シェーダ設定</param>
-        public void SwitchShader(Shader shader, Dictionary<string, Texture> d3d_texturemap)
+        public void SwitchShader(Shader shader, Func<string, Texture> fetch_d3d_texture)
         {
             if (shader == current_shader)
                 return;
@@ -91,9 +91,21 @@ namespace TDCG
                 }
             }
 
-            AssignTexture(shader.ShadeTex, handle_ShadeTex_texture, d3d_texturemap);
-            AssignTexture(shader.ColorTex, handle_ColorTex_texture, d3d_texturemap);
+            {
+                Texture d3d_tex = fetch_d3d_texture(shader.ShadeTex);
+                if (d3d_tex != null)
+                {
+                    effect.SetValue(handle_ShadeTex_texture, d3d_tex);
+                }
+            }
 
+            {
+                Texture d3d_tex = fetch_d3d_texture(shader.ColorTex);
+                if (d3d_tex != null)
+                {
+                    effect.SetValue(handle_ColorTex_texture, d3d_tex);
+                }
+            }
             if (FetchNormalMap != null)
             {
                 Texture d3d_tex = FetchNormalMap(shader.NormalMap);
@@ -102,13 +114,6 @@ namespace TDCG
                     effect.SetValue(handle_NormalMap_texture, d3d_tex);
                 }
             }
-        }
-
-        void AssignTexture(string name, EffectHandle handle, Dictionary<string, Texture> d3d_texturemap)
-        {
-            Texture d3d_tex;
-            if (name != null && d3d_texturemap.TryGetValue(name, out d3d_tex))
-                effect.SetValue(handle, d3d_tex);
         }
     }
 }
