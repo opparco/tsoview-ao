@@ -49,9 +49,6 @@
       <DependentUpon>ConfigForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
-    <None Include="Script.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <Compile Include="TSOConfig.cs" />
     <Compile Include="TSOForm.cs">
       <SubType>Form</SubType>
