@@ -22,9 +22,6 @@ namespace TDCG
         //位置変位
         Vector3 translation;
         
-        //カメラ移動方向ベクトル
-        Vector3 dirD;
-        
         //更新する必要があるか
         bool need_update;
         
@@ -86,7 +83,6 @@ namespace TDCG
             angle = Vector3.Empty;
             center = Vector3.Empty;
             translation = new Vector3(0.0f, 0.0f, +10.0f);
-            dirD = Vector3.Empty;
             need_update = true;
             view = Matrix.Identity;
         }
@@ -121,8 +117,8 @@ namespace TDCG
             if (dirX == 0.0f && dirY == 0.0f)
                 return;
 
-            dirD.X += dirX;
-            dirD.Y += dirY;
+            angle.Y -= dirX;
+            angle.X += dirY;
             need_update = true;
         }
 
@@ -134,9 +130,6 @@ namespace TDCG
             if (!need_update)
                 return;
 
-            angle.Y += -dirD.X;
-            angle.X += +dirD.Y;
-
             Matrix m = Matrix.RotationYawPitchRoll(angle.Y, angle.X, angle.Z);
             m.M41 = center.X;
             m.M42 = center.Y;
@@ -145,8 +138,6 @@ namespace TDCG
 
             view = Matrix.Invert(m) * Matrix.Translation(-translation);
 
-            //差分をリセット
-            ResetDefValue();
             need_update = false;
         }
 
@@ -212,14 +203,6 @@ namespace TDCG
             this.translation.Y += dy;
             this.translation.Z += dz;
             need_update = true;
-        }
-
-        /// <summary>
-        /// 差分をリセットします。
-        /// </summary>
-        protected void ResetDefValue()
-        {
-            dirD = Vector3.Empty;
         }
     }
 }
