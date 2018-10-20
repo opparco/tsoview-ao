@@ -26,7 +26,7 @@ namespace TDCG
         Vector3 dirD;
         
         //更新する必要があるか
-        bool needUpdate;
+        bool need_update;
         
         //view行列
         Matrix view;
@@ -39,17 +39,33 @@ namespace TDCG
         /// <summary>
         /// 回転中心
         /// </summary>
-        public Vector3 Center { get { return center; } set { center = value; } }
+        public Vector3 Center
+        {
+            get { return center; }
+            set
+            {
+                center = value;
+                need_update = true;
+            }
+        }
 
         /// <summary>
         /// 位置変位
         /// </summary>
-        public Vector3 Translation { get { return translation; } set { translation = value; } }
+        public Vector3 Translation
+        {
+            get { return translation; }
+            set
+            {
+                translation = value;
+                need_update = true;
+            }
+        }
     
         /// <summary>
         /// 更新する必要があるか
         /// </summary>
-        public bool NeedUpdate { get { return needUpdate; } }
+        public bool NeedUpdate { get { return need_update; } }
 
         /// <summary>
         /// view行列
@@ -71,7 +87,7 @@ namespace TDCG
             center = Vector3.Empty;
             translation = new Vector3(0.0f, 0.0f, +10.0f);
             dirD = Vector3.Empty;
-            needUpdate = true;
+            need_update = true;
             view = Matrix.Identity;
         }
 
@@ -83,7 +99,7 @@ namespace TDCG
             center = Vector3.Empty;
             translation = new Vector3(0.0f, 0.0f, +10.0f);
             angle = Vector3.Empty;
-            needUpdate = true;
+            need_update = true;
         }
 
         /// <summary>
@@ -92,7 +108,7 @@ namespace TDCG
         public void ResetTranslation()
         {
             translation = new Vector3(0.0f, 0.0f, +10.0f);
-            needUpdate = true;
+            need_update = true;
         }
 
         /// <summary>
@@ -107,7 +123,7 @@ namespace TDCG
 
             dirD.X += dirX;
             dirD.Y += dirY;
-            needUpdate = true;
+            need_update = true;
         }
 
         /// <summary>
@@ -115,7 +131,7 @@ namespace TDCG
         /// </summary>
         public void Update()
         {
-            if (!needUpdate)
+            if (!need_update)
                 return;
 
             angle.Y += -dirD.X;
@@ -131,7 +147,7 @@ namespace TDCG
 
             //差分をリセット
             ResetDefValue();
-            needUpdate = false;
+            need_update = false;
         }
 
         /// <summary>
@@ -145,32 +161,14 @@ namespace TDCG
         /// <summary>
         /// 回転中心を設定します。
         /// </summary>
-        /// <param name="center">回転中心</param>
-        public void SetCenter(Vector3 center)
-        {
-            this.center = center;
-            needUpdate = true;
-        }
-        /// <summary>
-        /// 回転中心を設定します。
-        /// </summary>
         /// <param name="x">回転中心x座標</param>
         /// <param name="y">回転中心y座標</param>
         /// <param name="z">回転中心z座標</param>
         public void SetCenter(float x, float y, float z)
         {
-            SetCenter(new Vector3(x, y, z));
+            this.Center = new Vector3(x, y, z);
         }
 
-        /// <summary>
-        /// view座標上の位置を設定します。
-        /// </summary>
-        /// <param name="translation">view座標上の位置</param>
-        public void SetTranslation(Vector3 translation)
-        {
-            this.translation = translation;
-            needUpdate = true;
-        }
         /// <summary>
         /// 位置変位を設定します。
         /// </summary>
@@ -179,7 +177,7 @@ namespace TDCG
         /// <param name="z">Z変位</param>
         public void SetTranslation(float x, float y, float z)
         {
-            SetTranslation(new Vector3(x, y, z));
+            this.Translation = new Vector3(x, y, z);
         }
 
         /// <summary>
@@ -189,7 +187,7 @@ namespace TDCG
         public void SetAngle(Vector3 angle)
         {
             this.angle = angle;
-            needUpdate = true;
+            need_update = true;
         }
         /// <summary>
         /// 角度を設定します。
@@ -213,7 +211,7 @@ namespace TDCG
             this.translation.X += dx;
             this.translation.Y += dy;
             this.translation.Z += dz;
-            needUpdate = true;
+            need_update = true;
         }
 
         /// <summary>

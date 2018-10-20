@@ -240,8 +240,7 @@ namespace TDCG
                 if (node == null)
                     node = fig.Tmo.nodes[0]; // W_Hips
 
-                Vector3 position = Vector3.TransformCoordinate(node.GetWorldPosition(), world);
-                camera.SetCenter(position);
+                camera.Center = Vector3.TransformCoordinate(node.GetWorldPosition(), world);
             }
         }
 
