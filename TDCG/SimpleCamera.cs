@@ -69,6 +69,8 @@ namespace TDCG
         /// </summary>
         public Matrix ViewMatrix { get { return view; } }
 
+        public Vector3 ViewTranslation { get { return new Vector3(-view.M41, -view.M42, -view.M43); } }
+
         /// 回転行列
         public Matrix RotationMatrix { get { return Matrix.RotationYawPitchRoll(angle.Y, angle.X, angle.Z); } }
 

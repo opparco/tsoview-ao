@@ -778,7 +778,7 @@ namespace TDCG
             PNGSaveData savedata = new PNGSaveData();
 
             PNGSaveCameraDescription camera_desc = new PNGSaveCameraDescription();
-            camera_desc.Translation = camera.Translation;
+            camera_desc.Translation = camera.ViewTranslation;
             camera_desc.Angle = camera.Angle;
             savedata.CameraDescription = camera_desc;
 
@@ -806,7 +806,7 @@ namespace TDCG
             PNGSaveData savedata = new PNGSaveData();
 
             PNGSaveCameraDescription camera_desc = new PNGSaveCameraDescription();
-            camera_desc.Translation = camera.Translation;
+            camera_desc.Translation = camera.ViewTranslation;
             camera_desc.Angle = camera.Angle;
             savedata.CameraDescription = camera_desc;
 
