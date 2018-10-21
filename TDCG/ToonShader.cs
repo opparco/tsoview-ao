@@ -69,25 +69,25 @@ namespace TDCG
 
             foreach (ShaderParameter p in shader.shader_parameters)
             {
-                if (p.system_p)
-                    continue;
-
-                switch (p.type)
-                {
-                case ShaderParameterType.String:
-                    effect.SetValue(p.name, p.GetString());
-                    break;
-                case ShaderParameterType.Float:
-                case ShaderParameterType.Float3:
-                case ShaderParameterType.Float4:
-                    effect.SetValue(p.name, new float[]{ p.F1, p.F2, p.F3, p.F4 });
-                    break;
-                    /*
-                case ShaderParameter.Type.Texture:
-                    effect.SetValue(p.name, p.GetTexture());
-                    break;
-                    */
-                }
+                //有効な parameter.name でない場合は設定しない。
+                //設定すると落ちる。
+                if (p.assignable)
+                    switch (p.type)
+                    {
+                    case ShaderParameterType.String:
+                        effect.SetValue(p.name, p.GetString());
+                        break;
+                    case ShaderParameterType.Float:
+                    case ShaderParameterType.Float3:
+                    case ShaderParameterType.Float4:
+                        effect.SetValue(p.name, new float[]{ p.F1, p.F2, p.F3, p.F4 });
+                        break;
+                        /*
+                    case ShaderParameter.Type.Texture:
+                        effect.SetValue(p.name, p.GetTexture());
+                        break;
+                        */
+                    }
             }
 
             {

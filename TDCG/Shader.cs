@@ -49,14 +49,15 @@ namespace TDCG
         internal ShaderParameterType type;
         internal string name;
 
-        private string str;
-        private float f1;
-        private float f2;
-        private float f3;
-        private float f4;
-        private int dim = 0;
+        string str;
+        float f1;
+        float f2;
+        float f3;
+        float f4;
+        int dim = 0;
 
-        internal bool system_p = false;
+        //Effect.SetValue で指定できる name か
+        internal bool assignable = false;
 
         /// <summary>
         /// パラメータの名称
@@ -375,10 +376,41 @@ namespace TDCG
             }
         }
 
+        static string GetParametersPath()
+        {
+            return Path.Combine(Application.StartupPath, @"resources\parameters.txt");
+        }
+
+        static Dictionary<string, bool> namemap;
+
+        static void LoadNameMap()
+        {
+            char[] delim = { ' ' };
+            using (StreamReader source = new StreamReader(File.OpenRead(GetParametersPath())))
+            {
+                string line;
+                while ((line = source.ReadLine()) != null)
+                {
+                    if (line.StartsWith("#"))
+                        continue;
+
+                    string[] tokens = line.Split(delim);
+                    {
+                        Debug.Assert(tokens.Length == 2 || tokens.Length == 3, "tokens length should be 2 or 3");
+                        string type = tokens[0];
+                        string name = tokens[1];
+                        namemap[name] = true;
+                    }
+                }
+            }
+        }
+
         static Shader()
         {
             techmap = new Dictionary<string, string>();
             LoadTechMap();
+            namemap = new Dictionary<string, bool>();
+            LoadNameMap();
         }
 
         static string RenameTechnique(string name)
@@ -388,6 +420,11 @@ namespace TDCG
                 return assumed_name;
             else
                 return name;
+        }
+
+        static bool IsAssignableName(string name)
+        {
+            return namemap.ContainsKey(name);
         }
 
         public string Technique { get { return technique; } }
@@ -419,13 +456,10 @@ namespace TDCG
                 switch(p.name)
                 {
                     case "description":
-                        p.system_p = true;
                         break;
                     case "shader":
-                        p.system_p = true;
                         break;
                     case "technique":
-                        p.system_p = true;
                         technique = RenameTechnique(p.GetString());
                         break;
                     case "LightDirX":
@@ -433,19 +467,18 @@ namespace TDCG
                     case "LightDirZ":
                     case "LightDirW":
                     case "LightDir":
-                        p.system_p = true;
                         break;
                     case "ShadeTex":
-                        p.system_p = true;
                         shade_tex = p.GetString();
                         break;
                     case "ColorTex":
-                        p.system_p = true;
                         color_tex = p.GetString();
                         break;
                     case "NormalMap":
-                        p.system_p = true;
                         normal_map = p.GetString();
+                        break;
+                    default:
+                        p.assignable = IsAssignableName(p.name);
                         break;
                 }
                 shader_parameters[i++] = p;
