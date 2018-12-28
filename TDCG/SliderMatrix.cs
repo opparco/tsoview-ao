@@ -512,12 +512,6 @@ static readonly uint[] EyeB = {
         {"Chichi_Left5", (7+9) * 16},
         {"Chichi_Left5_End", (8+9) * 16}
     };
-    void GetMinChichiClothed(string name, ref Matrix c)
-    {
-        int off;
-        if (MinChichiClothedMap.TryGetValue(name, out off))
-            GetChichiMinM(ref c, off);
-    }
 
     static readonly Dictionary<string, int> MinChichiMap = new Dictionary<string, int>() {
         {"Chichi_Right1", 3 * 16},
@@ -533,12 +527,6 @@ static readonly uint[] EyeB = {
         {"Chichi_Left5", (7+9) * 16},
         {"Chichi_Left5_End", (8+9) * 16}
     };
-    void GetMinChichi(string name, ref Matrix c)
-    {
-        int off;
-        if (MinChichiMap.TryGetValue(name, out off))
-            GetChichiMinM(ref c, off);
-    }
 
     /// 着衣扱いか
     public bool Clothed = false;
@@ -546,11 +534,17 @@ static readonly uint[] EyeB = {
     /// おっぱい変形：貧乳を行います。
     void TransformChichiFlat(string name, ref Matrix m)
     {
-        Matrix c = Matrix.Identity;
+        Dictionary<string, int> min_chichi_map;
         if (Clothed)
-            GetMinChichiClothed(name, ref c);
+            min_chichi_map = MinChichiClothedMap;
         else
-            GetMinChichi(name, ref c);
+            min_chichi_map = MinChichiMap;
+        Matrix c = Matrix.Identity;
+        {
+            int off;
+            if (min_chichi_map.TryGetValue(name, out off))
+                GetChichiMinM(ref c, off);
+        }
         GetMatrixRatio(out m, ref c, ref m, oppai_ratio / FlatRatio);
     }
 
