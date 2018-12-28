@@ -34,17 +34,16 @@ namespace TDCG
         /// </summary>
         public SliderMatrix SliderMatrix { get { return slider_matrix; } }
 
-        bool clothed = false;
         /// 着衣扱いか
         public bool Clothed
         {
-            get { return clothed; }
+            get { return slider_matrix.Clothed; }
         }
 
         /// 着衣扱いかを更新します。
         public void UpdateClothed()
         {
-            clothed = false;
+            bool clothed = false;
             foreach (TSOFile tso in TsoList)
             {
                 switch (tso.Row)
@@ -56,6 +55,7 @@ namespace TDCG
                         break;
                 }
             }
+            slider_matrix.Clothed = clothed;
         }
 
         TMOFile tmo = null;
@@ -182,8 +182,6 @@ namespace TDCG
             }
         }
 
-        static Regex re_chichi = new Regex(@"\AChichi");
-
         /// <summary>
         /// bone行列を更新します。
         /// </summary>
@@ -195,28 +193,14 @@ namespace TDCG
 
             if (slider_matrix != null)
             {
-                bool chichi_p = re_chichi.IsMatch(tmo_node.Name);
+                string name = tmo_node.Name;
 
-                if (chichi_p)
-                {
-                    slider_matrix.ScaleChichi(tmo_node, ref m);
-
-                    if (slider_matrix.Flat())
-                    {
-                        if (clothed)
-                            slider_matrix.TransformChichiFlatClothed(tmo_node, ref m);
-                        else
-                            slider_matrix.TransformChichiFlat(tmo_node, ref m);
-                    }
-                }
-                else
-                    slider_matrix.TransformFace(tmo_node, ref m);
+                slider_matrix.Transform(name, ref m);
 
                 matrixStack.MultiplyMatrixLocal(m);
                 m = matrixStack.Top;
 
-                if (!chichi_p)
-                    slider_matrix.Scale(tmo_node, ref m);
+                slider_matrix.TransformWithoutStack(name, ref m);
             }
             else
             {

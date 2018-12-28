@@ -6,6 +6,7 @@ using System.Threading;
 //using System.ComponentModel;
 using System.Windows.Forms;
 using System.IO;
+using System.Text.RegularExpressions;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
@@ -437,14 +438,14 @@ static readonly uint[] EyeB = {
         }
     }
 
+    /// 貧乳境界比率
+    static float FlatRatio = 0.20f; // 0.2250f ?
+
     /// 貧乳であるか
-    public bool Flat()
+    bool Flat()
     {
         return oppai_ratio < FlatRatio;
     }
-
-    /// 貧乳境界比率
-    public static float FlatRatio = 0.20f; // 0.2250f ?
 
     float age_ratio;
     /// 姉妹スライダ比率
@@ -518,14 +519,6 @@ static readonly uint[] EyeB = {
             GetChichiMinM(ref c, off);
     }
 
-    /// おっぱい変形：貧乳着衣を行います。
-    public void TransformChichiFlatClothed(TMONode tmo_node, ref Matrix m)
-    {
-        Matrix c = Matrix.Identity;
-        GetMinChichiClothed(tmo_node.Name, ref c);
-        GetMatrixRatio(out m, ref c, ref m, oppai_ratio / FlatRatio);
-    }
-
     static readonly Dictionary<string, int> MinChichiMap = new Dictionary<string, int>() {
         {"Chichi_Right1", 3 * 16},
         {"Chichi_Right2", 4 * 16},
@@ -547,18 +540,24 @@ static readonly uint[] EyeB = {
             GetChichiMinM(ref c, off);
     }
 
+    /// 着衣扱いか
+    public bool Clothed = false;
+
     /// おっぱい変形：貧乳を行います。
-    public void TransformChichiFlat(TMONode tmo_node, ref Matrix m)
+    void TransformChichiFlat(string name, ref Matrix m)
     {
         Matrix c = Matrix.Identity;
-        GetMinChichi(tmo_node.Name, ref c);
+        if (Clothed)
+            GetMinChichiClothed(name, ref c);
+        else
+            GetMinChichi(name, ref c);
         GetMatrixRatio(out m, ref c, ref m, oppai_ratio / FlatRatio);
     }
 
     /// おっぱい変形を行います。
-    public void ScaleChichi(TMONode tmo_node, ref Matrix m)
+    void ScaleChichi(string name, ref Matrix m)
     {
-        switch (tmo_node.Name)
+        switch (name)
         {
             case "Chichi_Right1":
             case "Chichi_Left1":
@@ -573,9 +572,9 @@ static readonly uint[] EyeB = {
     }
 
     /// 表情変形を行います。
-    public void TransformFace(TMONode tmo_node, ref Matrix m)
+    public void TransformFace(string name, ref Matrix m)
     {
-        switch (tmo_node.Name)
+        switch (name)
         {
             case "face_oya":
                 Helper.Scale1(ref m, this.FaceOya);
@@ -594,9 +593,9 @@ static readonly uint[] EyeB = {
     }
 
     /// 体型変形を行います。
-    public void Scale(TMONode tmo_node, ref Matrix m)
+    public void Scale(string name, ref Matrix m)
     {
-        switch (tmo_node.Name)
+        switch (name)
         {
             case "W_Spine_Dummy":
                 Helper.Scale1(ref m, this.SpineDummy);
@@ -644,6 +643,36 @@ static readonly uint[] EyeB = {
                 Helper.Scale1(ref m, this.Arm);
                 break;
         }
+    }
+
+    static Regex re_chichi = new Regex(@"\AChichi");
+
+    /// 体型変形を行います。
+    /// ここで変形した行列は MatrixStack に入ります。
+    public void Transform(string name, ref Matrix m)
+    {
+        bool chichi_p = re_chichi.IsMatch(name);
+
+        if (chichi_p)
+        {
+            ScaleChichi(name, ref m);
+
+            if (Flat())
+            {
+                TransformChichiFlat(name, ref m);
+            }
+        }
+        else
+            TransformFace(name, ref m);
+    }
+    /// 体型変形を行います。
+    /// ここで変形した行列は MatrixStack に入りません。
+    public void TransformWithoutStack(string name, ref Matrix m)
+    {
+        bool chichi_p = re_chichi.IsMatch(name);
+
+        if (!chichi_p)
+            Scale(name, ref m);
     }
 }
 }
