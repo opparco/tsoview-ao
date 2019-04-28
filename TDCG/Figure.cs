@@ -118,8 +118,35 @@ namespace TDCG
         {
             if (TsoList.Count != 0)
             {
-                Tmo = TsoList[0].GenerateTmo();
+                Tmo = GenerateTmo(TsoList[0]);
             }
+        }
+
+        /// <summary>
+        /// tmoを生成します。
+        /// </summary>
+        static TMOFile GenerateTmo(TSOFile tso)
+        {
+            TMOFile tmo = new TMOFile();
+            tmo.header = new byte[8] { 0, 0, 0, 0, 0, 0, 0, 0 };
+            tmo.opt0 = 1;
+            tmo.opt1 = 0;
+
+            int nodes_len = tso.nodes.Length;
+            tmo.nodes = new TMONode[nodes_len];
+
+            for (int i = 0; i < nodes_len; i++)
+            {
+                tmo.nodes[i] = new TMONode(i);
+                tmo.nodes[i].Path = tso.nodes[i].Path;
+                tmo.nodes[i].TransformationMatrix = tso.nodes[i].TransformationMatrix;
+            }
+
+            tmo.GenerateNodemapAndTree();
+
+            //tmo.footer = new byte[4] { 0, 0, 0, 0 };
+
+            return tmo;
         }
 
         /// <summary>
