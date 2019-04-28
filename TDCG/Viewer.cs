@@ -236,7 +236,6 @@ namespace TDCG
 
                 TMONode node = selected_node;
 
-                //TODO: selected_node should not be null
                 if (node == null)
                     node = fig.Tmo.nodes[0]; // W_Hips
 
@@ -511,8 +510,11 @@ namespace TDCG
                     }
                     else if (CloseToSelectedNode(screen_p))
                     {
-                        BeginSelectedNodeCommand();
-                        manipulator.BeginRotateNode(ManipulatorDeviceType.Mouse, selected_node);
+                        if (selected_node != null)
+                        {
+                            BeginSelectedNodeCommand();
+                            manipulator.BeginRotateNode(ManipulatorDeviceType.Mouse, selected_node);
+                        }
                     }
                     else if (SelectNode(screen_p))
                     {
@@ -536,8 +538,11 @@ namespace TDCG
                     }
                     else if (CloseToSelectedNode(screen_p))
                     {
-                        BeginSelectedNodeCommand();
-                        manipulator.BeginGrabNode(ManipulatorDeviceType.Mouse, selected_node);
+                        if (selected_node != null)
+                        {
+                            BeginSelectedNodeCommand();
+                            manipulator.BeginGrabNode(ManipulatorDeviceType.Mouse, selected_node);
+                        }
                     }
                     else
                         manipulator.BeginGrabCamera();
@@ -1987,7 +1992,6 @@ namespace TDCG
 
         public bool CanResetSelectedNode()
         {
-            //TODO: selected_node should not be null
             if (selected_node == null)
                 return false;
 
@@ -2094,8 +2098,12 @@ namespace TDCG
             if (keysEnabled[key])
             {
                 keysEnabled[key] = false;
-                BeginSelectedNodeCommand();
-                manipulator.BeginGrabNode(ManipulatorDeviceType.Keyboard, selected_node);
+
+                if (selected_node != null)
+                {
+                    BeginSelectedNodeCommand();
+                    manipulator.BeginGrabNode(ManipulatorDeviceType.Keyboard, selected_node);
+                }
             }
             if (manipulator.WhileGrabNodeLocal(dx, dy, dz))
             {
@@ -2109,8 +2117,12 @@ namespace TDCG
             if (keysEnabled[key])
             {
                 keysEnabled[key] = false;
-                BeginSelectedNodeCommand();
-                manipulator.BeginRotateNode(ManipulatorDeviceType.Keyboard, selected_node);
+
+                if (selected_node != null)
+                {
+                    BeginSelectedNodeCommand();
+                    manipulator.BeginRotateNode(ManipulatorDeviceType.Keyboard, selected_node);
+                }
             }
             if (manipulator.WhileRotateNodeLocal(dx, dy, dz))
             {
