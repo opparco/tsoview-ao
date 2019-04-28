@@ -42,10 +42,10 @@ namespace TDCG
         /// <summary>
         /// 名称の短い形式とboneを関連付ける辞書
         /// </summary>
-        public Dictionary<string, TMONode> nodemap;
+        public Dictionary<string, TMONode> nodemap = new Dictionary<string, TMONode>();
 
         internal TMONode w_hips_node = null;
-        internal List<TMONode> root_nodes_except_w_hips;
+        internal List<TMONode> root_nodes_except_w_hips = new List<TMONode>();
 
         /// <summary>
         /// 指定パスに保存します。
@@ -151,11 +151,17 @@ namespace TDCG
 
         internal void GenerateNodemapAndTree()
         {
-            nodemap = new Dictionary<string, TMONode>();
+            nodemap.Clear();
 
             for (int i = 0; i < nodes.Length; i++)
             {
                 nodemap.Add(nodes[i].Name, nodes[i]);
+            }
+
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                nodes[i].children.Clear();
+                nodes[i].parent = null;
             }
 
             List<TMONode> root_nodes = new List<TMONode>();
@@ -173,7 +179,8 @@ namespace TDCG
                 nodes[i].parent.children.Add(nodes[i]);
             }
 
-            root_nodes_except_w_hips = new List<TMONode>();
+            w_hips_node = null;
+            root_nodes_except_w_hips.Clear();
 
             foreach (TMONode node in root_nodes)
             {
