@@ -149,11 +149,45 @@ namespace TDCG
             return tmo;
         }
 
+        /// tsoにあるのにtmoにないボーンがあれば
+        /// tmoに追加します。
+        static void SyncTmo(TSOFile tso, TMOFile tmo)
+        {
+            List<TSONode> add_nodes = new List<TSONode>();
+            foreach (TSONode tso_node in tso.nodes)
+            {
+                TMONode tmo_node;
+                if (! tmo.nodemap.TryGetValue(tso_node.Name, out tmo_node))
+                {
+                    add_nodes.Add(tso_node);
+                }
+            }
+
+            if (add_nodes.Count != 0)
+            {
+                int nodes_len = tmo.nodes.Length;
+                Array.Resize(ref tmo.nodes, nodes_len + add_nodes.Count);
+                int x = nodes_len;
+                foreach (TSONode add_node in add_nodes)
+                {
+                    tmo.nodes[x] = new TMONode(x);
+                    tmo.nodes[x].Path = add_node.Path;
+                    tmo.nodes[x].TransformationMatrix = add_node.TransformationMatrix;
+                    x++;
+                }
+                tmo.GenerateNodemapAndTree();
+            }
+        }
+
         /// <summary>
         /// nodemapを更新します。
         /// </summary>
         public void UpdateNodeMap()
         {
+            if (TsoList.Count != 0)
+            {
+                SyncTmo(TsoList[0], Tmo);
+            }
             nodemap.Clear();
             foreach (TSOFile tso in TsoList)
                 AddNodeMap(tso);
@@ -163,7 +197,7 @@ namespace TDCG
         /// tsoに対するnodemapを追加します。
         /// </summary>
         /// <param name="tso">tso</param>
-        protected void AddNodeMap(TSOFile tso)
+        void AddNodeMap(TSOFile tso)
         {
             foreach (TSONode tso_node in tso.nodes)
             {
