@@ -16,8 +16,10 @@ namespace TDCG
         EffectHandle handle_ShadeTex_texture;
         EffectHandle handle_ColorTex_texture;
         EffectHandle handle_NormalMap_texture;
+        EffectHandle handle_EnvironmentMap_texture;
 
         public Func<string, Texture> FetchNormalMap;
+        public Func<string, Texture> FetchEnvironmentMap;
 
         public Shader current_shader = null;
 
@@ -28,6 +30,7 @@ namespace TDCG
             handle_ShadeTex_texture = effect.GetParameter(null, "ShadeTex_texture");
             handle_ColorTex_texture = effect.GetParameter(null, "ColorTex_texture");
             handle_NormalMap_texture = effect.GetParameter(null, "NormalMap_texture");
+            handle_EnvironmentMap_texture = effect.GetParameter(null, "EnvironmentMap_texture");
 
             techmap = new Dictionary<string, EffectHandle>();
 
@@ -111,6 +114,14 @@ namespace TDCG
                 if (d3d_tex != null)
                 {
                     effect.SetValue(handle_NormalMap_texture, d3d_tex);
+                }
+            }
+            if (FetchEnvironmentMap != null)
+            {
+                Texture d3d_tex = FetchEnvironmentMap(shader.EnvironmentMap);
+                if (d3d_tex != null)
+                {
+                    effect.SetValue(handle_EnvironmentMap_texture, d3d_tex);
                 }
             }
         }

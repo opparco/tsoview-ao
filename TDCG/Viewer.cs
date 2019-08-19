@@ -156,6 +156,7 @@ namespace TDCG
         public DiffusionConfig DiffusionConfig = null;
 
         NormalMapContainer nmap_container;
+        EnvironmentMapContainer emap_container;
 
         Texture amb_texture;
         Texture randommap_texture;
@@ -1459,6 +1460,10 @@ namespace TDCG
             {
                 return nmap_container.GetDirect3DTexture(name);
             };
+            toon_shader.FetchEnvironmentMap += delegate (string name)
+            {
+                return emap_container.GetDirect3DTexture(name);
+            };
 
             if (!LoadEffect(@"effects\clear.fx", out effect_clear))
                 return false;
@@ -1779,6 +1784,7 @@ namespace TDCG
             dev_zbuf = device.DepthStencilSurface;
 
             nmap_container = new NormalMapContainer(device, Path.Combine(Application.StartupPath, @"resources"));
+            emap_container = new EnvironmentMapContainer(device, Path.Combine(Application.StartupPath, @"resources"));
 
             amb_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             amb_surface = amb_texture.GetSurfaceLevel(0);
@@ -2386,6 +2392,9 @@ namespace TDCG
                 // xxx: for w-buffering
                 device.Transform.View = Transform_View;
                 effect.SetValue("view", Transform_View);
+
+                Matrix m = camera.RotationMatrix;
+                effect.SetValue("camdir", new Vector4(m.M31, m.M32, m.M33, 0));
 
                 AssignProjection();
                 AssignDepthProjection();

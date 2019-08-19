@@ -45,6 +45,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="DepthNormalMapRenderer.cs" />
     <Compile Include="DepthNormalMapShader.cs" />
+    <Compile Include="EnvironmentMapContainer.cs" />
     <Compile Include="Figure.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="LampRenderer.cs" />

@@ -346,6 +346,7 @@ namespace TDCG
         //internal float      shadeBlend;      // = [10]
         //internal float      highLightPower;  // = [100]
         string normal_map = "nmap";
+        string environment_map = "emap";
 
         static string GetAssumedTechsPath()
         {
@@ -441,6 +442,9 @@ namespace TDCG
         /// 法線マップのファイル名
         /// </summary>
         public string NormalMap { get { return normal_map; } }
+        /// 環境マップのファイル名
+        /// </summary>
+        public string EnvironmentMap { get { return environment_map; } }
 
         /// <summary>
         /// シェーダ設定を読み込みます。
@@ -476,6 +480,9 @@ namespace TDCG
                         break;
                     case "NormalMap":
                         normal_map = p.GetString();
+                        break;
+                    case "EnvironmentMap":
+                        environment_map = p.GetString();
                         break;
                     default:
                         p.assignable = IsAssignableName(p.name);
