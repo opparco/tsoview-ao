@@ -70,6 +70,8 @@ namespace TDCG
             }
             effect.ValidateTechnique(effect.Technique);
 
+            effect.SetValue("Environment", 0.0f);
+
             foreach (ShaderParameter p in shader.shader_parameters)
             {
                 //有効な parameter.name でない場合は設定しない。
