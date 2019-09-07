@@ -45,6 +45,7 @@ static class Program
             {
                 tso_form.Render();
                 Application.DoEvents();
+                System.Threading.Thread.Sleep(5);
             }
         }
     }

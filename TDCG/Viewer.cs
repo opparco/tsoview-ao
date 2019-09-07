@@ -2655,7 +2655,6 @@ namespace TDCG
 
             Debug.WriteLine("!! device Present !!");
             device.Present();
-            //Thread.Sleep(30);
         }
 
         /// config: スクリーン塗りつぶし色
