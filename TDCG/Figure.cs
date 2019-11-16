@@ -329,16 +329,16 @@ namespace TDCG
         /// <returns>スキン変形行列の配列</returns>
         public Matrix[] ClipBoneMatrices(TSOSubMesh sub_mesh)
         {
-            Matrix[] clipped_boneMatrices = new Matrix[sub_mesh.maxPalettes];
+            Matrix[] matrices = new Matrix[sub_mesh.maxPalettes];
 
-            for (int numPalettes = 0; numPalettes < sub_mesh.maxPalettes; numPalettes++)
+            for (int i = 0; i < sub_mesh.maxPalettes; i++)
             {
-                TSONode tso_node = sub_mesh.GetBone(numPalettes);
+                TSONode tso_node = sub_mesh.GetBone(i);
                 TMONode tmo_node;
                 if (nodemap.TryGetValue(tso_node, out tmo_node))
-                    clipped_boneMatrices[numPalettes] = tso_node.offset_matrix * tmo_node.combined_matrix;
+                    matrices[i] = tso_node.offset_matrix * tmo_node.combined_matrix;
             }
-            return clipped_boneMatrices;
+            return matrices;
         }
 
         /// <summary>
@@ -348,16 +348,16 @@ namespace TDCG
         /// <returns>スキン変形行列の配列</returns>
         public Matrix[] ClipBoneMatrices(TSOFile tso)
         {
-            Matrix[] clipped_boneMatrices = new Matrix[tso.nodes.Length];
+            Matrix[] matrices = new Matrix[tso.nodes.Length];
 
-            for (int numPalettes = 0; numPalettes < tso.nodes.Length; numPalettes++)
+            for (int i = 0; i < tso.nodes.Length; i++)
             {
-                TSONode tso_node = tso.nodes[numPalettes];
+                TSONode tso_node = tso.nodes[i];
                 TMONode tmo_node;
                 if (nodemap.TryGetValue(tso_node, out tmo_node))
-                    clipped_boneMatrices[numPalettes] = tso_node.offset_matrix * tmo_node.combined_matrix;
+                    matrices[i] = tso_node.offset_matrix * tmo_node.combined_matrix;
             }
-            return clipped_boneMatrices;
+            return matrices;
         }
 
         Quaternion lamp_rotation = Quaternion.Identity;

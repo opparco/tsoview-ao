@@ -60,7 +60,6 @@ namespace TDCG
             names.CopyTo(face_nodenames);
         }
 
-        //顔以外のボーン配列を得る
         TMONode[] GetNodes(TMOFile tmo, string[] nodenames)
         {
             TMONode[] nodes = new TMONode[nodenames.Length];
