@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-//using System.Drawing;
-using System.Threading;
-//using System.ComponentModel;
 using System.IO;
 
 using Microsoft.DirectX;
