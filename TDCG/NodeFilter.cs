@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Forms;
 
 namespace TDCG
 {
@@ -23,12 +22,12 @@ namespace TDCG
 
         static string GetNotFaceNodesPath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\not-facenodes.txt");
+            return @"resources\not-facenodes.txt";
         }
 
         static string GetFaceNodesPath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\facenodes.txt");
+            return @"resources\facenodes.txt";
         }
 
         void LoadNotFaceNodes()

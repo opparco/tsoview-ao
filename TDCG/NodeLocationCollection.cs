@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
+
 using Microsoft.DirectX.Direct3D;
 
 namespace TDCG
@@ -40,8 +40,7 @@ namespace TDCG
 
         string GetNodeLocationConfigPath()
         {
-            string relative_path = Path.Combine(@"resources\node-locations", string.Format("{0}.txt", this.number));
-            return Path.Combine(Application.StartupPath, relative_path);
+            return Path.Combine(@"resources\node-locations", string.Format("{0}.txt", this.number));
         }
 
         static int GetLocationKey(int x16, int y16)
@@ -96,8 +95,7 @@ namespace TDCG
 
         string GetNodeLocationTexturePath()
         {
-            string relative_path = Path.Combine(@"resources\node-locations", string.Format("{0}.png", this.number));
-            return Path.Combine(Application.StartupPath, relative_path);
+            return Path.Combine(@"resources\node-locations", string.Format("{0}.png", this.number));
         }
 
         // on device reset

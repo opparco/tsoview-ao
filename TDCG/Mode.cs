@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
+
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
@@ -40,8 +40,7 @@ namespace TDCG
 
         string GetModeTexturePath()
         {
-            string relative_path = Path.Combine(@"resources\modes", mode_filename);
-            return Path.Combine(Application.StartupPath, relative_path);
+            return Path.Combine(@"resources\modes", mode_filename);
         }
 
         // on device reset

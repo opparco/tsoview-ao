@@ -4,9 +4,8 @@ using System.Diagnostics;
 //using System.Drawing;
 using System.Threading;
 //using System.ComponentModel;
-using System.Windows.Forms;
 using System.IO;
-using System.Text.RegularExpressions;
+
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 

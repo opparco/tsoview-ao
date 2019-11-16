@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
+
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
@@ -58,12 +58,12 @@ namespace TDCG
 
         static string GetNodeSpriteTexturePath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\node-sprite.png");
+            return @"resources\node-sprite.png";
         }
 
         string GetNodeLocationMenuTexturePath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\node-locations\menu.png");
+            return @"resources\node-locations\menu.png";
         }
 
         // on device reset

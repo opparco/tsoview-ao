@@ -7,7 +7,6 @@ using System.IO;
 using System.Threading;
 using System.ComponentModel;
 using System.Windows.Forms;
-using System.Text.RegularExpressions;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 using Direct3D = Microsoft.DirectX.Direct3D;
@@ -696,12 +695,12 @@ namespace TDCG
 
         public static string GetModelThumbnailFileName()
         {
-            return Path.Combine(Application.StartupPath, @"model.tdcgsav\thumbnail.png");
+            return @"model.tdcgsav\thumbnail.png";
         }
 
         public static string GetSceneThumbnailFileName()
         {
-            return Path.Combine(Application.StartupPath, @"scene.tdcgpose\thumbnail.png");
+            return @"scene.tdcgpose\thumbnail.png";
         }
 
         public static string GetModelFileName()
@@ -1313,7 +1312,7 @@ namespace TDCG
 
         public static string GetCameraPresetFileName(int i)
         {
-            return Path.Combine(Application.StartupPath, string.Format(@"resources\camera-presets\{0}.txt", i));
+            return string.Format(@"resources\camera-presets\{0}.txt", i);
         }
 
         public void LoadCameraPreset(int i)
@@ -1625,11 +1624,10 @@ namespace TDCG
             };
         }
 
-        bool LoadEffect(string effect_filename, out Effect effect, Macro[] macros = null, EffectPool effect_pool = null)
+        bool LoadEffect(string effect_file, out Effect effect, Macro[] macros = null, EffectPool effect_pool = null)
         {
             effect = null;
 
-            string effect_file = Path.Combine(Application.StartupPath, effect_filename);
             if (!File.Exists(effect_file))
             {
                 Console.WriteLine("File not found: " + effect_file);
@@ -1783,8 +1781,8 @@ namespace TDCG
 
             dev_zbuf = device.DepthStencilSurface;
 
-            nmap_container = new NormalMapContainer(device, Path.Combine(Application.StartupPath, @"resources"));
-            emap_container = new EnvironmentMapContainer(device, Path.Combine(Application.StartupPath, @"resources"));
+            nmap_container = new NormalMapContainer(device, @"resources");
+            emap_container = new EnvironmentMapContainer(device, @"resources");
 
             amb_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             amb_surface = amb_texture.GetSurfaceLevel(0);
@@ -2863,7 +2861,7 @@ namespace TDCG
 
         static string GetRandomTexturePath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\rand.png");
+            return @"resources\rand.png";
         }
 
         void DrawDepthNormalMap()

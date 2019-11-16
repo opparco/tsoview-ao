@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
+
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
@@ -18,22 +18,22 @@ namespace TDCG
 
         static string GetCellTexturePath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\model-mode\cell.png");
+            return @"resources\model-mode\cell.png";
         }
 
         static string GetCharactersTexturePath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\model-mode\chars.png");
+            return @"resources\model-mode\chars.png";
         }
 
         static string GetCursorTexturePath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\model-mode\cursor.png");
+            return @"resources\model-mode\cursor.png";
         }
 
         static string GetDottedTexturePath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\model-mode\dotted.png");
+            return @"resources\model-mode\dotted.png";
         }
 
         Texture cell_texture;

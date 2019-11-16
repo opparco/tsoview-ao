@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
@@ -350,7 +349,7 @@ namespace TDCG
 
         static string GetAssumedTechsPath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\assumed-techs.txt");
+            return @"resources\assumed-techs.txt";
         }
 
         static Dictionary<string, string> techmap;
@@ -379,7 +378,7 @@ namespace TDCG
 
         static string GetParametersPath()
         {
-            return Path.Combine(Application.StartupPath, @"resources\parameters.txt");
+            return @"resources\parameters.txt";
         }
 
         static Dictionary<string, bool> namemap;
