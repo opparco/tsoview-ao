@@ -329,9 +329,10 @@ namespace TDCG
         /// <returns>スキン変形行列の配列</returns>
         public Matrix[] ClipBoneMatrices(TSOSubMesh sub_mesh)
         {
-            Matrix[] matrices = new Matrix[sub_mesh.maxPalettes];
+            int len = sub_mesh.maxPalettes;
+            Matrix[] matrices = new Matrix[len];
 
-            for (int i = 0; i < sub_mesh.maxPalettes; i++)
+            for (int i = 0; i < len; i++)
             {
                 TSONode tso_node = sub_mesh.GetBone(i);
                 TMONode tmo_node;
@@ -348,9 +349,10 @@ namespace TDCG
         /// <returns>スキン変形行列の配列</returns>
         public Matrix[] ClipBoneMatrices(TSOFile tso)
         {
-            Matrix[] matrices = new Matrix[tso.nodes.Length];
+            int len = tso.nodes.Length;
+            Matrix[] matrices = new Matrix[len];
 
-            for (int i = 0; i < tso.nodes.Length; i++)
+            for (int i = 0; i < len; i++)
             {
                 TSONode tso_node = tso.nodes[i];
                 TMONode tmo_node;
