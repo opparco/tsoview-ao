@@ -21,7 +21,7 @@ namespace TDCG
         public Func<string, Texture> FetchNormalMap;
         public Func<string, Texture> FetchEnvironmentMap;
 
-        public Shader current_shader = null;
+        Shader current_shader = null;
 
         public ToonShader(Effect effect)
         {
@@ -47,6 +47,12 @@ namespace TDCG
 
                 //Console.WriteLine(i + " " + tech_name);
             }
+        }
+
+        /// シェーダ設定を解除します。
+        public void RemoveShader()
+        {
+            current_shader = null;
         }
 
         /// <summary>

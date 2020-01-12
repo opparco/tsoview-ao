@@ -2749,7 +2749,7 @@ namespace TDCG
 
         void DrawTSO(Figure fig, TSOFile tso)
         {
-            toon_shader.current_shader = null;
+            toon_shader.RemoveShader();
 
             foreach (TSOMesh mesh in tso.meshes)
                 foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
@@ -2772,7 +2772,7 @@ namespace TDCG
                     }
                     effect.End();
                 }
-            toon_shader.current_shader = null;
+            toon_shader.RemoveShader();
         }
 
         void AssignWorldViewProjection(ref Matrix world)
