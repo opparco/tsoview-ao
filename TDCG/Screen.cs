@@ -63,12 +63,7 @@ namespace TDCG
             vb = new VertexBuffer(typeof(CustomVertex.PositionTextured), vertices.Length, device, Usage.Dynamic | Usage.WriteOnly, CustomVertex.PositionTextured.Format, Pool.Default);
             vb_Created(vb, null);
 
-            Matrix world = Matrix.Translation(-rect.Width / 2, -rect.Height / 2, 0);
-            Matrix view = Matrix.RotationX((float)Math.PI);
-            Matrix projection = Matrix.OrthoRH(rect.Width, rect.Height, 0.0f, 1.0f);
-
-            Matrix world_view = world * view;
-            world_view_projection = world_view * projection;
+            world_view_projection = new Matrix { M11 = 2f / rect.Width, M22 = -2f / rect.Height, M33 = 1f, M44 = 1f, M41 = -1f, M42 = 1f, };
         }
 
         /// uniform wvp を設定
