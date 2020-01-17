@@ -5,7 +5,7 @@ using System.IO;
 
 using Microsoft.DirectX.Direct3D;
 
-namespace TDCG
+namespace TDCG.Editor
 {
     /// ボーンを選択するためのパネルを扱う
     public class NodeLocationCollection

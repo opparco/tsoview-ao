@@ -49,7 +49,6 @@
     <Compile Include="Manipulator.cs" />
     <Compile Include="ModelThumbnail.cs" />
     <Compile Include="NodeFilter.cs" />
-    <Compile Include="NodeLocationCollection.cs" />
     <Compile Include="NormalMapContainer.cs" />
     <Compile Include="PNGFile.cs" />
     <Compile Include="PNGModelSaveWriter.cs" />

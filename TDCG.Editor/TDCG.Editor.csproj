@@ -60,6 +60,7 @@
     <Compile Include="LampRenderer.cs" />
     <Compile Include="Mode.cs" />
     <Compile Include="ModelMode.cs" />
+    <Compile Include="NodeLocationCollection.cs" />
     <Compile Include="NodeRenderer.cs" />
     <Compile Include="Pole.cs" />
     <Compile Include="PoseCommand.cs" />
