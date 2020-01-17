@@ -119,7 +119,7 @@ namespace TDCG
                     //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
                     device.SetStreamSource(0, sub_mesh.vb, 0, 52);
 
-                    dnmap_shader.SwicthShader(shader, tso.GetDirect3dTextureByName);
+                    dnmap_shader.SwitchShader(shader, tso.GetDirect3dTextureByName);
                     effect_dnmap.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh)); // shared
 
                     int npass = effect_dnmap.Begin(0);

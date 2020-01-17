@@ -30,7 +30,7 @@ namespace TDCG
         /// 色テクスチャのみ切り替えます。
         /// </summary>
         /// <param name="shader">シェーダ設定</param>
-        public void SwicthShader(Shader shader, Func<string, Texture> fetch_d3d_texture)
+        public void SwitchShader(Shader shader, Func<string, Texture> fetch_d3d_texture)
         {
             if (shader == current_shader)
                 return;
