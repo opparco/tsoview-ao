@@ -7,7 +7,7 @@ using System.IO;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
-namespace TDCG
+namespace TDCG.Editor
 {
     public class ModelMode : Mode
     {

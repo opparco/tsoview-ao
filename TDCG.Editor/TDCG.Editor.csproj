@@ -57,8 +57,15 @@
   <ItemGroup>
     <Compile Include="Circle.cs" />
     <Compile Include="LampRenderer.cs" />
+    <Compile Include="Mode.cs" />
+    <Compile Include="ModelMode.cs" />
     <Compile Include="NodeRenderer.cs" />
     <Compile Include="Pole.cs" />
+    <Compile Include="PoseMode.cs" />
+    <Compile Include="SceneMode.cs" />
+    <Compile Include="Screen.cs" />
+    <Compile Include="SpriteCellRenderer.cs" />
+    <Compile Include="SpriteRenderer.cs" />
     <Compile Include="Viewer.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -6,7 +6,7 @@ using System.Drawing;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
-namespace TDCG
+namespace TDCG.Editor
 {
     /*
     Model画面, Scene画面でcellを描画するために
@@ -15,7 +15,7 @@ namespace TDCG
     描画先はsnap_texture (snap_surface) である。
     これを矩形で分割するとcell画像となる。
     */
-    public class SnapRenderer
+    public class SpriteCellRenderer
     {
         Device device;
         Sprite sprite;
@@ -23,7 +23,7 @@ namespace TDCG
         Texture snap_texture;
         Surface snap_surface;
 
-        public SnapRenderer(Device device, Sprite sprite)
+        public SpriteCellRenderer(Device device, Sprite sprite)
         {
             this.device = device;
             this.sprite = sprite;
@@ -47,9 +47,9 @@ namespace TDCG
             snap_surface = snap_texture.GetSurfaceLevel(0);
         }
 
-        public void DrawSpriteSnapTSO(Figure fig)
+        public void DrawSpriteTSO(Figure fig)
         {
-            Debug.WriteLine("DrawSpriteSnapTSO");
+            Debug.WriteLine("DrawSpriteTSO");
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
@@ -68,9 +68,9 @@ namespace TDCG
             sprite.End();
         }
 
-        public void DrawSpriteSnapFigure(List<Figure> FigureList)
+        public void DrawSpriteFigure(List<Figure> FigureList)
         {
-            Debug.WriteLine("DrawSpriteSnapFigure");
+            Debug.WriteLine("DrawSpriteFigure");
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 

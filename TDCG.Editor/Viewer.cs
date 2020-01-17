@@ -107,7 +107,7 @@ namespace TDCG.Editor
         DepthNormalMapRenderer dnmap_renderer = null;
         LampRenderer lamp_renderer = null;
         NodeRenderer node_renderer = null;
-        SnapRenderer snap_renderer = null;
+        SpriteCellRenderer sprite_cell_renderer = null;
         SpriteRenderer sprite_renderer = null;
         NodeFilter node_filter = null;
 
@@ -1528,7 +1528,7 @@ namespace TDCG.Editor
             handle_HohoAlpha = effect.GetParameter(null, "HohoAlpha");
             handle_UVSCR = effect.GetParameter(null, "UVSCR");
 
-            snap_renderer = new SnapRenderer(device, sprite);
+            sprite_cell_renderer = new SpriteCellRenderer(device, sprite);
             sprite_renderer = new SpriteRenderer(device, sprite);
 
             node_filter = new NodeFilter();
@@ -1720,8 +1720,8 @@ namespace TDCG.Editor
 
             if (sprite_renderer != null)
                 sprite_renderer.Dispose();
-            if (snap_renderer != null)
-                snap_renderer.Dispose();
+            if (sprite_cell_renderer != null)
+                sprite_cell_renderer.Dispose();
             if (node_renderer != null)
                 node_renderer.Dispose();
             if (lamp_renderer != null)
@@ -1811,7 +1811,7 @@ namespace TDCG.Editor
 
             lamp_renderer.Create(dev_rect, lamp_radius_on_device, lamp_center_on_device);
             node_renderer.Create(dev_rect, node_radius_on_device, selected_node_radius_on_device);
-            snap_renderer.Create(dev_rect);
+            sprite_cell_renderer.Create(dev_rect);
             sprite_renderer.Create(dev_rect);
 
             effect_ao.SetValue("DepthMap_texture", dnmap_renderer.dmap_texture); // in
@@ -2454,7 +2454,7 @@ namespace TDCG.Editor
                     device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
 
                     DrawTSO(fig, tso);
-                    snap_renderer.SnapTSO(idx);
+                    sprite_cell_renderer.SnapTSO(idx);
                 }
             }
         }
@@ -2474,7 +2474,7 @@ namespace TDCG.Editor
                 device.Clear(ClearFlags.Target | ClearFlags.ZBuffer | ClearFlags.Stencil, ScreenColor, 1.0f, 0);
 
                 DrawFigure(fig);
-                snap_renderer.SnapFigure(idx);
+                sprite_cell_renderer.SnapFigure(idx);
 
                 idx++;
             }
@@ -2494,7 +2494,7 @@ namespace TDCG.Editor
             Figure fig;
             if (TryGetFigure(out fig))
             {
-                snap_renderer.DrawSpriteSnapTSO(fig);
+                sprite_cell_renderer.DrawSpriteTSO(fig);
             }
             if (swap_row != -1)
                 sprite_renderer.model_mode.DrawDottedSprite(sprite_renderer.model_mode.SelectedIdx);
@@ -2534,7 +2534,7 @@ namespace TDCG.Editor
 
         void DrawSpritesOnSceneMode()
         {
-            snap_renderer.DrawSpriteSnapFigure(FigureList);
+            sprite_cell_renderer.DrawSpriteFigure(FigureList);
             if (swap_idx != -1)
                 sprite_renderer.scene_mode.DrawDottedSprite(sprite_renderer.scene_mode.SelectedIdx);
             else

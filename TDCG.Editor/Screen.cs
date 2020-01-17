@@ -3,7 +3,7 @@ using System.Drawing;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
-namespace TDCG
+namespace TDCG.Editor
 {
     ///スクリーン全面に描画します。
     public class Screen
