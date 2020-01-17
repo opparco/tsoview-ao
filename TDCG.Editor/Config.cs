@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace TDCG
+namespace TDCG.Editor
 {
     /// カメラ設定
     public class CameraConfig

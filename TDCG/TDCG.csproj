@@ -40,13 +40,11 @@
   -->
   <ItemGroup>
     <Compile Include="BMPSaveData.cs" />
-    <Compile Include="Config.cs" />
     <Compile Include="DepthNormalMapRenderer.cs" />
     <Compile Include="DepthNormalMapShader.cs" />
     <Compile Include="EnvironmentMapContainer.cs" />
     <Compile Include="Figure.cs" />
     <Compile Include="Helper.cs" />
-    <Compile Include="Manipulator.cs" />
     <Compile Include="ModelThumbnail.cs" />
     <Compile Include="NodeFilter.cs" />
     <Compile Include="NormalMapContainer.cs" />

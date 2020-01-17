@@ -57,7 +57,9 @@
   <ItemGroup>
     <Compile Include="Circle.cs" />
     <Compile Include="CommandManager.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="LampRenderer.cs" />
+    <Compile Include="Manipulator.cs" />
     <Compile Include="Mode.cs" />
     <Compile Include="ModelMode.cs" />
     <Compile Include="NodeLocationCollection.cs" />

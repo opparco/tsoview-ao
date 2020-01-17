@@ -4,7 +4,7 @@ using System.Diagnostics;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
-namespace TDCG
+namespace TDCG.Editor
 {
     /// 操作に用いるデバイス
     public enum ManipulatorDeviceType
