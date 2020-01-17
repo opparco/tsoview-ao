@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.DirectX;
 
-namespace TDCG
+namespace TDCG.Editor
 {
     struct TMONodeData
     {

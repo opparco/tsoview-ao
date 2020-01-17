@@ -40,7 +40,6 @@
   -->
   <ItemGroup>
     <Compile Include="BMPSaveData.cs" />
-    <Compile Include="CommandManager.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="DepthNormalMapRenderer.cs" />
     <Compile Include="DepthNormalMapShader.cs" />
@@ -58,7 +57,6 @@
     <Compile Include="PNGSaveLoader.cs" />
     <Compile Include="PNGSceneSaveWriter.cs" />
     <Compile Include="PNGWriter.cs" />
-    <Compile Include="PoseCommand.cs" />
     <Compile Include="SceneThumbnail.cs" />
     <Compile Include="Shader.cs" />
     <Compile Include="SimpleCamera.cs" />
