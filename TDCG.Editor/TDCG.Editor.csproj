@@ -58,6 +58,7 @@
     <Compile Include="Circle.cs" />
     <Compile Include="CommandManager.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="DepthNormalMapRenderer.cs" />
     <Compile Include="LampRenderer.cs" />
     <Compile Include="Manipulator.cs" />
     <Compile Include="Mode.cs" />
