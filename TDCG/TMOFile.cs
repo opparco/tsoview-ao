@@ -44,8 +44,8 @@ namespace TDCG
         /// </summary>
         public Dictionary<string, TMONode> nodemap = new Dictionary<string, TMONode>();
 
-        internal TMONode w_hips_node = null;
-        internal List<TMONode> root_nodes_except_w_hips = new List<TMONode>();
+        public TMONode w_hips_node = null;
+        public List<TMONode> root_nodes_except_w_hips = new List<TMONode>();
 
         /// <summary>
         /// 指定パスに保存します。

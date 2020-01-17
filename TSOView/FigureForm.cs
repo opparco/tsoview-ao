@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.IO;
 using TDCG;
+using TDCG.Editor;
 
 namespace TSOView
 {

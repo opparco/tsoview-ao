@@ -19,7 +19,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
-    <OutputPath>..\Debug\</OutputPath>
+    <OutputPath>..\debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
@@ -79,5 +79,11 @@
     <EmbeddedResource Include="TSOForm.resx">
       <DependentUpon>TSOForm.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TDCG.Editor\TDCG.Editor.csproj">
+      <Project>{64d076d5-5526-4c4f-93e2-8577c0c3c2dd}</Project>
+      <Name>TDCG.Editor</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

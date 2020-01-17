@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSONormal", "TSONormal\TSON
 		{30D26679-E876-46FC-B8C0-E55146316C8C} = {30D26679-E876-46FC-B8C0-E55146316C8C}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TDCG.Editor", "TDCG.Editor\TDCG.Editor.csproj", "{64D076D5-5526-4C4F-93E2-8577C0C3C2DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -47,6 +49,10 @@ Global
 		{4DFD779A-4E55-4F43-9BD8-BFE56FDB677B}.Debug|x86.Build.0 = Debug|x86
 		{4DFD779A-4E55-4F43-9BD8-BFE56FDB677B}.Release|x86.ActiveCfg = Release|x86
 		{4DFD779A-4E55-4F43-9BD8-BFE56FDB677B}.Release|x86.Build.0 = Release|x86
+		{64D076D5-5526-4C4F-93E2-8577C0C3C2DD}.Debug|x86.ActiveCfg = Debug|x86
+		{64D076D5-5526-4C4F-93E2-8577C0C3C2DD}.Debug|x86.Build.0 = Debug|x86
+		{64D076D5-5526-4C4F-93E2-8577C0C3C2DD}.Release|x86.ActiveCfg = Release|x86
+		{64D076D5-5526-4C4F-93E2-8577C0C3C2DD}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

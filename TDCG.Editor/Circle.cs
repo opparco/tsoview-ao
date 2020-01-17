@@ -3,7 +3,7 @@ using System.Diagnostics;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
-namespace TDCG
+namespace TDCG.Editor
 {
     /// <summary>
     /// 円を描画します。

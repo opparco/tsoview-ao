@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
-namespace TDCG
+namespace TDCG.Editor
 {
     /// モデル上に重ねてボーンを描画する
     public class NodeRenderer

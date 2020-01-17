@@ -40,7 +40,6 @@
   -->
   <ItemGroup>
     <Compile Include="BMPSaveData.cs" />
-    <Compile Include="Circle.cs" />
     <Compile Include="CommandManager.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="DepthNormalMapRenderer.cs" />
@@ -48,14 +47,12 @@
     <Compile Include="EnvironmentMapContainer.cs" />
     <Compile Include="Figure.cs" />
     <Compile Include="Helper.cs" />
-    <Compile Include="LampRenderer.cs" />
     <Compile Include="Manipulator.cs" />
     <Compile Include="ModelMode.cs" />
     <Compile Include="ModelThumbnail.cs" />
     <Compile Include="Mode.cs" />
     <Compile Include="NodeFilter.cs" />
     <Compile Include="NodeLocationCollection.cs" />
-    <Compile Include="NodeRenderer.cs" />
     <Compile Include="NormalMapContainer.cs" />
     <Compile Include="PNGFile.cs" />
     <Compile Include="PNGModelSaveWriter.cs" />
@@ -63,7 +60,6 @@
     <Compile Include="PNGSaveLoader.cs" />
     <Compile Include="PNGSceneSaveWriter.cs" />
     <Compile Include="PNGWriter.cs" />
-    <Compile Include="Pole.cs" />
     <Compile Include="PoseMode.cs" />
     <Compile Include="PoseCommand.cs" />
     <Compile Include="SceneMode.cs" />
@@ -79,7 +75,6 @@
     <Compile Include="TMOFile.cs" />
     <Compile Include="ToonShader.cs" />
     <Compile Include="TSOFile.cs" />
-    <Compile Include="Viewer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.4.369, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">

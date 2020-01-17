@@ -1,7 +1,7 @@
-﻿using System;
-using System.Globalization;
+using System;
 using System.Windows.Forms;
 using TDCG;
+using TDCG.Editor;
 
 namespace TSOView
 {
