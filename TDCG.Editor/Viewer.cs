@@ -2879,7 +2879,7 @@ namespace TDCG.Editor
 
             device.VertexDeclaration = vd;
 
-            dnmap_renderer.Draw(FigureList);
+            dnmap_renderer.DrawFigureList(FigureList);
 
             // restore
             device.SetRenderTarget(0, dev_surface);

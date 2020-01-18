@@ -105,7 +105,7 @@ namespace TDCG.Editor
 
         void DrawTSO(Figure fig, TSOFile tso)
         {
-            dnmap_shader.current_shader = null;
+            dnmap_shader.RemoveShader();
 
             foreach (TSOMesh mesh in tso.meshes)
                 foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
@@ -131,7 +131,7 @@ namespace TDCG.Editor
                     }
                     effect_dnmap.End();
                 }
-            dnmap_shader.current_shader = null;
+            dnmap_shader.RemoveShader();
         }
 
         void AssignWorldViewProjection(ref Matrix world)
@@ -163,7 +163,7 @@ namespace TDCG.Editor
         // draw depthmap and normalmap
         // out dmap_surface
         // out nmap_surface
-        public void Draw(List<Figure> FigureList)
+        public void DrawFigureList(List<Figure> FigureList)
         {
             foreach (Figure fig in FigureList)
             {

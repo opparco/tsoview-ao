@@ -25,6 +25,12 @@ namespace TDCG
             handle_NormalMap_texture = effect.GetParameter(null, "NormalMap_texture");
         }
 
+        /// シェーダ設定を解除します。
+        public void RemoveShader()
+        {
+            current_shader = null;
+        }
+
         /// <summary>
         /// dnmap 向けにシェーダ設定を切り替えます。
         /// 色テクスチャのみ切り替えます。
