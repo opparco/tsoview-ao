@@ -2509,21 +2509,12 @@ namespace TDCG.Editor
             {
                 device.SetRenderState(RenderStates.AlphaBlendEnable, true);
 
-                Matrix world;
-                fig.GetWorldMatrix(out world);
-
                 Matrix camera_rotation = camera.RotationMatrix;
                 node_renderer.SetTransform(projection_mode, ref camera_rotation);
                 node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
 
-                TMONode node = fig.Tmo.FindNodeByName("face_oya");
-                if (node != null)
-                {
-                    Vector3 position = node.GetWorldPosition();
-                    position.Y += 5.0f;
-                    lamp_renderer.SetTransform(projection_mode, ref camera_rotation);
-                    lamp_renderer.Render(fig, ref position, ref world);
-                }
+                lamp_renderer.SetTransform(projection_mode, ref camera_rotation);
+                lamp_renderer.Render(fig);
             }
             // draw manipulator.NodePower
             sprite.Transform = Matrix.Scaling(dev_rect.Width / 1024.0f, dev_rect.Height / 768.0f, 1.0f);

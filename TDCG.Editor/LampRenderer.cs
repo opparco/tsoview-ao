@@ -71,38 +71,8 @@ namespace TDCG.Editor
             this.camera_rotation = camera_rotation;
         }
 
-        void GetWorldViewMatrix(float scale, ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world, out Matrix world_view_matrix)
+        void DrawLampPole(ref Matrix world_rotation)
         {
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * world_rotation;
-
-            // translation
-            world_matrix.M41 = world_position.X;
-            world_matrix.M42 = world_position.Y;
-            world_matrix.M43 = world_position.Z;
-
-            world_view_matrix = world_matrix * world * device.Transform.View;
-        }
-
-        float UnprojectScaling(ref Matrix world_view_matrix)
-        {
-            float d;
-            if (projection_mode == ProjectionMode.Ortho)
-                d = 1.0f;
-            else
-                d = -world_view_matrix.M43;
-            return d / device.Transform.Projection.M22;
-        }
-
-        void DrawLampPole(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
-        {
-#if false
-            float scale = lamp_circle_scale;
-            Matrix world_view_matrix;
-            GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
-            scale *= UnprojectScaling(ref world_view_matrix);
-            GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
-            Matrix world_view_projection_matrix = world_view_matrix * transform_projection;
-#endif
             float scale = lamp_radius;
             Matrix lamp_scaling = Matrix.Scaling(scale, scale, scale);
 
@@ -121,16 +91,8 @@ namespace TDCG.Editor
             pole.Draw(effect_pole);
         }
 
-        void DrawLampCircleW(ref Vector3 world_position, ref Matrix world)
+        void DrawLampCircleW()
         {
-#if false
-            float scale = lamp_circle_scale;
-            Matrix world_view_matrix;
-            GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
-            scale *= UnprojectScaling(ref world_view_matrix);
-            GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
-            Matrix world_view_projection_matrix = world_view_matrix * transform_projection;
-#endif
             float scale = lamp_radius;
             Matrix lamp_scaling = Matrix.Scaling(scale, scale, scale);
 
@@ -151,12 +113,11 @@ namespace TDCG.Editor
 
         //モデル上に重ねてランプを描画する
         //@param fig: ランプを描画するモデル
-        public void Render(Figure fig, ref Vector3 world_position, ref Matrix world)
+        public void Render(Figure fig)
         {
             Matrix world_rotation = Matrix.RotationQuaternion(fig.LampRotation);
-            DrawLampPole(ref world_position, ref world_rotation, ref world);
-            DrawLampCircleW(ref world_position, ref world);
+            DrawLampPole(ref world_rotation);
+            DrawLampCircleW();
         }
     }
 }
-
