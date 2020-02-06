@@ -209,19 +209,10 @@ namespace TDCG
         }
 
         /// <summary>
-        /// 頂点をDirect3Dバッファに書き込みます。
-        /// </summary>
-        public void WriteBuffer()
-        {
-            if (vb != null)
-                WriteBuffer(vb.Device);
-        }
-
-        /// <summary>
-        /// 頂点をDirect3Dバッファに書き込みます。
+        /// Direct3Dバッファを作成します。
         /// </summary>
         /// <param name="device">device</param>
-        public void WriteBuffer(Device device)
+        public void CreateD3DBuffers(Device device)
         {
             if (vb != null)
                 vb.Dispose();
@@ -945,10 +936,10 @@ namespace TDCG
         }
 
         /// <summary>
-        /// 指定deviceで開きます。
+        /// 指定device上でDirect3Dテクスチャを作成します。
         /// </summary>
         /// <param name="device">device</param>
-        public void Open(Device device)
+        public void CreateD3DTexture(Device device)
         {
             /*
             string dest_file = file.Trim('"');
@@ -1469,18 +1460,18 @@ namespace TDCG
         }
 
         /// <summary>
-        /// 指定device上で開きます。
+        /// 指定device上でDirect3D Resourcesを作成します。
         /// </summary>
         /// <param name="device">device</param>
-        public void Open(Device device)
+        public void CreateD3DResources(Device device)
         {
             foreach (TSOMesh mesh in meshes)
             foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
-                sub_mesh.WriteBuffer(device);
+                sub_mesh.CreateD3DBuffers(device);
 
             foreach (TSOTexture tex in textures)
             {
-                tex.Open(device);
+                tex.CreateD3DTexture(device);
             }
             GenerateDirect3dTexturemap();
         }

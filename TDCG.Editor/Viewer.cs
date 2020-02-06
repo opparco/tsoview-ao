@@ -942,7 +942,7 @@ namespace TDCG.Editor
             Figure fig = new Figure();
             foreach (TSOFile tso in tso_list)
             {
-                tso.Open(device);
+                tso.CreateD3DResources(device);
                 fig.TsoList.Add(tso);
             }
             int len = FigureList.Count;
@@ -1072,7 +1072,7 @@ namespace TDCG.Editor
                 Console.WriteLine("Error: " + ex);
             }
 
-            tso.Open(device);
+            tso.CreateD3DResources(device);
 
             Figure fig = GetSelectedFigure();
             int idx = sprite_renderer.scene_mode.SelectedIdx;
@@ -1237,7 +1237,7 @@ namespace TDCG.Editor
             {
                 Figure fig = savedata.figures[0];
                 foreach (TSOFile tso in fig.TsoList)
-                    tso.Open(device);
+                    tso.CreateD3DResources(device);
 
                 int len = FigureList.Count;
                 int idx = sprite_renderer.scene_mode.SelectedIdx;
@@ -1293,7 +1293,7 @@ namespace TDCG.Editor
                 foreach (Figure fig in savedata.figures)
                 {
                     foreach (TSOFile tso in fig.TsoList)
-                        tso.Open(device);
+                        tso.CreateD3DResources(device);
 
                     //todo: override List#Add
                     FigureList.Add(fig);

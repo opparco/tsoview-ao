@@ -110,12 +110,6 @@ namespace TDCG
             }
         }
 
-        internal void WriteBuffer()
-        {
-            foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
-                sub_mesh.WriteBuffer();
-        }
-
         // 頂点位置を元に面法線を計算する。
         //      update MqoFace#normal
         //
