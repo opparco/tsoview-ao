@@ -75,12 +75,12 @@ namespace TDCG
         {
             float[] floats = new float[7];
 
-            floats[0] = slider_matrix.AgeRatio;
-            floats[1] = slider_matrix.ArmRatio;
-            floats[2] = slider_matrix.LegRatio;
-            floats[3] = slider_matrix.WaistRatio;
-            floats[4] = slider_matrix.OppaiRatio;
-            floats[5] = slider_matrix.EyeRatio;
+            floats[0] = slider_matrix.AgeRate;
+            floats[1] = slider_matrix.ArmRate;
+            floats[2] = slider_matrix.LegRate;
+            floats[3] = slider_matrix.WaistRate;
+            floats[4] = slider_matrix.OppaiRate;
+            floats[5] = slider_matrix.EyeRate;
             floats[6] = 0.5f; // やわらか
 
             byte[] figu = ToBytes(floats);

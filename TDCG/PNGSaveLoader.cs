@@ -154,12 +154,12 @@ namespace TDCG
                     SliderMatrix slider_matrix = fig.SliderMatrix;
                     if (slider_matrix != null)
                     {
-                        slider_matrix.AgeRatio = ratios[0];
-                        slider_matrix.ArmRatio = ratios[1];
-                        slider_matrix.LegRatio = ratios[2];
-                        slider_matrix.WaistRatio = ratios[3];
-                        slider_matrix.OppaiRatio = ratios[4];
-                        slider_matrix.EyeRatio = ratios[5];
+                        slider_matrix.AgeRate = ratios[0];
+                        slider_matrix.ArmRate = ratios[1];
+                        slider_matrix.LegRate = ratios[2];
+                        slider_matrix.WaistRate = ratios[3];
+                        slider_matrix.OppaiRate = ratios[4];
+                        slider_matrix.EyeRate = ratios[5];
                     }
                 };
                 png.Ftso += delegate (Stream dest, int extract_length, byte[] opt1)
@@ -182,12 +182,12 @@ namespace TDCG
                     SliderMatrix slider_matrix = fig.SliderMatrix;
                     if (slider_matrix != null && data.bitmap.Size == new Size(128, 256))
                     {
-                        slider_matrix.AgeRatio = data.GetSliderValue(4);
-                        slider_matrix.ArmRatio = data.GetSliderValue(5);
-                        slider_matrix.LegRatio = data.GetSliderValue(6);
-                        slider_matrix.WaistRatio = data.GetSliderValue(7);
-                        slider_matrix.OppaiRatio = data.GetSliderValue(0);
-                        slider_matrix.EyeRatio = data.GetSliderValue(8);
+                        slider_matrix.AgeRate = data.GetSliderValue(4);
+                        slider_matrix.ArmRate = data.GetSliderValue(5);
+                        slider_matrix.LegRate = data.GetSliderValue(6);
+                        slider_matrix.WaistRate = data.GetSliderValue(7);
+                        slider_matrix.OppaiRate = data.GetSliderValue(0);
+                        slider_matrix.EyeRate = data.GetSliderValue(8);
                     }
 
                     foreach (TSOFile tso in fig.TsoList)

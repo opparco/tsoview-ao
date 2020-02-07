@@ -750,15 +750,15 @@ namespace TDCG.Editor
                     data.SetFileName(i, "(none)");
                 }
                 SliderMatrix slider_matrix = fig.SliderMatrix;
-                data.SetSliderValue(0, slider_matrix.OppaiRatio);
+                data.SetSliderValue(0, slider_matrix.OppaiRate);
                 data.SetBytes(1, BitConverter.GetBytes((uint)3));
                 data.SetBytes(2, BitConverter.GetBytes((uint)0x39AA5963));
                 //3: key1
-                data.SetSliderValue(4, slider_matrix.AgeRatio);
-                data.SetSliderValue(5, slider_matrix.ArmRatio);
-                data.SetSliderValue(6, slider_matrix.LegRatio);
-                data.SetSliderValue(7, slider_matrix.WaistRatio);
-                data.SetSliderValue(8, slider_matrix.EyeRatio);
+                data.SetSliderValue(4, slider_matrix.AgeRate);
+                data.SetSliderValue(5, slider_matrix.ArmRate);
+                data.SetSliderValue(6, slider_matrix.LegRate);
+                data.SetSliderValue(7, slider_matrix.WaistRate);
+                data.SetSliderValue(8, slider_matrix.EyeRate);
                 data.SetBytes(9, BitConverter.GetBytes((uint)0x31415926));
                 //10: key2
                 data.SetSliderValue(11, 0.5f); // やわらか
