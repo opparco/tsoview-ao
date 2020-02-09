@@ -31,7 +31,15 @@ namespace TDCG
         /// <summary>
         /// 角度
         /// </summary>
-        public Vector3 Angle { get { return angle; } set { angle = value; } }
+        public Vector3 Angle
+        {
+            get { return angle; }
+            set
+            {
+                angle = value;
+                need_update = true;
+            }
+        }
 
         /// <summary>
         /// 回転中心

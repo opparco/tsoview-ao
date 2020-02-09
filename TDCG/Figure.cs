@@ -390,7 +390,9 @@ namespace TDCG
             get { return ToVector4(LightDirection); }
         }
 
-
+        /// <summary>
+        /// 姉妹スライダを基にワールド行列を得ます。
+        /// </summary>
         public void GetWorldMatrix(out Matrix m)
         {
             m = Matrix.Identity;

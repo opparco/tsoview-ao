@@ -1195,6 +1195,11 @@ namespace TDCG.Editor
             }
         }
 
+        static void Dump(ref Vector3 v)
+        {
+                    Console.WriteLine("{0:F4} {1:F4} {2:F4}", v.X, v.Y, v.Z);
+        }
+
         /// <summary>
         /// 指定パスからPNGFileを読み込みます。
         /// </summary>
@@ -1211,6 +1216,11 @@ namespace TDCG.Editor
             if (savedata.CameraDescription != null)
             {
                 savedata.CameraDescription.Angle.Z = CameraConfig.Roll;
+
+                    Console.WriteLine("-- translation");
+                    Dump(ref savedata.CameraDescription.Translation);
+                    Console.WriteLine("-- angle");
+                    Dump(ref savedata.CameraDescription.Angle);
 
                 camera.Reset();
                 camera.Translation = savedata.CameraDescription.Translation;
