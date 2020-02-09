@@ -1451,7 +1451,7 @@ namespace TDCG
                 return null;
         }
 
-        internal void GenerateDirect3dTexturemap()
+        void GenerateD3DTexturemap()
         {
             d3d_texturemap = new Dictionary<string, Texture>();
 
@@ -1470,10 +1470,9 @@ namespace TDCG
                 sub_mesh.CreateD3DBuffers(device);
 
             foreach (TSOTexture tex in textures)
-            {
                 tex.CreateD3DTexture(device);
-            }
-            GenerateDirect3dTexturemap();
+
+            GenerateD3DTexturemap();
         }
 
         /// <summary>

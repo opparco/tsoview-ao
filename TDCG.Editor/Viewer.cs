@@ -2408,16 +2408,6 @@ namespace TDCG.Editor
         /// </summary>
         public bool NeedRender { get { return need_render; } }
 
-        void AssignWorldViewProjection()
-        {
-            Matrix world_view_matrix = world_matrix * device.Transform.View;
-            Matrix world_view_projection_matrix = world_view_matrix * device.Transform.Projection;
-
-            effect.SetValue("wld", world_matrix);
-            effect.SetValue("wv", world_view_matrix);
-            effect.SetValue("wvp", world_view_projection_matrix);
-        }
-
         //選択中のパネル上にあるボーン配列を得る
         TMONode[] GetDrawableNodes(TMOFile tmo)
         {
@@ -2447,6 +2437,14 @@ namespace TDCG.Editor
             Figure fig;
             if (TryGetFigure(out fig))
             {
+                {
+                    Matrix world;
+                    fig.GetWorldMatrix(out world);
+
+                    AssignWorldViewProjection(ref world);
+                }
+                effect.SetValue(handle_LightDirForced, fig.LightDirForced);
+
                 foreach (TSOFile tso in fig.TsoList)
                 {
                     int idx = tso.Row;
@@ -2612,8 +2610,6 @@ namespace TDCG.Editor
 
             Debug.WriteLine("-- device BeginScene --");
             device.BeginScene();
-
-            AssignWorldViewProjection();
 
             if (sprite_enabled)
                 Snap();
