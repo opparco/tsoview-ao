@@ -319,7 +319,7 @@ public class Viewer : IDisposable
         device.SetRenderState(RenderStates.SourceBlend, (int)Blend.SourceAlpha);
         device.SetRenderState(RenderStates.DestinationBlend, (int)Blend.InvSourceAlpha);
         device.SetRenderState(RenderStates.AlphaTestEnable, true);
-        device.SetRenderState(RenderStates.ReferenceAlpha, 0x08);
+        device.SetRenderState(RenderStates.ReferenceAlpha, 0x40);
         device.SetRenderState(RenderStates.AlphaFunction, (int)Compare.GreaterEqual);
     }
 
