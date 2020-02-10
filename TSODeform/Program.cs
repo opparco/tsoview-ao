@@ -52,12 +52,12 @@ namespace TSODeform
                     6: やわらか
                  */
                 SliderMatrix slider_matrix = fig.SliderMatrix;
-                slider_matrix.AgeRate = ratios[0];
-                slider_matrix.ArmRate = ratios[1];
-                slider_matrix.LegRate = ratios[2];
-                slider_matrix.WaistRate = ratios[3];
-                slider_matrix.OppaiRate = ratios[4];
-                slider_matrix.EyeRate = ratios[5];
+                slider_matrix.AgeRatio = ratios[0];
+                slider_matrix.ArmRatio = ratios[1];
+                slider_matrix.LegRatio = ratios[2];
+                slider_matrix.WaistRatio = ratios[3];
+                slider_matrix.OppaiRatio = ratios[4];
+                slider_matrix.EyeRatio = ratios[5];
             }
             fig.UpdateNodeMap();
             if (fig_file != null)

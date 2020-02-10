@@ -67,12 +67,12 @@ namespace TSOView
             SliderMatrix slider_matrix = fig.SliderMatrix;
             if (slider_matrix != null)
             {
-                this.tbSlideArm.Value = (int)(slider_matrix.ArmRate * (float)tbSlideArm.Maximum);
-                this.tbSlideLeg.Value = (int)(slider_matrix.LegRate * (float)tbSlideLeg.Maximum);
-                this.tbSlideWaist.Value = (int)(slider_matrix.WaistRate * (float)tbSlideWaist.Maximum);
-                this.tbSlideOppai.Value = (int)(slider_matrix.OppaiRate * (float)tbSlideOppai.Maximum);
-                this.tbSlideAge.Value = (int)(slider_matrix.AgeRate * (float)tbSlideAge.Maximum);
-                this.tbSlideEye.Value = (int)(slider_matrix.EyeRate * (float)tbSlideEye.Maximum);
+                this.tbSlideArm.Value = (int)(slider_matrix.ArmRatio * (float)tbSlideArm.Maximum);
+                this.tbSlideLeg.Value = (int)(slider_matrix.LegRatio * (float)tbSlideLeg.Maximum);
+                this.tbSlideWaist.Value = (int)(slider_matrix.WaistRatio * (float)tbSlideWaist.Maximum);
+                this.tbSlideOppai.Value = (int)(slider_matrix.OppaiRatio * (float)tbSlideOppai.Maximum);
+                this.tbSlideAge.Value = (int)(slider_matrix.AgeRatio * (float)tbSlideAge.Maximum);
+                this.tbSlideEye.Value = (int)(slider_matrix.EyeRatio * (float)tbSlideEye.Maximum);
             }
             lvTSOFiles.Items.Clear();
             for (int i = 0; i < fig.TsoList.Count; i++)
@@ -172,7 +172,7 @@ namespace TSOView
             if (fig == null)
                 return;
 
-            fig.SliderMatrix.ArmRate = tbSlideArm.Value / (float)tbSlideArm.Maximum;
+            fig.SliderMatrix.ArmRatio = tbSlideArm.Value / (float)tbSlideArm.Maximum;
             fig.UpdateBoneMatrices();
         }
 
@@ -181,7 +181,7 @@ namespace TSOView
             if (fig == null)
                 return;
 
-            fig.SliderMatrix.LegRate = tbSlideLeg.Value / (float)tbSlideLeg.Maximum;
+            fig.SliderMatrix.LegRatio = tbSlideLeg.Value / (float)tbSlideLeg.Maximum;
             fig.UpdateBoneMatrices();
         }
 
@@ -190,7 +190,7 @@ namespace TSOView
             if (fig == null)
                 return;
 
-            fig.SliderMatrix.WaistRate = tbSlideWaist.Value / (float)tbSlideWaist.Maximum;
+            fig.SliderMatrix.WaistRatio = tbSlideWaist.Value / (float)tbSlideWaist.Maximum;
             fig.UpdateBoneMatrices();
         }
 
@@ -199,7 +199,7 @@ namespace TSOView
             if (fig == null)
                 return;
 
-            fig.SliderMatrix.OppaiRate = tbSlideOppai.Value / (float)tbSlideOppai.Maximum;
+            fig.SliderMatrix.OppaiRatio = tbSlideOppai.Value / (float)tbSlideOppai.Maximum;
             fig.UpdateBoneMatrices();
         }
 
@@ -208,7 +208,7 @@ namespace TSOView
             if (fig == null)
                 return;
 
-            fig.SliderMatrix.AgeRate = tbSlideAge.Value / (float)tbSlideAge.Maximum;
+            fig.SliderMatrix.AgeRatio = tbSlideAge.Value / (float)tbSlideAge.Maximum;
             fig.UpdateBoneMatrices();
         }
 
@@ -217,7 +217,7 @@ namespace TSOView
             if (fig == null)
                 return;
 
-            fig.SliderMatrix.EyeRate = tbSlideEye.Value / (float)tbSlideEye.Maximum;
+            fig.SliderMatrix.EyeRatio = tbSlideEye.Value / (float)tbSlideEye.Maximum;
             fig.UpdateBoneMatrices();
         }
 
