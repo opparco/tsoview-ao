@@ -135,14 +135,14 @@ namespace TDCG.Editor
             sprite.End();
         }
 
-        public void DrawCursorSprite(int idx)
+        public void DrawCursorSprite()
         {
-            DrawSprite(cursor_texture, idx);
+            DrawSprite(cursor_texture, selected_idx);
         }
 
-        public void DrawDottedSprite(int idx)
+        public void DrawDottedSprite()
         {
-            DrawSprite(dotted_texture, idx);
+            DrawSprite(dotted_texture, selected_idx);
         }
 
         public override void Render()

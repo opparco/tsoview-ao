@@ -2505,9 +2505,9 @@ namespace TDCG.Editor
                 sprite_cell_renderer.DrawSpriteTSO(fig);
             }
             if (swap_row != -1)
-                sprite_renderer.model_mode.DrawDottedSprite(sprite_renderer.model_mode.SelectedIdx);
+                sprite_renderer.model_mode.DrawDottedSprite();
             else
-                sprite_renderer.model_mode.DrawCursorSprite(sprite_renderer.model_mode.SelectedIdx);
+                sprite_renderer.model_mode.DrawCursorSprite();
         }
 
         void DrawSpritesOnPoseMode()
@@ -2535,9 +2535,9 @@ namespace TDCG.Editor
         {
             sprite_cell_renderer.DrawSpriteFigure(FigureList);
             if (swap_idx != -1)
-                sprite_renderer.scene_mode.DrawDottedSprite(sprite_renderer.scene_mode.SelectedIdx);
+                sprite_renderer.scene_mode.DrawDottedSprite();
             else
-                sprite_renderer.scene_mode.DrawCursorSprite(sprite_renderer.scene_mode.SelectedIdx);
+                sprite_renderer.scene_mode.DrawCursorSprite();
         }
 
         void DrawModeSprite()
