@@ -4,40 +4,40 @@ using System.Diagnostics;
 
 namespace TDCG.Editor
 {
-    /// ‘€ì‚ğˆµ‚¢‚Ü‚·B
+    /// æ“ä½œã‚’æ‰±ã„ã¾ã™ã€‚
     public interface ICommand
     {
-        /// Œ³‚É–ß‚·B
+        /// å…ƒã«æˆ»ã™ã€‚
         void Undo();
 
-        /// ‚â‚è’¼‚·B
+        /// ã‚„ã‚Šç›´ã™ã€‚
         void Redo();
 
-        /// Às‚·‚éB
+        /// å®Ÿè¡Œã™ã‚‹ã€‚
         bool Execute();
     }
 
-    /// ‘€ì‚ğŠÇ—‚µ‚Ü‚·B
+    /// æ“ä½œã‚’ç®¡ç†ã—ã¾ã™ã€‚
     public class CommandManager
     {
-        /// ‘€ìƒŠƒXƒg
+        /// æ“ä½œãƒªã‚¹ãƒˆ
         public List<ICommand> commands = new List<ICommand>();
         int command_id = 0;
 
-        /// ‘€ì‚ğÁ‹‚µ‚Ü‚·B
+        /// æ“ä½œã‚’æ¶ˆå»ã—ã¾ã™ã€‚
         public void ClearCommands()
         {
             commands.Clear();
             command_id = 0;
         }
 
-        /// ‚Ğ‚Æ‚Â‘O‚Ì‘€ì‚É‚æ‚é•ÏX‚ğŒ³‚É–ß‚¹‚é‚©B
+        /// ã²ã¨ã¤å‰ã®æ“ä½œã«ã‚ˆã‚‹å¤‰æ›´ã‚’å…ƒã«æˆ»ã›ã‚‹ã‹ã€‚
         public bool CanUndo()
         {
             return (command_id > 0);
         }
 
-        /// ‚Ğ‚Æ‚Â‘O‚Ì‘€ì‚É‚æ‚é•ÏX‚ğŒ³‚É–ß‚µ‚Ü‚·B
+        /// ã²ã¨ã¤å‰ã®æ“ä½œã«ã‚ˆã‚‹å¤‰æ›´ã‚’å…ƒã«æˆ»ã—ã¾ã™ã€‚
         public void Undo()
         {
             if (!CanUndo())
@@ -47,19 +47,19 @@ namespace TDCG.Editor
             Undo(commands[command_id]);
         }
 
-        /// w’è‘€ì‚É‚æ‚é•ÏX‚ğŒ³‚É–ß‚µ‚Ü‚·B
+        /// æŒ‡å®šæ“ä½œã«ã‚ˆã‚‹å¤‰æ›´ã‚’å…ƒã«æˆ»ã—ã¾ã™ã€‚
         public void Undo(ICommand command)
         {
             command.Undo();
         }
 
-        /// ‚Ğ‚Æ‚Â‘O‚Ì‘€ì‚É‚æ‚é•ÏX‚ğ‚â‚è’¼‚¹‚é‚©B
+        /// ã²ã¨ã¤å‰ã®æ“ä½œã«ã‚ˆã‚‹å¤‰æ›´ã‚’ã‚„ã‚Šç›´ã›ã‚‹ã‹ã€‚
         public bool CanRedo()
         {
             return (command_id < commands.Count);
         }
 
-        /// ‚Ğ‚Æ‚Â‘O‚Ì‘€ì‚É‚æ‚é•ÏX‚ğ‚â‚è’¼‚µ‚Ü‚·B
+        /// ã²ã¨ã¤å‰ã®æ“ä½œã«ã‚ˆã‚‹å¤‰æ›´ã‚’ã‚„ã‚Šç›´ã—ã¾ã™ã€‚
         public void Redo()
         {
             if (!CanRedo())
@@ -69,13 +69,13 @@ namespace TDCG.Editor
             command_id++;
         }
 
-        /// w’è‘€ì‚É‚æ‚é•ÏX‚ğ‚â‚è’¼‚µ‚Ü‚·B
+        /// æŒ‡å®šæ“ä½œã«ã‚ˆã‚‹å¤‰æ›´ã‚’ã‚„ã‚Šç›´ã—ã¾ã™ã€‚
         public void Redo(ICommand command)
         {
             command.Redo();
         }
 
-        /// w’è‘€ì‚ğÀs‚µ‚Ü‚·B
+        /// æŒ‡å®šæ“ä½œã‚’å®Ÿè¡Œã—ã¾ã™ã€‚
         public void Execute(ICommand command)
         {
             if (command.Execute())
