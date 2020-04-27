@@ -9,7 +9,7 @@ using Microsoft.DirectX.Direct3D;
 
 namespace TDCG.Editor
 {
-    /// モデル上に重ねてランプを描画する
+    /// ランプを描画する
     public class LampRenderer
     {
         Device device;
@@ -62,21 +62,25 @@ namespace TDCG.Editor
 
         ProjectionMode projection_mode = ProjectionMode.Perspective;
 
-        /// camera回転行列
+        /// カメラ回転行列
         Matrix camera_rotation = Matrix.Identity;
 
-        public void SetTransform(ProjectionMode projection_mode, ref Matrix camera_rotation)
+        /// ランプ回転行列
+        Matrix lamp_rotation = Matrix.Identity;
+
+        public void SetTransform(ProjectionMode projection_mode, ref Matrix camera_rotation, ref Matrix lamp_rotation)
         {
             this.projection_mode = projection_mode;
             this.camera_rotation = camera_rotation;
+            this.lamp_rotation = lamp_rotation;
         }
 
-        void DrawLampPole(ref Matrix world_rotation)
+        void DrawLampPole()
         {
             float scale = lamp_radius;
             Matrix lamp_scaling = Matrix.Scaling(scale, scale, scale);
 
-            Matrix world_view_matrix = world_rotation * Matrix.Invert(camera_rotation);
+            Matrix world_view_matrix = lamp_rotation * Matrix.Invert(camera_rotation);
             world_view_matrix.M43 = -1.0f;
             world_view_matrix = world_view_matrix * lamp_scaling;
             world_view_matrix.M41 = -device_rect.Width / 2 + lamp_center.X;
@@ -111,12 +115,10 @@ namespace TDCG.Editor
             circle.Draw(effect_circle);
         }
 
-        //モデル上に重ねてランプを描画する
-        //@param fig: ランプを描画するモデル
-        public void Render(Figure fig)
+        //ランプを描画する
+        public void Render()
         {
-            Matrix world_rotation = Matrix.RotationQuaternion(fig.LampRotation);
-            DrawLampPole(ref world_rotation);
+            DrawLampPole();
             DrawLampCircleW();
         }
     }

@@ -9,7 +9,7 @@ using Microsoft.DirectX.Direct3D;
 
 namespace TDCG.Editor
 {
-    /// モデル上に重ねてボーンを描画する
+    /// ボーンを描画する
     public class NodeRenderer
     {
         Device device;
@@ -54,25 +54,29 @@ namespace TDCG.Editor
 
         ProjectionMode projection_mode = ProjectionMode.Perspective;
 
-        /// camera回転行列
+        /// カメラ回転行列
         Matrix camera_rotation = Matrix.Identity;
 
-        public void SetTransform(ProjectionMode projection_mode, ref Matrix camera_rotation)
+        /// フィギュアワールド行列
+        Matrix fig_world = Matrix.Identity;
+
+        public void SetTransform(ProjectionMode projection_mode, ref Matrix camera_rotation, ref Matrix fig_world)
         {
             this.projection_mode = projection_mode;
             this.camera_rotation = camera_rotation;
+            this.fig_world = fig_world;
         }
 
-        void GetWorldViewMatrix(float scale, ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world, out Matrix world_view_matrix)
+        void GetWorldViewMatrix(float scale, ref Vector3 world_position, ref Matrix world_rotation, out Matrix world_view_matrix)
         {
-            Matrix world_matrix = Matrix.Scaling(scale, scale, scale) * world_rotation;
+            Matrix world = Matrix.Scaling(scale, scale, scale) * world_rotation;
 
             // translation
-            world_matrix.M41 = world_position.X;
-            world_matrix.M42 = world_position.Y;
-            world_matrix.M43 = world_position.Z;
+            world.M41 = world_position.X;
+            world.M42 = world_position.Y;
+            world.M43 = world_position.Z;
 
-            world_view_matrix = world_matrix * world * device.Transform.View;
+            world_view_matrix = world * fig_world * device.Transform.View;
         }
 
         float UnprojectScaling(ref Matrix world_view_matrix)
@@ -85,12 +89,12 @@ namespace TDCG.Editor
             return d / device.Transform.Projection.M22;
         }
 
-        void DrawNodePoleAny(float scale, ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world, ref Vector4 col)
+        void DrawNodePoleAny(float scale, ref Vector3 world_position, ref Matrix world_rotation, ref Vector4 col)
         {
             Matrix world_view_matrix;
-            GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
+            GetWorldViewMatrix(scale, ref world_position, ref world_rotation, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
-            GetWorldViewMatrix(scale, ref world_position, ref world_rotation, ref world, out world_view_matrix);
+            GetWorldViewMatrix(scale, ref world_position, ref world_rotation, out world_view_matrix);
             Matrix world_view_projection_matrix = world_view_matrix * device.Transform.Projection;
 
             effect_pole.SetValue("wvp", world_view_projection_matrix);
@@ -99,38 +103,38 @@ namespace TDCG.Editor
             pole.Draw(effect_pole);
         }
 
-        void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
+        void DrawNodePoleZ(ref Vector3 world_position, ref Matrix world_rotation)
         {
             float scale = selected_node_circle_scale;
             Vector4 col = new Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
-            DrawNodePoleAny(scale, ref world_position, ref world_rotation, ref world, ref col);
+            DrawNodePoleAny(scale, ref world_position, ref world_rotation, ref col);
         }
 
-        void DrawNodePoleY(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
+        void DrawNodePoleY(ref Vector3 world_position, ref Matrix world_rotation)
         {
             float scale = selected_node_circle_scale;
             Matrix world_rotation_x = Matrix.RotationX((float)(-Math.PI / 2.0)) * world_rotation;
             Vector4 col = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
 
-            DrawNodePoleAny(scale, ref world_position, ref world_rotation_x, ref world, ref col);
+            DrawNodePoleAny(scale, ref world_position, ref world_rotation_x, ref col);
         }
 
-        void DrawNodePoleX(ref Vector3 world_position, ref Matrix world_rotation, ref Matrix world)
+        void DrawNodePoleX(ref Vector3 world_position, ref Matrix world_rotation)
         {
             float scale = selected_node_circle_scale;
             Matrix world_rotation_y = Matrix.RotationY((float)(+Math.PI / 2.0)) * world_rotation;
             Vector4 col = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 
-            DrawNodePoleAny(scale, ref world_position, ref world_rotation_y, ref world, ref col);
+            DrawNodePoleAny(scale, ref world_position, ref world_rotation_y, ref col);
         }
 
-        void DrawNodeCircleAny(float scale, ref Vector3 world_position, ref Matrix world, ref Vector4 col)
+        void DrawNodeCircleAny(float scale, ref Vector3 world_position, ref Vector4 col)
         {
             Matrix world_view_matrix;
-            GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
+            GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, out world_view_matrix);
             scale *= UnprojectScaling(ref world_view_matrix);
-            GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, ref world, out world_view_matrix);
+            GetWorldViewMatrix(scale, ref world_position, ref camera_rotation, out world_view_matrix);
             Matrix world_view_projection_matrix = world_view_matrix * device.Transform.Projection;
 
             effect_circle.SetValue("wvp", world_view_projection_matrix);
@@ -139,30 +143,30 @@ namespace TDCG.Editor
             circle.Draw(effect_circle);
         }
 
-        void DrawNodeCircleW(ref Vector3 world_position, ref Matrix world)
+        void DrawNodeCircleW(ref Vector3 world_position)
         {
             float scale = node_circle_scale;
             Vector4 col = new Vector4(0.5f, 0.5f, 0.5f, 1.0f);
 
-            DrawNodeCircleAny(scale, ref world_position, ref world, ref col);
+            DrawNodeCircleAny(scale, ref world_position, ref col);
         }
 
-        void DrawSelectedNodeCircleW(ref Vector3 world_position, ref Matrix world)
+        void DrawSelectedNodeCircleW(ref Vector3 world_position)
         {
             float scale = selected_node_circle_scale;
             Vector4 col = new Vector4(0.0f, 1.0f, 1.0f, 1.0f);
 
-            DrawNodeCircleAny(scale, ref world_position, ref world, ref col);
+            DrawNodeCircleAny(scale, ref world_position, ref col);
         }
 
-        void DrawNode(TMONode node, ref Matrix world)
+        void DrawNode(TMONode node)
         {
             Vector3 world_position = node.GetWorldPosition();
 
-            DrawNodeCircleW(ref world_position, ref world);
+            DrawNodeCircleW(ref world_position);
         }
 
-        void DrawSelectedNode(TMONode selected_node, ref Matrix world)
+        void DrawSelectedNode(TMONode selected_node)
         {
             if (selected_node == null)
                 return;
@@ -170,26 +174,22 @@ namespace TDCG.Editor
             Vector3 world_position = selected_node.GetWorldPosition();
             Matrix world_rotation = Matrix.RotationQuaternion(selected_node.GetWorldRotation());
 
-            DrawNodePoleX(ref world_position, ref world_rotation, ref world);
-            DrawNodePoleY(ref world_position, ref world_rotation, ref world);
-            DrawNodePoleZ(ref world_position, ref world_rotation, ref world);
-            DrawSelectedNodeCircleW(ref world_position, ref world);
+            DrawNodePoleX(ref world_position, ref world_rotation);
+            DrawNodePoleY(ref world_position, ref world_rotation);
+            DrawNodePoleZ(ref world_position, ref world_rotation);
+            DrawSelectedNodeCircleW(ref world_position);
         }
 
-        //モデル上に重ねてボーンを描画する
-        //@param fig: ボーンを描画するモデル
+        //ボーンを描画する
         //@param selected_node: 選択ボーン
         //@param nodes: 描画ボーン
-        public void Render(Figure fig, TMONode selected_node, TMONode[] nodes)
+        public void Render(TMONode selected_node, TMONode[] nodes)
         {
-            Matrix world;
-            fig.GetWorldMatrix(out world);
-
             foreach (TMONode node in nodes)
             {
-                DrawNode(node, ref world);
+                DrawNode(node);
             }
-            DrawSelectedNode(selected_node, ref world);
+            DrawSelectedNode(selected_node);
         }
     }
 }

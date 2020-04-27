@@ -2518,11 +2518,14 @@ namespace TDCG.Editor
                 device.SetRenderState(RenderStates.AlphaBlendEnable, true);
 
                 Matrix camera_rotation = camera.RotationMatrix;
-                node_renderer.SetTransform(projection_mode, ref camera_rotation);
-                node_renderer.Render(fig, selected_node, GetDrawableNodes(fig.Tmo));
+                Matrix world;
+                fig.GetWorldMatrix(out world);
+                node_renderer.SetTransform(projection_mode, ref camera_rotation, ref world);
+                node_renderer.Render(selected_node, GetDrawableNodes(fig.Tmo));
 
-                lamp_renderer.SetTransform(projection_mode, ref camera_rotation);
-                lamp_renderer.Render(fig);
+                Matrix lamp_rotation = Matrix.RotationQuaternion(fig.LampRotation);
+                lamp_renderer.SetTransform(projection_mode, ref camera_rotation, ref lamp_rotation);
+                lamp_renderer.Render();
             }
             // draw manipulator.NodePower
             sprite.Transform = Matrix.Scaling(dev_rect.Width / 1024.0f, dev_rect.Height / 768.0f, 1.0f);
