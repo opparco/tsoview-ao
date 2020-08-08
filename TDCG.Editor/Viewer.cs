@@ -2401,8 +2401,8 @@ namespace TDCG.Editor
                 device.Transform.View = Transform_View;
                 effect.SetValue("view", Transform_View);
 
-                Matrix m = camera.RotationMatrix;
-                effect.SetValue("camdir", new Vector4(m.M31, m.M32, m.M33, 0));
+                Vector3 pos = camera.WorldPosition;
+                effect.SetValue("campos", new Vector4(pos.X, pos.Y, pos.Z, 0));
 
                 AssignProjection();
                 AssignDepthProjection();
@@ -2488,15 +2488,6 @@ namespace TDCG.Editor
             }
         }
 
-        void Snap()
-        {
-            string modename = sprite_renderer.CurrentModeName;
-            if (modename == "MODEL")
-                SnapTsosOnModelMode();
-            if (modename == "SCENE")
-                SnapFiguresOnSceneMode();
-        }
-
         void DrawSpritesOnModelMode()
         {
             Figure fig;
@@ -2541,23 +2532,6 @@ namespace TDCG.Editor
                 sprite_renderer.scene_mode.DrawDottedSprite();
             else
                 sprite_renderer.scene_mode.DrawCursorSprite();
-        }
-
-        void DrawModeSprite()
-        {
-            {
-                device.SetRenderState(RenderStates.AlphaBlendEnable, true);
-
-                sprite_renderer.Render();
-            }
-
-            string modename = sprite_renderer.CurrentModeName;
-            if (modename == "MODEL")
-                DrawSpritesOnModelMode();
-            if (modename == "POSE")
-                DrawSpritesOnPoseMode();
-            if (modename == "SCENE")
-                DrawSpritesOnSceneMode();
         }
 
         public void Draw()
@@ -2625,10 +2599,30 @@ namespace TDCG.Editor
             device.BeginScene();
 
             if (sprite_enabled)
-                Snap();
+            {
+                string modename = sprite_renderer.CurrentModeName;
+                if (modename == "MODEL")
+                    SnapTsosOnModelMode();
+                if (modename == "SCENE")
+                    SnapFiguresOnSceneMode();
+            }
             Draw();
             if (sprite_enabled)
-                DrawModeSprite();
+            {
+                {
+                    device.SetRenderState(RenderStates.AlphaBlendEnable, true);
+
+                    sprite_renderer.Render();
+                }
+
+                string modename = sprite_renderer.CurrentModeName;
+                if (modename == "MODEL")
+                    DrawSpritesOnModelMode();
+                if (modename == "POSE")
+                    DrawSpritesOnPoseMode();
+                if (modename == "SCENE")
+                    DrawSpritesOnSceneMode();
+            }
 
             Debug.WriteLine("-- device EndScene --");
             device.EndScene();

@@ -78,6 +78,13 @@ namespace TDCG
         public Matrix ViewMatrix { get { return view; } }
 
         public Vector3 ViewTranslation { get { return new Vector3(-view.M41, -view.M42, -view.M43); } }
+        public Vector3 WorldPosition {
+            get
+            {
+                Matrix m = Matrix.Invert(view);
+                return new Vector3(m.M41, m.M42, m.M43);
+            }
+        }
 
         /// 回転行列
         public Matrix RotationMatrix { get { return Matrix.RotationYawPitchRoll(angle.Y, angle.X, angle.Z); } }
@@ -146,7 +153,10 @@ namespace TDCG
             m.M43 = center.Z;
             m.M44 = 1;
 
-            view = Matrix.Invert(m) * Matrix.Translation(-translation);
+            view = Matrix.Invert(m);
+            view.M41 -= translation.X;
+            view.M42 -= translation.Y;
+            view.M43 -= translation.Z;
 
             need_update = false;
         }
