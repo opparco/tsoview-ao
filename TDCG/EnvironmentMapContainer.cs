@@ -23,7 +23,7 @@ public class EnvironmentMapContainer
         d3d_texturemap = new Dictionary<string, Texture>();
     }
 
-    string GetNormalTexturePath(string name)
+    string GetTexturePath(string name)
     {
         return Path.Combine(root_path, name + ".png");
     }
@@ -37,7 +37,7 @@ public class EnvironmentMapContainer
         }
         else
         {
-            string source_file = GetNormalTexturePath(name);
+            string source_file = GetTexturePath(name);
 
             if (!File.Exists(source_file))
             {
