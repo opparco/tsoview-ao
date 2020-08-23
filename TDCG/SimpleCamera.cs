@@ -78,11 +78,17 @@ namespace TDCG
         public Matrix ViewMatrix { get { return view; } }
 
         public Vector3 ViewTranslation { get { return new Vector3(-view.M41, -view.M42, -view.M43); } }
+        Vector3 campos;
         public Vector3 WorldPosition {
             get
             {
+                return campos;
+
+                // invert は重いので避ける
+#if false
                 Matrix m = Matrix.Invert(view);
                 return new Vector3(m.M41, m.M42, m.M43);
+#endif
             }
         }
 
@@ -148,6 +154,23 @@ namespace TDCG
                 return;
 
             Matrix m = Matrix.RotationYawPitchRoll(angle.Y, angle.X, angle.Z);
+
+            float a = center.X * m.M11 + center.Y * m.M12 + center.Z * m.M13 + translation.X;
+            float b = center.X * m.M21 + center.Y * m.M22 + center.Z * m.M23 + translation.Y;
+            float c = center.X * m.M31 + center.Y * m.M32 + center.Z * m.M33 + translation.Z;
+
+            view = Matrix.TransposeMatrix(m);
+            view.M41 = -a;
+            view.M42 = -b;
+            view.M43 = -c;
+
+            campos = new Vector3(
+                a * m.M11 + b * m.M21 + c * m.M31,
+                a * m.M12 + b * m.M22 + c * m.M32,
+                a * m.M13 + b * m.M23 + c * m.M33);
+
+            // invert は重いので避ける
+#if false
             m.M41 = center.X;
             m.M42 = center.Y;
             m.M43 = center.Z;
@@ -157,6 +180,7 @@ namespace TDCG
             view.M41 -= translation.X;
             view.M42 -= translation.Y;
             view.M43 -= translation.Z;
+#endif
 
             need_update = false;
         }
