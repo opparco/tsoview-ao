@@ -16,24 +16,12 @@ namespace TDCG
 
         public NodeFilter()
         {
-            LoadNotFaceNodes();
-            LoadFaceNodes();
         }
 
-        static string GetNotFaceNodesPath()
-        {
-            return @"resources\not-facenodes.txt";
-        }
-
-        static string GetFaceNodesPath()
-        {
-            return @"resources\facenodes.txt";
-        }
-
-        void LoadNotFaceNodes()
+        public void LoadNotFaceNodes(string nodes_path)
         {
             List<string> names = new List<string>();
-            using (StreamReader source = new StreamReader(File.OpenRead(GetNotFaceNodesPath())))
+            using (StreamReader source = new StreamReader(File.OpenRead(nodes_path)))
             {
                 string line;
                 while ((line = source.ReadLine()) != null)
@@ -45,10 +33,10 @@ namespace TDCG
             names.CopyTo(not_face_nodenames);
         }
 
-        void LoadFaceNodes()
+        public void LoadFaceNodes(string nodes_path)
         {
             List<string> names = new List<string>();
-            using (StreamReader source = new StreamReader(File.OpenRead(GetFaceNodesPath())))
+            using (StreamReader source = new StreamReader(File.OpenRead(nodes_path)))
             {
                 string line;
                 while ((line = source.ReadLine()) != null)

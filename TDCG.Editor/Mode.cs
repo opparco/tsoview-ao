@@ -16,15 +16,12 @@ namespace TDCG.Editor
         //mode name
         string name;
         public string Name { get { return name; } }
-        //filename of the mode picture
-        string mode_filename;
 
-        public Mode(Device device, Sprite sprite, string name, string mode_filename)
+        public Mode(Device device, Sprite sprite, string name)
         {
             this.device = device;
             this.sprite = sprite;
             this.name = name;
-            this.mode_filename = mode_filename;
         }
 
         protected Texture mode_texture;
@@ -38,17 +35,14 @@ namespace TDCG.Editor
 
         protected Rectangle device_rect;
 
-        string GetModeTexturePath()
-        {
-            return Path.Combine(@"resources\modes", mode_filename);
-        }
+        protected string mode_texture_path;
 
         // on device reset
         public virtual void Create(Rectangle device_rect)
         {
             this.device_rect = device_rect;
 
-            mode_texture = TextureLoader.FromFile(device, GetModeTexturePath(), 1024, 768, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            mode_texture = TextureLoader.FromFile(device, mode_texture_path, 1024, 768, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
         }
 
         public abstract bool Update(Point sprite_p);

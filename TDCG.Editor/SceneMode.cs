@@ -11,25 +11,20 @@ namespace TDCG.Editor
 {
     public class SceneMode : Mode
     {
-        public SceneMode(Device device, Sprite sprite) : base(device, sprite, "SCENE", "2-scene.png")
+        public SceneMode(Device device, Sprite sprite, string root_path) : base(device, sprite, "SCENE")
         {
+            mode_texture_path = Path.Combine(root_path, @"modes\2-scene.png");
+
+            cell_texture_path = Path.Combine(root_path, @"scene-mode\cell.png");
+            cursor_texture_path = Path.Combine(root_path, @"scene-mode\cursor.png");
+            dotted_texture_path = Path.Combine(root_path, @"scene-mode\dotted.png");
+
             ClearHidden();
         }
 
-        static string GetCellTexturePath()
-        {
-            return @"resources\scene-mode\cell.png";
-        }
-
-        static string GetCursorTexturePath()
-        {
-            return @"resources\scene-mode\cursor.png";
-        }
-
-        static string GetDottedTexturePath()
-        {
-            return @"resources\scene-mode\dotted.png";
-        }
+        string cell_texture_path;
+        string cursor_texture_path;
+        string dotted_texture_path;
 
         Texture cell_texture;
         Texture cursor_texture;
@@ -55,9 +50,9 @@ namespace TDCG.Editor
         {
             base.Create(device_rect);
 
-            cell_texture = TextureLoader.FromFile(device, GetCellTexturePath(), 128, 128, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
-            cursor_texture = TextureLoader.FromFile(device, GetCursorTexturePath(), 128, 96, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
-            dotted_texture = TextureLoader.FromFile(device, GetDottedTexturePath(), 128, 96, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            cell_texture = TextureLoader.FromFile(device, cell_texture_path, 128, 128, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            cursor_texture = TextureLoader.FromFile(device, cursor_texture_path, 128, 96, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            dotted_texture = TextureLoader.FromFile(device, dotted_texture_path, 128, 96, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
         }
 
         int selected_idx = 0;

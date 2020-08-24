@@ -347,17 +347,12 @@ namespace TDCG
         string normal_map = "nmap";
         string environment_map = "emap";
 
-        static string GetAssumedTechsPath()
-        {
-            return @"resources\assumed-techs.txt";
-        }
-
         static Dictionary<string, string> techmap;
 
-        static void LoadTechMap()
+        public static void LoadTechMap(string techmap_path)
         {
             char[] delim = { ' ' };
-            using (StreamReader source = new StreamReader(File.OpenRead(GetAssumedTechsPath())))
+            using (StreamReader source = new StreamReader(File.OpenRead(techmap_path)))
             {
                 string line;
                 while ((line = source.ReadLine()) != null)
@@ -376,17 +371,12 @@ namespace TDCG
             }
         }
 
-        static string GetParametersPath()
-        {
-            return @"resources\parameters.txt";
-        }
-
         static Dictionary<string, bool> namemap;
 
-        static void LoadNameMap()
+        public static void LoadNameMap(string namemap_path)
         {
             char[] delim = { ' ' };
-            using (StreamReader source = new StreamReader(File.OpenRead(GetParametersPath())))
+            using (StreamReader source = new StreamReader(File.OpenRead(namemap_path)))
             {
                 string line;
                 while ((line = source.ReadLine()) != null)
@@ -408,9 +398,7 @@ namespace TDCG
         static Shader()
         {
             techmap = new Dictionary<string, string>();
-            LoadTechMap();
             namemap = new Dictionary<string, bool>();
-            LoadNameMap();
         }
 
         static string RenameTechnique(string name)

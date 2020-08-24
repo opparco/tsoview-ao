@@ -1320,14 +1320,14 @@ namespace TDCG.Editor
             }
         }
 
-        public static string GetCameraPresetFileName(int i)
+        string CombineStartupPath(string path)
         {
-            return string.Format(@"resources\camera-presets\{0}.txt", i);
+            return Path.Combine(Application.StartupPath, path);
         }
 
         public void LoadCameraPreset(int i)
         {
-            string file = GetCameraPresetFileName(i);
+            string file = CombineStartupPath(string.Format(@"resources\camera-presets\{0}.txt", i));
             PNGSaveCameraDescription cameraDescription = new PNGSaveCameraDescription();
             cameraDescription.ReadFromTextFile(file);
 
@@ -1502,10 +1502,15 @@ namespace TDCG.Editor
 
             vd = new VertexDeclaration(device, ve);
 
+            Shader.LoadTechMap(CombineStartupPath(@"resources\assumed-techs.txt"));
+            Shader.LoadNameMap(CombineStartupPath(@"resources\parameters.txt"));
+
             screen = new Screen(device);
             sprite = new Sprite(device);
 
+            string techmap_path = CombineStartupPath(@"resources\dnmap-hidetechs.txt");
             dnmap_renderer = new DepthNormalMapRenderer(device);
+            dnmap_renderer.LoadTechMap(techmap_path);
 
             if (!LoadEffect(@"effects\dnclear.fx", out dnmap_renderer.effect_dnclear))
                 return false;
@@ -1539,17 +1544,23 @@ namespace TDCG.Editor
             handle_UVSCR = effect.GetParameter(null, "UVSCR");
 
             sprite_cell_renderer = new SpriteCellRenderer(device, sprite);
-            sprite_renderer = new SpriteRenderer(device, sprite);
+            sprite_renderer = new SpriteRenderer(device, sprite, CombineStartupPath(@"resources"));
 
             node_filter = new NodeFilter();
+            node_filter.LoadNotFaceNodes(CombineStartupPath(@"resources\not-facenodes.txt"));
+            node_filter.LoadFaceNodes(CombineStartupPath(@"resources\facenodes.txt"));
+
             Direct3D.FontDescription fd = new Direct3D.FontDescription();
             fd.FaceName = "Consolas";
             font = new Direct3D.Font(device, fd);
+
             camera.Update();
+
             manipulator.GrabNodeSpeed = GrabNodeSpeed;
             manipulator.RotateNodeSpeed = RotateNodeSpeed;
             manipulator.GrabCameraSpeed = GrabCameraSpeed;
             manipulator.RotateCameraSpeed = RotateCameraSpeed;
+
             OnDeviceReset(device, null);
 
             FigureSelectEvent += delegate (object sender, EventArgs e)
@@ -1637,13 +1648,13 @@ namespace TDCG.Editor
         bool LoadEffect(string effect_file, out Effect effect, Macro[] macros = null, EffectPool effect_pool = null)
         {
             effect = null;
-
-            if (!File.Exists(effect_file))
+            string effect_path = CombineStartupPath(effect_file);
+            if (!File.Exists(effect_path))
             {
                 Console.WriteLine("File not found: " + effect_file);
                 return false;
             }
-            using (FileStream effect_stream = File.OpenRead(effect_file))
+            using (FileStream effect_stream = File.OpenRead(effect_path))
             {
                 string compile_error;
                 effect = Effect.FromStream(device, effect_stream, macros, null, ShaderFlags.None, effect_pool, out compile_error);
@@ -1791,13 +1802,14 @@ namespace TDCG.Editor
 
             dev_zbuf = device.DepthStencilSurface;
 
-            nmap_container = new NormalMapContainer(device, @"resources");
-            emap_container = new EnvironmentMapContainer(device, @"resources");
+            nmap_container = new NormalMapContainer(device, CombineStartupPath(@"resources"));
+            emap_container = new EnvironmentMapContainer(device, CombineStartupPath(@"resources"));
 
             amb_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             amb_surface = amb_texture.GetSurfaceLevel(0);
 
-            randommap_texture = TextureLoader.FromFile(device, GetRandomTexturePath());
+            string randommap_texture_path = CombineStartupPath(@"resources\rand.png");
+            randommap_texture = TextureLoader.FromFile(device, randommap_texture_path);
 
             occ_texture = new Texture(device, devw, devh, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             occ_surface = occ_texture.GetSurfaceLevel(0);
@@ -2851,11 +2863,6 @@ namespace TDCG.Editor
             screen.Draw(effect_clear);
             effect_clear.Technique = "White";
             screen.Draw(effect_clear);
-        }
-
-        static string GetRandomTexturePath()
-        {
-            return @"resources\rand.png";
         }
 
         void DrawDepthNormalMap()

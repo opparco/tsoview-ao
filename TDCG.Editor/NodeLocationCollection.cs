@@ -12,9 +12,6 @@ namespace TDCG.Editor
     {
         Device device;
 
-        //パネル No.
-        int number;
-
         //パネル上のボーン位置からボーン名称を得るための辞書
         Dictionary<int, string> location_namemap;
 
@@ -29,18 +26,12 @@ namespace TDCG.Editor
             return names;
         }
 
-        public NodeLocationCollection(Device device, int number)
+        public NodeLocationCollection(Device device, string node_location_texture_path)
         {
             this.device = device;
-            this.number = number;
+            this.node_location_texture_path = node_location_texture_path;
             location_namemap = new Dictionary<int, string>();
             name_locationmap = new Dictionary<string, Point>();
-            LoadNameLocationMap();
-        }
-
-        string GetNodeLocationConfigPath()
-        {
-            return Path.Combine(@"resources\node-locations", string.Format("{0}.txt", this.number));
         }
 
         static int GetLocationKey(int x16, int y16)
@@ -48,10 +39,10 @@ namespace TDCG.Editor
             return x16 + 64*y16;
         }
 
-        void LoadNameLocationMap()
+        public void LoadNameLocationMap(string namemap_path)
         {
             char[] delim = { ' ' };
-            using (StreamReader source = new StreamReader(File.OpenRead(GetNodeLocationConfigPath())))
+            using (StreamReader source = new StreamReader(File.OpenRead(namemap_path)))
             {
                 string line;
                 while ((line = source.ReadLine()) != null)
@@ -93,15 +84,12 @@ namespace TDCG.Editor
                 node_location_texture.Dispose();
         }
 
-        string GetNodeLocationTexturePath()
-        {
-            return Path.Combine(@"resources\node-locations", string.Format("{0}.png", this.number));
-        }
+        string node_location_texture_path;
 
         // on device reset
         public void Create(Rectangle client_rect)
         {
-            node_location_texture = TextureLoader.FromFile(device, GetNodeLocationTexturePath(), 320, 640, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            node_location_texture = TextureLoader.FromFile(device, node_location_texture_path, 320, 640, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
         }
     }
 }

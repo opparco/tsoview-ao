@@ -31,11 +31,22 @@ namespace TDCG.Editor
             }
         }
 
-        public PoseMode(Device device, Sprite sprite) : base(device, sprite, "POSE", "1-pose.png")
+        public PoseMode(Device device, Sprite sprite, string root_path) : base(device, sprite, "POSE")
         {
+            mode_texture_path = Path.Combine(root_path, @"modes\1-pose.png");
+
+            node_sprite_texture_path = Path.Combine(root_path, @"node-sprite.png");
+            node_location_menu_texture_path = Path.Combine(root_path, @"node-locations\menu.png");
+
             node_location_collections = new NodeLocationCollection[5];
             for (int i = 0; i < node_location_collections.Length; i++)
-                node_location_collections[i] = new NodeLocationCollection(device, i);
+            {
+                string namemap_path = Path.Combine(root_path, string.Format(@"node-locations\{0}.txt", i));
+                string texture_path = Path.Combine(root_path, string.Format(@"node-locations\{0}.png", i));
+                NodeLocationCollection collection = new NodeLocationCollection(device, texture_path);
+                collection.LoadNameLocationMap(namemap_path);
+                node_location_collections[i] = collection;
+            }
             current_node_location_collection = node_location_collections[0];
         }
 
@@ -56,24 +67,17 @@ namespace TDCG.Editor
             base.Dispose();
         }
 
-        static string GetNodeSpriteTexturePath()
-        {
-            return @"resources\node-sprite.png";
-        }
-
-        string GetNodeLocationMenuTexturePath()
-        {
-            return @"resources\node-locations\menu.png";
-        }
+        string node_sprite_texture_path;
+        string node_location_menu_texture_path;
 
         // on device reset
         public override void Create(Rectangle device_rect)
         {
             base.Create(device_rect);
 
-            node_sprite_texture = TextureLoader.FromFile(device, GetNodeSpriteTexturePath(), 16, 16, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            node_sprite_texture = TextureLoader.FromFile(device, node_sprite_texture_path, 16, 16, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
 
-            node_location_menu_texture = TextureLoader.FromFile(device, GetNodeLocationMenuTexturePath(), 320, 640, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
+            node_location_menu_texture = TextureLoader.FromFile(device, node_location_menu_texture_path, 320, 640, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, Filter.Linear, Filter.Linear, 0);
 
             for (int i = 0; i < node_location_collections.Length; i++)
                 node_location_collections[i].Create(device_rect);
@@ -131,16 +135,12 @@ namespace TDCG.Editor
 
         void DrawNodeCollectionMenuSprite()
         {
-            Texture node_location_texture = current_node_location_collection.node_location_texture;
-
             sprite.Draw(node_location_menu_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(8, 72, 0), Color.FromArgb(0xCC, Color.White));
         }
 
         void DrawNodeCollectionSprite()
         {
-            Texture node_location_texture = current_node_location_collection.node_location_texture;
-
-            sprite.Draw(node_location_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(8, 72, 0), Color.FromArgb(0xCC, Color.White));
+            sprite.Draw(current_node_location_collection.node_location_texture, Rectangle.Empty, new Vector3(0, 0, 0), new Vector3(8, 72, 0), Color.FromArgb(0xCC, Color.White));
         }
 
         void DrawSelectedNodeSprite()

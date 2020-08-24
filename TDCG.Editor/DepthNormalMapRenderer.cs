@@ -36,7 +36,6 @@ namespace TDCG.Editor
             this.device = device;
 
             techmap = new Dictionary<string, bool>();
-            LoadTechMap();
         }
 
         public void Dispose()
@@ -71,17 +70,12 @@ namespace TDCG.Editor
             };
         }
 
-        static string GetHideTechsPath()
-        {
-            return @"resources\dnmap-hidetechs.txt";
-        }
-
         Dictionary<string, bool> techmap;
 
-        void LoadTechMap()
+        public void LoadTechMap(string techmap_path)
         {
             char[] delim = { ' ' };
-            using (StreamReader source = new StreamReader(File.OpenRead(GetHideTechsPath())))
+            using (StreamReader source = new StreamReader(File.OpenRead(techmap_path)))
             {
                 string line;
                 while ((line = source.ReadLine()) != null)

@@ -11,23 +11,27 @@ namespace TDCG.Editor
 {
     public class SpriteRenderer : IDisposable
     {
+        public ModelMode model_mode;
+        public PoseMode pose_mode;
+        public SceneMode scene_mode;
+
         Mode[] modes;
         Mode current_mode;
         public string CurrentModeName { get { return current_mode.Name; } }
 
-        public ModelMode model_mode { get { return modes[0] as ModelMode; } }
-        public PoseMode pose_mode { get { return modes[1] as PoseMode; } }
-        public SceneMode scene_mode { get { return modes[2] as SceneMode; } }
-
         public string[] NodeNames { get { return pose_mode.NodeNames; } }
 
-        public SpriteRenderer(Device device, Sprite sprite)
+        public SpriteRenderer(Device device, Sprite sprite, string root_path)
         {
+            model_mode = new ModelMode(device, sprite, root_path);
+            pose_mode = new PoseMode(device, sprite, root_path);
+            scene_mode = new SceneMode(device, sprite, root_path);
+
             modes = new Mode[3];
-            modes[0] = new ModelMode(device, sprite);
-            modes[1] = new PoseMode(device, sprite);
-            modes[2] = new SceneMode(device, sprite);
-            current_mode = modes[1];
+            modes[0] = model_mode;
+            modes[1] = pose_mode;
+            modes[2] = scene_mode;
+            current_mode = pose_mode;
         }
 
         // on device lost
