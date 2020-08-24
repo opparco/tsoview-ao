@@ -695,12 +695,12 @@ namespace TDCG.Editor
 
         public static string GetModelThumbnailFileName()
         {
-            return @"model.tdcgsav\thumbnail.png";
+            return CombineStartupPath(@"model.tdcgsav\thumbnail.png");
         }
 
         public static string GetSceneThumbnailFileName()
         {
-            return @"scene.tdcgpose\thumbnail.png";
+            return CombineStartupPath(@"scene.tdcgpose\thumbnail.png");
         }
 
         public static string GetModelFileName()
@@ -1320,7 +1320,7 @@ namespace TDCG.Editor
             }
         }
 
-        string CombineStartupPath(string path)
+        public static string CombineStartupPath(string path)
         {
             return Path.Combine(Application.StartupPath, path);
         }
