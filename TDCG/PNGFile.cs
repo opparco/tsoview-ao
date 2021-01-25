@@ -248,8 +248,7 @@ namespace TDCG
             int length = BitConverter.ToInt32(chunk_data, 16);
             //Console.WriteLine("taOb extract length: {0}", extract_length);
             //Console.WriteLine("taOb length: {0}", length);
-            MemoryStream ms = new MemoryStream(chunk_data, 20, chunk_data.Length - 20);
-
+            using (MemoryStream ms = new MemoryStream(chunk_data, 20, chunk_data.Length - 20))
             using (Stream dest = new InflaterInputStream(ms))
             if (type == "TDCG")
             {
