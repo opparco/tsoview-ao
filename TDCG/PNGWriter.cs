@@ -92,7 +92,6 @@ namespace TDCG
         {
             //Console.WriteLine("WriteTaOb {0}", type);
             //Console.WriteLine("taOb extract length {0}", data.Length);
-            byte[] chunk_type = System.Text.Encoding.ASCII.GetBytes(type);
 
             using (MemoryStream dest = new MemoryStream())
             {
@@ -103,9 +102,12 @@ namespace TDCG
                 }
                 dest.Seek(0, SeekOrigin.Begin);
                 //Console.WriteLine("taOb length {0}", dest.Length);
+
+                byte[] chunk_type = System.Text.Encoding.ASCII.GetBytes(type);
                 byte[] chunk_data = new byte[dest.Length + 20];
 
                 Array.Copy(chunk_type, 0, chunk_data, 0, 4);
+
                 byte[] buf;
                 buf = BitConverter.GetBytes((UInt32)opt0);
                 Array.Copy(buf, 0, chunk_data, 4, 4);
@@ -185,8 +187,8 @@ namespace TDCG
                 {
                     gzip.IsStreamOwner = false;
 
-                    byte[] b = new byte[4096];
-                    StreamUtils.Copy(source, gzip, b);
+                    byte[] buffer = new byte[4096];
+                    StreamUtils.Copy(source, gzip, buffer);
                 }
                 dest.Seek(0, SeekOrigin.Begin);
                 //Console.WriteLine("taOb length {0}", dest.Length);

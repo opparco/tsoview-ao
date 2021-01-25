@@ -235,7 +235,7 @@ namespace TDCG
         public TaobFtsoHandler Ftso;
 
         /// <summary>
-        /// TaObチャンクを読みとります。
+        /// TaObチャンクを読み込みます。
         /// </summary>
         /// <param name="chunk_data">チャンク</param>
         protected void ReadTaOb(byte[] chunk_data)
