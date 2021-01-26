@@ -707,7 +707,7 @@ namespace TDCG.Editor
         {
             DateTime ti = DateTime.Now;
             CultureInfo ci = CultureInfo.InvariantCulture;
-            string ti_string = ti.ToString("yyyyMMdd-hhmmss-fff", ci);
+            string ti_string = ti.ToString("yyyyMMdd-HHmmss-fff", ci);
             return ti_string + ".tdcgsav.png";
         }
 
@@ -715,7 +715,7 @@ namespace TDCG.Editor
         {
             DateTime ti = DateTime.Now;
             CultureInfo ci = CultureInfo.InvariantCulture;
-            string ti_string = ti.ToString("yyyyMMdd-hhmmss-fff", ci);
+            string ti_string = ti.ToString("yyyyMMdd-HHmmss-fff", ci);
             return ti_string + ".tdcgpose.png";
         }
 
