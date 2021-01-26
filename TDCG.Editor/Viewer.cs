@@ -2773,7 +2773,7 @@ namespace TDCG.Editor
                     for (int ipass = 0; ipass < npass; ipass++)
                     {
                         effect.BeginPass(ipass);
-                        device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, sub_mesh.vertices.Length - 2);
+                        device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, sub_mesh.NumberVertices - 2);
                         effect.EndPass();
                     }
                     effect.End();

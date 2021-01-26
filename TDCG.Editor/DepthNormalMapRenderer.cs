@@ -120,7 +120,7 @@ namespace TDCG.Editor
                     for (int ipass = 0; ipass < npass; ipass++)
                     {
                         effect_dnmap.BeginPass(ipass);
-                        device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, sub_mesh.vertices.Length - 2);
+                        device.DrawPrimitives(PrimitiveType.TriangleStrip, 0, sub_mesh.NumberVertices - 2);
                         effect_dnmap.EndPass();
                     }
                     effect_dnmap.End();

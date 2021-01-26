@@ -119,20 +119,20 @@ namespace TDCG
         public void Read(BinaryReader reader)
         {
             this.spec = reader.ReadInt32();
-            int bone_indices_count = reader.ReadInt32(); //numbones
+            int num_bone_indices = reader.ReadInt32();
             this.maxPalettes = 16;
-            if (this.maxPalettes > bone_indices_count)
-                this.maxPalettes = bone_indices_count;
+            if (this.maxPalettes > num_bone_indices)
+                this.maxPalettes = num_bone_indices;
 
-            this.bone_indices = new int[bone_indices_count];
-            for (int i = 0; i < bone_indices_count; i++)
+            this.bone_indices = new int[num_bone_indices];
+            for (int i = 0; i < num_bone_indices; i++)
             {
                 this.bone_indices[i] = reader.ReadInt32();
             }
 
-            int vertices_count = reader.ReadInt32(); //numvertices
-            this.vertices = new Vertex[vertices_count];
-            for (int i = 0; i < vertices_count; i++)
+            int num_vertices = reader.ReadInt32();
+            this.vertices = new Vertex[num_vertices];
+            for (int i = 0; i < num_vertices; i++)
             {
                 Vertex v = new Vertex();
                 v.Read(reader);
@@ -203,7 +203,7 @@ namespace TDCG
         }
 
         /// 頂点数
-        public int VerticesCount
+        public int NumberVertices
         {
             get { return vertices.Length; }
         }
@@ -689,19 +689,19 @@ namespace TDCG
         /// <summary>
         /// 幅
         /// </summary>
-        public int width;
+        int width;
         /// <summary>
         /// 高さ
         /// </summary>
-        public int height;
+        int height;
         /// <summary>
         /// 色深度
         /// </summary>
-        public int depth;
+        int depth;
         /// <summary>
         /// ビットマップ配列
         /// </summary>
-        public byte[] data;
+        byte[] data;
 
         internal Texture d3d_tex = null;
 
