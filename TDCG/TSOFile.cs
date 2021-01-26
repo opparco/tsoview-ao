@@ -403,9 +403,9 @@ namespace TDCG
             reader.ReadVector3(ref this.normal);
             this.u = reader.ReadSingle();
             this.v = reader.ReadSingle();
-            int skin_weights_count = reader.ReadInt32();
-            this.skin_weights = new SkinWeight[skin_weights_count];
-            for (int i = 0; i < skin_weights_count; i++)
+            int num_skin_weights = reader.ReadInt32();
+            this.skin_weights = new SkinWeight[num_skin_weights];
+            for (int i = 0; i < num_skin_weights; i++)
             {
                 int bone_index = reader.ReadInt32();
                 float weight = reader.ReadSingle();
@@ -450,18 +450,18 @@ namespace TDCG
             bw.Write(this.u);
             bw.Write(this.v);
 
-            int skin_weights_count = 0;
+            int num_skin_weights = 0;
             SkinWeight[] skin_weights = new SkinWeight[4];
             foreach (SkinWeight skin_weight in this.skin_weights)
             {
                 if (skin_weight.weight == 0.0f)
                     continue;
 
-                skin_weights[skin_weights_count++] = skin_weight;
+                skin_weights[num_skin_weights++] = skin_weight;
             }
-            bw.Write(skin_weights_count);
+            bw.Write(num_skin_weights);
 
-            for (int i = 0; i < skin_weights_count; i++)
+            for (int i = 0; i < num_skin_weights; i++)
             {
                 bw.Write(skin_weights[i].bone_index);
                 bw.Write(skin_weights[i].weight);
