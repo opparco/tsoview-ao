@@ -714,123 +714,7 @@ namespace TDCG
         /// </summary>
         public string FileName { get { return file; } set { file = value; } }
 
-        /// <summary>
-        /// テクスチャを読み込みます。
-        /// </summary>
-        public void Load(string source_file)
-        {
-            string ext = Path.GetExtension(source_file).ToLower();
-            using (BinaryReader br = new BinaryReader(File.OpenRead(source_file)))
-            {
-                if (ext == ".tga")
-                    LoadTGA(br);
-                else
-                if (ext == ".bmp")
-                    LoadBMP(br);
-            }
-            this.file = "\"" + Path.GetFileName(source_file) + "\"";
-        }
-
         static readonly int sizeof_tga_header = Marshal.SizeOf(typeof(TARGA_HEADER));
-        static readonly int sizeof_bfh = Marshal.SizeOf(typeof(BITMAPFILEHEADER));
-
-        /// <summary>
-        /// TGA形式のテクスチャを読み込みます。
-        /// </summary>
-        public void LoadTGA(BinaryReader br)
-        {
-            TARGA_HEADER header;
-
-            byte[] header_buf = br.ReadBytes(sizeof_tga_header);
-            GCHandle header_handle = GCHandle.Alloc(header_buf, GCHandleType.Pinned);
-            header = (TARGA_HEADER)Marshal.PtrToStructure(header_handle.AddrOfPinnedObject(), typeof(TARGA_HEADER));
-            header_handle.Free();
-
-            if (header.imagetype != 0x02)
-                throw new Exception("Invalid imagetype: " + file);
-            if (header.depth != 24 && header.depth != 32)
-                throw new Exception("Invalid depth: " + file);
-
-            this.width = header.width;
-            this.height = header.height;
-            this.depth = header.depth / 8;
-            this.data = br.ReadBytes( this.width * this.height * this.depth );
-        }
-
-        /// <summary>
-        /// BMP形式のテクスチャを読み込みます。
-        /// </summary>
-        public void LoadBMP(BinaryReader br)
-        {
-            BITMAPFILEHEADER bfh;
-            BITMAPINFOHEADER bih;
-
-            byte[] buf;
-
-            bfh.bfType = br.ReadUInt16();
-
-            if (bfh.bfType != 0x4D42)
-                throw new Exception("Invalid imagetype: " + file);
-
-            buf = br.ReadBytes(12);
-            bfh.bfSize = BitConverter.ToUInt32(buf, 0x00);
-            bfh.bfReserved1 = BitConverter.ToUInt16(buf, 0x04);
-            bfh.bfReserved2 = BitConverter.ToUInt16(buf, 0x06);
-            bfh.bfOffBits = BitConverter.ToUInt16(buf, 0x08);
-
-            uint biSize = br.ReadUInt32();
-            //Console.WriteLine("biSize {0}", biSize);
-
-            buf = br.ReadBytes((int)biSize - 4);
-            bih.biWidth             = BitConverter.ToInt32(buf, 0x00);
-            bih.biHeight            = BitConverter.ToInt32(buf, 0x04);
-            bih.biPlanes            = BitConverter.ToUInt16(buf, 0x08);
-            bih.biBitCount          = BitConverter.ToUInt16(buf, 0x0A);
-            bih.biCompression       = BitConverter.ToUInt32(buf, 0x0C);
-            bih.biSizeImage         = BitConverter.ToUInt32(buf, 0x10);
-            bih.biXPelsPerMeter     = BitConverter.ToInt32(buf, 0x14);
-            bih.biYPelsPerMeter     = BitConverter.ToInt32(buf, 0x18);
-            bih.biClrUsed           = BitConverter.ToUInt32(buf, 0x1C);
-            bih.biClrImportant      = BitConverter.ToUInt32(buf, 0x20);
-            bih.bV5RedMask      = 0x00ff0000;
-            bih.bV5GreenMask    = 0x0000ff00;
-            bih.bV5BlueMask     = 0x000000ff;
-            bih.bV5AlphaMask    = 0;
-            if (biSize >= 56)
-            {
-                bih.bV5RedMask      = BitConverter.ToUInt32(buf, 0x24);
-                bih.bV5GreenMask    = BitConverter.ToUInt32(buf, 0x28);
-                bih.bV5BlueMask     = BitConverter.ToUInt32(buf, 0x2C);
-                bih.bV5AlphaMask    = BitConverter.ToUInt32(buf, 0x30);
-            }
-
-            if (bih.biBitCount != 24 && bih.biBitCount != 32)
-                throw new Exception("Invalid depth: " + file);
-
-            this.width = bih.biWidth;
-            this.height = bih.biHeight;
-            this.depth = bih.biBitCount / 8;
-            buf = br.ReadBytes( this.width * this.height * this.depth );
-
-            if (biSize >= 56)
-            {
-                /*
-                 * change channels order RGBA to ARGB
-                 */
-                for (int i = 0; i < buf.Length; i += 4)
-                {
-                    byte A = buf[i + 0];
-                    byte B = buf[i + 1];
-                    byte G = buf[i + 2];
-                    byte R = buf[i + 3];
-                    buf[i + 0] = B;
-                    buf[i + 1] = G;
-                    buf[i + 2] = R;
-                    buf[i + 3] = A;
-                }
-            }
-            this.data = buf;
-        }
 
         /// <summary>
         /// テクスチャを読み込みます。
@@ -851,65 +735,6 @@ namespace TDCG
                 buf[j + 0] = tmp;
             }
             this.data = buf;
-        }
-
-        /// <summary>
-        /// TGA形式のテクスチャを書き出します。
-        /// </summary>
-        public void SaveTGA(BinaryWriter bw)
-        {
-            TARGA_HEADER header;
-
-            header.id = 0;
-            header.colormap = 0;
-            header.imagetype = 2;
-            header.colormaporigin = 0;
-            header.colormaplength = 0;
-            header.colormapdepth = 0;
-            header.x = 0;
-            header.y = 0;
-            header.width = (ushort)width;
-            header.height = (ushort)height;
-            header.depth = (byte)(depth * 8);
-            header.type = 0;
-
-            IntPtr header_ptr = Marshal.AllocHGlobal(sizeof_tga_header);
-            Marshal.StructureToPtr(header, header_ptr, false);
-            byte[] header_buf = new byte[sizeof_tga_header];
-            Marshal.Copy(header_ptr, header_buf, 0, sizeof_tga_header);
-            Marshal.FreeHGlobal(header_ptr);
-            bw.Write(header_buf);
-
-            bw.Write(data, 0, data.Length);
-        }
-
-        /// <summary>
-        /// BMP形式のテクスチャを書き出します。
-        /// </summary>
-        public void SaveBMP(BinaryWriter bw)
-        {
-            /*
-             * write bmp v3 header
-             */
-            bw.Write((byte)'B');
-            bw.Write((byte)'M');
-            bw.Write((uint)(14 + 40 + data.Length)); // bfSize
-            bw.Write((ushort)0);
-            bw.Write((ushort)0);
-            bw.Write((uint)(14 + 40)); // bfOffBits
-            bw.Write((uint)40); // biSize
-            bw.Write(width);
-            bw.Write(height);
-            bw.Write((ushort)1); // biPlanes
-            bw.Write((ushort)(depth * 8)); // biBitCount
-            bw.Write((uint)0); // biCompression
-            bw.Write((uint)data.Length); // biSizeImage
-            bw.Write((int)0);
-            bw.Write((int)0);
-            bw.Write((uint)0);
-            bw.Write((uint)0);
-
-            bw.Write(data, 0, data.Length);
         }
 
         /// <summary>
@@ -965,7 +790,7 @@ namespace TDCG
                 header.width = (ushort)width;
                 header.height = (ushort)height;
                 header.depth = (byte)(depth * 8);
-                header.type = 0;
+                header.type = 0x20;
 
                 IntPtr header_ptr = Marshal.AllocHGlobal(sizeof_tga_header);
                 Marshal.StructureToPtr(header, header_ptr, false);
@@ -974,13 +799,7 @@ namespace TDCG
                 Marshal.FreeHGlobal(header_ptr);
                 bw.Write(header_buf);
 
-                int stride = width * depth;
-                int offset = width * height * depth - stride;
-                for (int y = 0; y < height; y++)
-                {
-                    bw.Write(data, offset, stride);
-                    offset -= stride;
-                }
+                bw.Write(data);
                 bw.Flush();
                 ms.Seek(0, SeekOrigin.Begin);
                 d3d_tex = TextureLoader.FromStream(device, ms);
