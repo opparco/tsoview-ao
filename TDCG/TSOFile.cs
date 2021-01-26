@@ -679,7 +679,7 @@ namespace TDCG
     /// <summary>
     /// テクスチャ
     /// </summary>
-    public class TSOTexture : IDisposable
+    public class TSOTexture
     {
         /// <summary>
         /// 名称
@@ -705,8 +705,6 @@ namespace TDCG
         /// ビットマップ配列
         /// </summary>
         byte[] data;
-
-        internal Texture d3d_tex = null;
 
         /// <summary>
         /// 名称
@@ -819,16 +817,18 @@ namespace TDCG
             bw.WriteCString(this.file);
 
             string object_path = GetObjectPath(this.sha1);
-            byte[] buf = File.ReadAllBytes(object_path);
-
-            bw.Write(buf);
+            using (FileStream file = File.OpenRead(object_path))
+            {
+                    byte[] buffer = new byte[4096];
+                    StreamUtils.Copy(file, bw.BaseStream, buffer);
+            }
         }
 
         /// <summary>
         /// 指定device上でDirect3Dテクスチャを作成します。
         /// </summary>
         /// <param name="device">device</param>
-        public void CreateD3DTexture(Device device)
+        public Texture CreateD3DTexture(Device device)
         {
             /*
             string dest_file = file.Trim('"');
@@ -837,7 +837,8 @@ namespace TDCG
             string ext = Path.GetExtension(dest_file).ToLower();
             */
             if (data.Length == 0)
-                return;
+                return null;
+            Texture d3d_tex;
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
@@ -869,15 +870,7 @@ namespace TDCG
                 d3d_tex = TextureLoader.FromStream(device, ms);
             }
             data = null;
-        }
-
-        /// <summary>
-        /// Direct3Dテクスチャを破棄します。
-        /// </summary>
-        public void Dispose()
-        {
-            if (d3d_tex != null)
-                d3d_tex.Dispose();
+            return d3d_tex;
         }
     }
 
@@ -1335,14 +1328,6 @@ namespace TDCG
                 return null;
         }
 
-        void GenerateD3DTexturemap()
-        {
-            d3d_texturemap = new Dictionary<string, Texture>();
-
-            foreach (TSOTexture tex in textures)
-                d3d_texturemap.Add(tex.name, tex.d3d_tex);
-        }
-
         /// <summary>
         /// 指定device上でDirect3D Resourcesを作成します。
         /// </summary>
@@ -1353,10 +1338,13 @@ namespace TDCG
             foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
                 sub_mesh.CreateD3DBuffers(device);
 
-            foreach (TSOTexture tex in textures)
-                tex.CreateD3DTexture(device);
+            d3d_texturemap = new Dictionary<string, Texture>();
 
-            GenerateD3DTexturemap();
+            foreach (TSOTexture tex in textures)
+            {
+                Texture d3d_tex = tex.CreateD3DTexture(device);
+                d3d_texturemap.Add(tex.name, d3d_tex);
+            }
         }
 
         /// <summary>
@@ -1366,12 +1354,14 @@ namespace TDCG
         {
             Debug.WriteLine("TSOFile.Dispose");
 
+            foreach (Texture d3d_tex in d3d_texturemap.Values)
+            {
+                d3d_tex.Dispose();
+            }
             d3d_texturemap.Clear();
 
             foreach (TSOMesh mesh in meshes)
                 mesh.Dispose();
-            foreach (TSOTexture tex in textures)
-                tex.Dispose();
         }
 
         /// ファイル名
