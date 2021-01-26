@@ -14,10 +14,10 @@ using TDCG.Extensions;
 
 namespace TDCG
 {
-    using BYTE  = Byte;
-    using WORD  = UInt16;
+    using BYTE = Byte;
+    using WORD = UInt16;
     using DWORD = UInt32;
-    using LONG  = Int32;
+    using LONG = Int32;
 
     [StructLayout(LayoutKind.Sequential, Pack=1)]
     struct TARGA_HEADER
@@ -762,7 +762,7 @@ namespace TDCG
             return CombineStartupPath(string.Format(@"objects\{0}.bin", sha1));
         }
 
-        string sha1;
+        public string sha1;
 
         /// <summary>
         /// テクスチャを読み込みます。
@@ -1118,14 +1118,14 @@ namespace TDCG
         /// </summary>
         public Dictionary<string, TSONode> nodemap;
 
-        /// shader設定上の texture name と d3d texture を関連付ける辞書
-        Dictionary<string, Texture> d3d_texturemap;
+        /// shader設定上の texture name と sha1 を関連付ける辞書
+        Dictionary<string, string> d3d_texturemap;
 
         public Texture GetDirect3dTextureByName(string name)
         {
-            Texture d3d_tex;
-            if (name != null && d3d_texturemap.TryGetValue(name, out d3d_tex))
-                return d3d_tex;
+            string sha1;
+            if (name != null && d3d_texturemap.TryGetValue(name, out sha1))
+                return D3DTextureManager.instance.GetDirect3dTextureBySha1(sha1);
             else
                 return null;
         }
@@ -1338,12 +1338,20 @@ namespace TDCG
             foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
                 sub_mesh.CreateD3DBuffers(device);
 
-            d3d_texturemap = new Dictionary<string, Texture>();
+            d3d_texturemap = new Dictionary<string, string>();
 
             foreach (TSOTexture tex in textures)
             {
-                Texture d3d_tex = tex.CreateD3DTexture(device);
-                d3d_texturemap.Add(tex.name, d3d_tex);
+                if (D3DTextureManager.instance.ContainsKey(tex.sha1))
+                {
+                    D3DTextureManager.instance.AddRef(tex.sha1);
+                }
+                else
+                {
+                    Texture d3d_tex = tex.CreateD3DTexture(device);
+                    D3DTextureManager.instance.Add(tex.sha1, d3d_tex);
+                }
+                d3d_texturemap.Add(tex.name, tex.sha1);
             }
         }
 
@@ -1354,9 +1362,9 @@ namespace TDCG
         {
             Debug.WriteLine("TSOFile.Dispose");
 
-            foreach (Texture d3d_tex in d3d_texturemap.Values)
+            foreach (string sha1 in d3d_texturemap.Values)
             {
-                d3d_tex.Dispose();
+                D3DTextureManager.instance.Release(sha1);
             }
             d3d_texturemap.Clear();
 
