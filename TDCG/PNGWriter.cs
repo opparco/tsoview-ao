@@ -51,6 +51,24 @@ namespace TDCG
             Array.Reverse(crc_buf);
             Write(bw, crc_buf);
         }
+        public static void WriteChunk(BinaryWriter bw, string type, byte[] chunk_data, int len)
+        {
+            byte[] buf = BitConverter.GetBytes((UInt32)len);
+            Array.Reverse(buf);
+            Write(bw, buf);
+
+            byte[] chunk_type = System.Text.Encoding.ASCII.GetBytes(type);
+            Write(bw, chunk_type);
+            bw.BaseStream.Write(chunk_data, 0, len);
+
+            crc.Reset();
+            crc.Update(chunk_type);
+            crc.Update(chunk_data, 0, len);
+
+            byte[] crc_buf = BitConverter.GetBytes((UInt32)crc.Value);
+            Array.Reverse(crc_buf);
+            Write(bw, crc_buf);
+        }
         /// <summary>
         /// 指定ライタにIHDRチャンクを書き出します。
         /// </summary>
@@ -95,31 +113,24 @@ namespace TDCG
 
             using (MemoryStream dest = new MemoryStream())
             {
-                using (DeflaterOutputStream gzip = new DeflaterOutputStream(dest))
+                using (BinaryWriter bw = new BinaryWriter(dest, System.Text.Encoding.ASCII))
                 {
-                    gzip.IsStreamOwner = false;
-                    gzip.Write(data, 0, data.Length);
+                    byte[] chunk_type = System.Text.Encoding.ASCII.GetBytes(type);
+                    bw.Write(chunk_type);
+                    bw.Write(opt0);
+                    bw.Write(opt1);
+                    bw.Write((UInt32)data.Length);
+                    bw.Write((UInt32)dest.Length);
+
+                    using (DeflaterOutputStream gzip = new DeflaterOutputStream(dest))
+                    {
+                        gzip.IsStreamOwner = false;
+                        gzip.Write(data, 0, data.Length);
+                    }
+                    //Console.WriteLine("taOb length {0}", dest.Length);
+
+                    PNGWriter.WriteChunk(writer, "taOb", dest.GetBuffer(), (int)dest.Length);
                 }
-                dest.Seek(0, SeekOrigin.Begin);
-                //Console.WriteLine("taOb length {0}", dest.Length);
-
-                byte[] chunk_type = System.Text.Encoding.ASCII.GetBytes(type);
-                byte[] chunk_data = new byte[dest.Length + 20];
-
-                Array.Copy(chunk_type, 0, chunk_data, 0, 4);
-
-                byte[] buf;
-                buf = BitConverter.GetBytes((UInt32)opt0);
-                Array.Copy(buf, 0, chunk_data, 4, 4);
-                buf = BitConverter.GetBytes((UInt32)opt1);
-                Array.Copy(buf, 0, chunk_data, 8, 4);
-                buf = BitConverter.GetBytes((UInt32)data.Length);
-                Array.Copy(buf, 0, chunk_data, 12, 4);
-                buf = BitConverter.GetBytes((UInt32)dest.Length);
-                Array.Copy(buf, 0, chunk_data, 16, 4);
-
-                dest.Read(chunk_data, 20, (int)dest.Length);
-                PNGWriter.WriteChunk(writer, "taOb", chunk_data);
             }
         }
 
@@ -183,34 +194,26 @@ namespace TDCG
 
             using (MemoryStream dest = new MemoryStream())
             {
-                using (DeflaterOutputStream gzip = new DeflaterOutputStream(dest))
+                using (BinaryWriter bw = new BinaryWriter(dest, System.Text.Encoding.ASCII))
                 {
-                    gzip.IsStreamOwner = false;
+                    byte[] chunk_type = System.Text.Encoding.ASCII.GetBytes(type);
+                    bw.Write(chunk_type);
+                    bw.Write(opt0);
+                    bw.Write(opt1);
+                    bw.Write((UInt32)source.Length);
+                    bw.Write((UInt32)dest.Length);
 
-                    byte[] buffer = new byte[4096];
-                    StreamUtils.Copy(source, gzip, buffer);
+                    using (DeflaterOutputStream gzip = new DeflaterOutputStream(dest))
+                    {
+                        gzip.IsStreamOwner = false;
+
+                        byte[] buffer = new byte[4096];
+                        StreamUtils.Copy(source, gzip, buffer);
+                    }
+                    //Console.WriteLine("taOb length {0}", dest.Length);
+
+                    PNGWriter.WriteChunk(writer, "taOb", dest.GetBuffer(), (int)dest.Length);
                 }
-                dest.Seek(0, SeekOrigin.Begin);
-                //Console.WriteLine("taOb length {0}", dest.Length);
-
-                byte[] chunk_type = System.Text.Encoding.ASCII.GetBytes(type);
-                byte[] chunk_data = new byte[dest.Length + 20];
-
-                Array.Copy(chunk_type, 0, chunk_data, 0, 4);
-
-                byte[] buf;
-                buf = BitConverter.GetBytes((UInt32)opt0);
-                Array.Copy(buf, 0, chunk_data, 4, 4);
-                buf = BitConverter.GetBytes((UInt32)opt1);
-                Array.Copy(buf, 0, chunk_data, 8, 4);
-
-                buf = BitConverter.GetBytes((UInt32)source.Length);
-                Array.Copy(buf, 0, chunk_data, 12, 4);
-                buf = BitConverter.GetBytes((UInt32)dest.Length);
-                Array.Copy(buf, 0, chunk_data, 16, 4);
-
-                dest.Read(chunk_data, 20, (int)dest.Length);
-                PNGWriter.WriteChunk(writer, "taOb", chunk_data);
             }
         }
 
