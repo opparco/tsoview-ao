@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
+using ICSharpCode.SharpZipLib.Core;
 using TDCG.Extensions;
 
 namespace TDCG
@@ -736,12 +737,34 @@ namespace TDCG
             return string_builder.ToString();
         }
 
+        static string GetSha1HexString(Stream stream)
+        {
+            byte[] data;
+            using (SHA1 sha1 = SHA1.Create())
+            {
+                data = sha1.ComputeHash(stream);
+            }
+
+            StringBuilder string_builder = new StringBuilder();
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                string_builder.Append(data[i].ToString("x2"));
+            }
+
+            return string_builder.ToString();
+        }
+
         static string CombineStartupPath(string path)
         {
             return Path.Combine(Application.StartupPath, path);
         }
+        static string GetObjectPath(string sha1)
+        {
+            return CombineStartupPath(string.Format(@"objects\{0}.bin", sha1));
+        }
 
-        string object_path;
+        string sha1;
 
         /// <summary>
         /// テクスチャを読み込みます。
@@ -753,19 +776,38 @@ namespace TDCG
             this.width = reader.ReadInt32();
             this.height = reader.ReadInt32();
             this.depth = reader.ReadInt32();
-            byte[] buf = reader.ReadBytes( this.width * this.height * this.depth );
+            byte[] data = reader.ReadBytes( this.width * this.height * this.depth );
 
-            this.object_path = CombineStartupPath(string.Format(@"objects\{0}.bin", GetSha1HexString(buf)));
-            if (! File.Exists(object_path))
-                File.WriteAllBytes(object_path, buf);
-
-            for(int j = 0; j < buf.Length; j += 4)
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
             {
-                byte tmp = buf[j + 2];
-                buf[j + 2] = buf[j + 0];
-                buf[j + 0] = tmp;
+                bw.Write(this.width);
+                bw.Write(this.height);
+                bw.Write(this.depth);
+                bw.Write(data);
+                bw.Flush();
+                ms.Seek(0, SeekOrigin.Begin);
+                this.sha1 = GetSha1HexString(ms);
+                string object_path = GetObjectPath(this.sha1);
+                if (! File.Exists(object_path))
+                {
+                    using (FileStream file = File.Create(object_path))
+                    {
+                        ms.Seek(0, SeekOrigin.Begin);
+
+                        byte[] buffer = new byte[4096];
+                        StreamUtils.Copy(ms, file, buffer);
+                    }
+                }
             }
-            this.data = buf;
+
+            for(int j = 0; j < data.Length; j += 4)
+            {
+                byte tmp = data[j + 2];
+                data[j + 2] = data[j + 0];
+                data[j + 0] = tmp;
+            }
+            this.data = data;
         }
 
         /// <summary>
@@ -775,10 +817,8 @@ namespace TDCG
         {
             bw.WriteCString(this.name);
             bw.WriteCString(this.file);
-            bw.Write(this.width);
-            bw.Write(this.height);
-            bw.Write(this.depth);
 
+            string object_path = GetObjectPath(this.sha1);
             byte[] buf = File.ReadAllBytes(object_path);
 
             bw.Write(buf);
