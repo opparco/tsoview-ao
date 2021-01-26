@@ -1263,9 +1263,6 @@ namespace TDCG.Editor
                     orig_fig.Dispose();
                     orig_fig = null;
 
-                    // free meshes and textures.
-                    Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
-
                     fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
                     {
                         if (GetSelectedFigure() == sender)
@@ -1293,6 +1290,9 @@ namespace TDCG.Editor
                     // fire FigureSelectEvent
                     SetFigureIdx(len);
                 }
+
+                // free meshes and textures.
+                Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
             }
             if (savedata.type == "SCNE")
             {
@@ -1317,6 +1317,9 @@ namespace TDCG.Editor
                 }
                 // fire FigureSelectEvent
                 SetFigureIdx(len);
+
+                // free meshes and textures.
+                Console.WriteLine("Total Memory: {0}", GC.GetTotalMemory(true));
             }
         }
 

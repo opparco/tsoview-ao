@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.ComponentModel;
+using System.Security.Cryptography;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 using TDCG.Extensions;
@@ -101,6 +103,12 @@ namespace TDCG
         public int NumberBones
         {
             get { return bone_indices.Length; }
+        }
+
+        /// 頂点数
+        public int NumberVertices
+        {
+            get { return vertices.Length; }
         }
 
         /// <summary>
@@ -200,12 +208,6 @@ namespace TDCG
 
             foreach (int bone_index in bone_indices)
                 this.bones.Add(nodes[bone_index]);
-        }
-
-        /// 頂点数
-        public int NumberVertices
-        {
-            get { return vertices.Length; }
         }
 
         /// <summary>
@@ -716,6 +718,31 @@ namespace TDCG
 
         static readonly int sizeof_tga_header = Marshal.SizeOf(typeof(TARGA_HEADER));
 
+        static string GetSha1HexString(byte[] buf)
+        {
+            byte[] data;
+            using (SHA1 sha1 = SHA1.Create())
+            {
+                data = sha1.ComputeHash(buf);
+            }
+
+            StringBuilder string_builder = new StringBuilder();
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                string_builder.Append(data[i].ToString("x2"));
+            }
+
+            return string_builder.ToString();
+        }
+
+        static string CombineStartupPath(string path)
+        {
+            return Path.Combine(Application.StartupPath, path);
+        }
+
+        string object_path;
+
         /// <summary>
         /// テクスチャを読み込みます。
         /// </summary>
@@ -727,6 +754,10 @@ namespace TDCG
             this.height = reader.ReadInt32();
             this.depth = reader.ReadInt32();
             byte[] buf = reader.ReadBytes( this.width * this.height * this.depth );
+
+            this.object_path = CombineStartupPath(string.Format(@"objects\{0}.bin", GetSha1HexString(buf)));
+            if (! File.Exists(object_path))
+                File.WriteAllBytes(object_path, buf);
 
             for(int j = 0; j < buf.Length; j += 4)
             {
@@ -748,15 +779,8 @@ namespace TDCG
             bw.Write(this.height);
             bw.Write(this.depth);
 
-            byte[] buf = new byte[this.data.Length];
-            Array.Copy(this.data, 0, buf, 0, buf.Length);
+            byte[] buf = File.ReadAllBytes(object_path);
 
-            for(int j = 0; j < buf.Length; j += 4)
-            {
-                byte tmp = buf[j + 2];
-                buf[j + 2] = buf[j + 0];
-                buf[j + 0] = tmp;
-            }
             bw.Write(buf);
         }
 
@@ -804,6 +828,7 @@ namespace TDCG
                 ms.Seek(0, SeekOrigin.Begin);
                 d3d_tex = TextureLoader.FromStream(device, ms);
             }
+            data = null;
         }
 
         /// <summary>
