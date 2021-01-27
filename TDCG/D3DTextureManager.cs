@@ -2,9 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
+using System.Security.Cryptography;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
+using ICSharpCode.SharpZipLib.Core;
 
 namespace TDCG
 {
@@ -100,12 +104,111 @@ namespace TDCG
             }
         }
 
+        static string GetSha1HexString(Stream stream)
+        {
+            byte[] data;
+            using (SHA1 sha1 = SHA1.Create())
+            {
+                data = sha1.ComputeHash(stream);
+            }
+
+            StringBuilder string_builder = new StringBuilder();
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                string_builder.Append(data[i].ToString("x2"));
+            }
+
+            return string_builder.ToString();
+        }
+
+        static string CombineStartupPath(string path)
+        {
+            return Path.Combine(Application.StartupPath, path);
+        }
+
+        static string GetObjectPath(string sha1)
+        {
+            return CombineStartupPath(string.Format(@"objects\{0}.bin", sha1));
+        }
+
+        public string Create(int width, int height, int depth, byte[] data)
+        {
+            string sha1 = null;
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write(width);
+                bw.Write(height);
+                bw.Write(depth);
+                bw.Write(data);
+                bw.Flush();
+                ms.Seek(0, SeekOrigin.Begin);
+                sha1 = GetSha1HexString(ms);
+                string object_path = GetObjectPath(sha1);
+                if (! File.Exists(object_path))
+                {
+                    using (FileStream file = File.Create(object_path))
+                    {
+                        ms.Seek(0, SeekOrigin.Begin);
+
+                        byte[] buffer = new byte[4096];
+                        StreamUtils.Copy(ms, file, buffer);
+                    }
+                }
+            }
+
+            if (ContainsKey(sha1))
+            {
+                AddRef(sha1);
+            }
+            else
+            {
+                Texture d3d_tex = CreateD3DTexture(width, height, depth, data);
+                Add(sha1, d3d_tex);
+            }
+            return sha1;
+        }
+
+        public void ReadOnDeviceReset(string sha1)
+        {
+            string object_path = GetObjectPath(sha1);
+            using (FileStream file = File.OpenRead(object_path))
+            using (BinaryReader reader = new BinaryReader(file))
+            {
+                int width = reader.ReadInt32();
+                int height = reader.ReadInt32();
+                int depth = reader.ReadInt32();
+                byte[] data = reader.ReadBytes( width * height * depth );
+
+                if (ContainsKey(sha1))
+                {
+                    AddRef(sha1);
+                }
+                else
+                {
+                    Texture d3d_tex = CreateD3DTexture(width, height, depth, data);
+                    Add(sha1, d3d_tex);
+                }
+            }
+        }
+
+        public void Write(string sha1, Stream dest)
+        {
+            string object_path = GetObjectPath(sha1);
+            using (FileStream file = File.OpenRead(object_path))
+            {
+                byte[] buffer = new byte[4096];
+                StreamUtils.Copy(file, dest, buffer);
+            }
+        }
+
         static readonly int sizeof_tga_header = Marshal.SizeOf(typeof(TARGA_HEADER));
 
         /// <summary>
         /// device上でDirect3Dテクスチャを作成します。
         /// </summary>
-        public Texture CreateD3DTexture(int width, int height, int depth, byte[] data)
+        Texture CreateD3DTexture(int width, int height, int depth, byte[] data)
         {
             if (data.Length == 0)
                 return null;

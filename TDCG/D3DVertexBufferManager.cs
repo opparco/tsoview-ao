@@ -2,8 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
+using System.Security.Cryptography;
+using System.Windows.Forms;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
+using ICSharpCode.SharpZipLib.Core;
 
 namespace TDCG
 {
@@ -102,15 +106,118 @@ namespace TDCG
             }
         }
 
+        static string GetSha1HexString(Stream stream)
+        {
+            byte[] data;
+            using (SHA1 sha1 = SHA1.Create())
+            {
+                data = sha1.ComputeHash(stream);
+            }
+
+            StringBuilder string_builder = new StringBuilder();
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                string_builder.Append(data[i].ToString("x2"));
+            }
+
+            return string_builder.ToString();
+        }
+
+        static string CombineStartupPath(string path)
+        {
+            return Path.Combine(Application.StartupPath, path);
+        }
+
+        static string GetObjectPath(string sha1)
+        {
+            return CombineStartupPath(string.Format(@"objects\{0}.bin", sha1));
+        }
+
+        public string Create(Vertex[] vertices)
+        {
+            string sha1 = null;
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                int num_vertices = vertices.Length;
+                bw.Write(num_vertices);
+                for (int i = 0; i < num_vertices; i++)
+                {
+                    vertices[i].Write(bw);
+                }
+                bw.Flush();
+                ms.Seek(0, SeekOrigin.Begin);
+                sha1 = GetSha1HexString(ms);
+                string object_path = GetObjectPath(sha1);
+                if (! File.Exists(object_path))
+                {
+                    using (FileStream file = File.Create(object_path))
+                    {
+                        ms.Seek(0, SeekOrigin.Begin);
+
+                        byte[] buffer = new byte[4096];
+                        StreamUtils.Copy(ms, file, buffer);
+                    }
+                }
+            }
+
+            if (ContainsKey(sha1))
+            {
+                AddRef(sha1);
+            }
+            else
+            {
+                VertexBuffer d3d_vb = CreateD3DVertexBuffer(vertices);
+                Add(sha1, d3d_vb);
+            }
+            return sha1;
+        }
+
+        public void ReadOnDeviceReset(string sha1)
+        {
+            string object_path = GetObjectPath(sha1);
+            using (FileStream file = File.OpenRead(object_path))
+            using (BinaryReader reader = new BinaryReader(file))
+            {
+                int num_vertices = reader.ReadInt32();
+                Vertex[] vertices = new Vertex[num_vertices];
+                for (int i = 0; i < num_vertices; i++)
+                {
+                    Vertex v = new Vertex();
+                    v.Read(reader);
+                    vertices[i] = v;
+                }
+
+                if (ContainsKey(sha1))
+                {
+                    AddRef(sha1);
+                }
+                else
+                {
+                    VertexBuffer d3d_vb = CreateD3DVertexBuffer(vertices);
+                    Add(sha1, d3d_vb);
+                }
+            }
+        }
+
+        public void Write(string sha1, Stream dest)
+        {
+            string object_path = GetObjectPath(sha1);
+            using (FileStream file = File.OpenRead(object_path))
+            {
+                byte[] buffer = new byte[4096];
+                StreamUtils.Copy(file, dest, buffer);
+            }
+        }
+
         /// <summary>
         /// device上でDirect3D頂点バッファを作成します。
         /// </summary>
         /// <param name="device">device</param>
-        public VertexBuffer CreateD3DVertexBuffer(Vertex[] vertices)
+        VertexBuffer CreateD3DVertexBuffer(Vertex[] vertices)
         {
             VertexBuffer vb = new VertexBuffer(typeof(VertexFormat), vertices.Length, device, Usage.Dynamic | Usage.WriteOnly, VertexFormats.None, Pool.Default);
-            //vb.Created += new EventHandler(vb_Created);
-            //vb_Created(vb, null);
 
             //
             // rewrite vertex buffer
@@ -133,13 +240,6 @@ namespace TDCG
             vb.Unlock();
             vertices = null;
             return vb;
-        }
-
-        void vb_Created(object sender, EventArgs e)
-        {
-            VertexBuffer vb = (VertexBuffer)sender;
-
-            //todo: load vertices from file.
         }
     }
 }

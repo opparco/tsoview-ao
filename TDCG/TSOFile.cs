@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.ComponentModel;
-using System.Security.Cryptography;
 using System.Text;
-using System.Windows.Forms;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
-using ICSharpCode.SharpZipLib.Core;
 using TDCG.Extensions;
 
 namespace TDCG
@@ -65,34 +62,6 @@ namespace TDCG
             return bones[i];
         }
 
-        static string GetSha1HexString(Stream stream)
-        {
-            byte[] data;
-            using (SHA1 sha1 = SHA1.Create())
-            {
-                data = sha1.ComputeHash(stream);
-            }
-
-            StringBuilder string_builder = new StringBuilder();
-
-            for (int i = 0; i < data.Length; i++)
-            {
-                string_builder.Append(data[i].ToString("x2"));
-            }
-
-            return string_builder.ToString();
-        }
-
-        static string CombineStartupPath(string path)
-        {
-            return Path.Combine(Application.StartupPath, path);
-        }
-
-        static string GetObjectPath(string sha1)
-        {
-            return CombineStartupPath(string.Format(@"objects\{0}.bin", sha1));
-        }
-
         public string sha1;
 
         /// <summary>
@@ -121,40 +90,9 @@ namespace TDCG
                 vertices[i] = v;
             }
 
-            using (MemoryStream ms = new MemoryStream())
-            using (BinaryWriter bw = new BinaryWriter(ms))
-            {
-                bw.Write(num_vertices);
-                for (int i = 0; i < num_vertices; i++)
-                {
-                    vertices[i].Write(bw);
-                }
-                bw.Flush();
-                ms.Seek(0, SeekOrigin.Begin);
-                this.sha1 = GetSha1HexString(ms);
-                string object_path = GetObjectPath(this.sha1);
-                if (! File.Exists(object_path))
-                {
-                    using (FileStream file = File.Create(object_path))
-                    {
-                        ms.Seek(0, SeekOrigin.Begin);
+            this.sha1 = D3DVertexBufferManager.instance.Create(vertices);
 
-                        byte[] buffer = new byte[4096];
-                        StreamUtils.Copy(ms, file, buffer);
-                    }
-                }
-            }
             this.num_vertices = num_vertices;
-
-            if (D3DVertexBufferManager.instance.ContainsKey(this.sha1))
-            {
-                D3DVertexBufferManager.instance.AddRef(this.sha1);
-            }
-            else
-            {
-                VertexBuffer d3d_vb = D3DVertexBufferManager.instance.CreateD3DVertexBuffer(vertices);
-                D3DVertexBufferManager.instance.Add(this.sha1, d3d_vb);
-            }
         }
 
         /// <summary>
@@ -162,29 +100,7 @@ namespace TDCG
         /// </summary>
         public void ReadOnDeviceReset()
         {
-            string object_path = GetObjectPath(this.sha1);
-            using (FileStream file = File.OpenRead(object_path))
-            using (BinaryReader reader = new BinaryReader(file))
-            {
-                int num_vertices = reader.ReadInt32();
-                Vertex[] vertices = new Vertex[num_vertices];
-                for (int i = 0; i < num_vertices; i++)
-                {
-                    Vertex v = new Vertex();
-                    v.Read(reader);
-                    vertices[i] = v;
-                }
-
-                if (D3DVertexBufferManager.instance.ContainsKey(this.sha1))
-                {
-                    D3DVertexBufferManager.instance.AddRef(this.sha1);
-                }
-                else
-                {
-                    VertexBuffer d3d_vb = D3DVertexBufferManager.instance.CreateD3DVertexBuffer(vertices);
-                    D3DVertexBufferManager.instance.Add(this.sha1, d3d_vb);
-                }
-            }
+            D3DVertexBufferManager.instance.ReadOnDeviceReset(this.sha1);
         }
 
         /// <summary>
@@ -198,12 +114,7 @@ namespace TDCG
             foreach (int bone_index in this.bone_indices)
                 bw.Write(bone_index);
 
-            string object_path = GetObjectPath(this.sha1);
-            using (FileStream file = File.OpenRead(object_path))
-            {
-                    byte[] buffer = new byte[4096];
-                    StreamUtils.Copy(file, bw.BaseStream, buffer);
-            }
+            D3DVertexBufferManager.instance.Write(this.sha1, bw.BaseStream);
         }
 
         /// <summary>
@@ -678,34 +589,6 @@ namespace TDCG
         /// </summary>
         public string FileName { get { return file; } set { file = value; } }
 
-        static string GetSha1HexString(Stream stream)
-        {
-            byte[] data;
-            using (SHA1 sha1 = SHA1.Create())
-            {
-                data = sha1.ComputeHash(stream);
-            }
-
-            StringBuilder string_builder = new StringBuilder();
-
-            for (int i = 0; i < data.Length; i++)
-            {
-                string_builder.Append(data[i].ToString("x2"));
-            }
-
-            return string_builder.ToString();
-        }
-
-        static string CombineStartupPath(string path)
-        {
-            return Path.Combine(Application.StartupPath, path);
-        }
-
-        static string GetObjectPath(string sha1)
-        {
-            return CombineStartupPath(string.Format(@"objects\{0}.bin", sha1));
-        }
-
         public string sha1;
 
         /// <summary>
@@ -720,38 +603,7 @@ namespace TDCG
             this.depth = reader.ReadInt32();
             byte[] data = reader.ReadBytes( this.width * this.height * this.depth );
 
-            using (MemoryStream ms = new MemoryStream())
-            using (BinaryWriter bw = new BinaryWriter(ms))
-            {
-                bw.Write(this.width);
-                bw.Write(this.height);
-                bw.Write(this.depth);
-                bw.Write(data);
-                bw.Flush();
-                ms.Seek(0, SeekOrigin.Begin);
-                this.sha1 = GetSha1HexString(ms);
-                string object_path = GetObjectPath(this.sha1);
-                if (! File.Exists(object_path))
-                {
-                    using (FileStream file = File.Create(object_path))
-                    {
-                        ms.Seek(0, SeekOrigin.Begin);
-
-                        byte[] buffer = new byte[4096];
-                        StreamUtils.Copy(ms, file, buffer);
-                    }
-                }
-            }
-
-            if (D3DTextureManager.instance.ContainsKey(this.sha1))
-            {
-                D3DTextureManager.instance.AddRef(this.sha1);
-            }
-            else
-            {
-                Texture d3d_tex = D3DTextureManager.instance.CreateD3DTexture(width, height, depth, data);
-                D3DTextureManager.instance.Add(this.sha1, d3d_tex);
-            }
+            this.sha1 = D3DTextureManager.instance.Create(width, height, depth, data);
         }
 
         /// <summary>
@@ -759,25 +611,7 @@ namespace TDCG
         /// </summary>
         public void ReadOnDeviceReset()
         {
-            string object_path = GetObjectPath(this.sha1);
-            using (FileStream file = File.OpenRead(object_path))
-            using (BinaryReader reader = new BinaryReader(file))
-            {
-                this.width = reader.ReadInt32();
-                this.height = reader.ReadInt32();
-                this.depth = reader.ReadInt32();
-                byte[] data = reader.ReadBytes( this.width * this.height * this.depth );
-
-                if (D3DTextureManager.instance.ContainsKey(this.sha1))
-                {
-                    D3DTextureManager.instance.AddRef(this.sha1);
-                }
-                else
-                {
-                    Texture d3d_tex = D3DTextureManager.instance.CreateD3DTexture(width, height, depth, data);
-                    D3DTextureManager.instance.Add(this.sha1, d3d_tex);
-                }
-            }
+            D3DTextureManager.instance.ReadOnDeviceReset(this.sha1);
         }
 
         /// <summary>
@@ -788,12 +622,7 @@ namespace TDCG
             bw.WriteCString(this.name);
             bw.WriteCString(this.file);
 
-            string object_path = GetObjectPath(this.sha1);
-            using (FileStream file = File.OpenRead(object_path))
-            {
-                    byte[] buffer = new byte[4096];
-                    StreamUtils.Copy(file, bw.BaseStream, buffer);
-            }
+            D3DTextureManager.instance.Write(this.sha1, bw.BaseStream);
         }
     }
 
