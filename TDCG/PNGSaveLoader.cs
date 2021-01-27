@@ -82,7 +82,7 @@ namespace TDCG
         /// 指定パスからPNGFileを読み込みセーブファイルの内容を得ます。
         /// </summary>
         /// <param name="source_file">PNGFileのパス</param>
-        static public PNGSaveData FromFile(string source_file, Func<int, int, int, byte[], Texture> create_d3d_texture, Func<Vertex[], VertexBuffer> create_d3d_vertex_buffer)
+        static public PNGSaveData FromFile(string source_file)
         {
             PNGSaveData savedata = new PNGSaveData();
             try
@@ -167,7 +167,7 @@ namespace TDCG
                 png.Ftso += delegate (Stream dest, int extract_length, byte[] opt1)
                 {
                     TSOFile tso = new TSOFile();
-                    tso.Load(dest, create_d3d_texture, create_d3d_vertex_buffer);
+                    tso.Load(dest);
                     tso.Row = opt1[0];
                     fig.TsoList.Add(tso);
                 };

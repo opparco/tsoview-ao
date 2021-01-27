@@ -1,13 +1,40 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 
 namespace TDCG
 {
+    /// 頂点構造体
+    struct VertexFormat
+    {
+        /// 位置
+        public Vector3 position;
+        /// スキンウェイト0
+        public float weight_0;
+        /// スキンウェイト1
+        public float weight_1;
+        /// スキンウェイト2
+        public float weight_2;
+        /// スキンウェイト3
+        public float weight_3;
+        /// ボーンインデックス
+        public uint bone_indices;
+        /// 法線
+        public Vector3 normal;
+        /// テクスチャU座標
+        public float u;
+        /// テクスチャV座標
+        public float v;
+    }
+
     public sealed class D3DVertexBufferManager
     {
         public static D3DVertexBufferManager instance = new D3DVertexBufferManager();
+
+        public Device device;
 
         /// sha1 と d3d vertex buffer を関連付ける辞書
         Dictionary<string, VertexBuffer> d3d_vbmap;
@@ -73,6 +100,46 @@ namespace TDCG
                 d3d_vbmap.Clear();
                 d3d_vbref.Clear();
             }
+        }
+
+        /// <summary>
+        /// device上でDirect3D頂点バッファを作成します。
+        /// </summary>
+        /// <param name="device">device</param>
+        public VertexBuffer CreateD3DVertexBuffer(Vertex[] vertices)
+        {
+            VertexBuffer vb = new VertexBuffer(typeof(VertexFormat), vertices.Length, device, Usage.Dynamic | Usage.WriteOnly, VertexFormats.None, Pool.Default);
+            //vb.Created += new EventHandler(vb_Created);
+            //vb_Created(vb, null);
+
+            //
+            // rewrite vertex buffer
+            //
+            GraphicsStream gs = vb.Lock(0, 0, LockFlags.None);
+            {
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    Vertex v = vertices[i];
+
+                    gs.Write(v.position);
+                    for (int j = 0; j < 4; j++)
+                        gs.Write(v.skin_weights[j].weight);
+                    gs.Write(v.bone_indices);
+                    gs.Write(v.normal);
+                    gs.Write(v.u);
+                    gs.Write(v.v);
+                }
+            }
+            vb.Unlock();
+            vertices = null;
+            return vb;
+        }
+
+        void vb_Created(object sender, EventArgs e)
+        {
+            VertexBuffer vb = (VertexBuffer)sender;
+
+            //todo: load vertices from file.
         }
     }
 }
