@@ -1917,8 +1917,8 @@ namespace TDCG.Editor
                 foreach (TSOFile tso in fig.TsoList)
                     tso.Dispose();
 
-            //D3DTextureManager.instance.Clear();
-            //D3DVertexBufferManager.instance.Clear();
+            D3DTextureManager.instance.Clear();
+            D3DVertexBufferManager.instance.Clear();
         }
 
         Rectangle dev_rect;

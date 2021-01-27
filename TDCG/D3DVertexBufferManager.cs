@@ -60,5 +60,19 @@ namespace TDCG
                 d3d_vbref.Remove(sha1);
             }
         }
+
+        public void Clear()
+        {
+            if (d3d_vbmap.Count == 0)
+            {
+                Debug.WriteLine("d3d_vbmap has been cleared.");
+            }
+            else
+            {
+                Debug.WriteLine("d3d_vbmap clear.");
+                d3d_vbmap.Clear();
+                d3d_vbref.Clear();
+            }
+        }
     }
 }

@@ -60,5 +60,19 @@ namespace TDCG
                 d3d_textureref.Remove(sha1);
             }
         }
+
+        public void Clear()
+        {
+            if (d3d_texturemap.Count == 0)
+            {
+                Debug.WriteLine("d3d_texturemap has been cleared.");
+            }
+            else
+            {
+                Debug.WriteLine("d3d_texturemap clear.");
+                d3d_texturemap.Clear();
+                d3d_textureref.Clear();
+            }
+        }
     }
 }
