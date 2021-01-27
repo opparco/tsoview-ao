@@ -99,7 +99,7 @@ namespace TDCG
         /// <summary>
         /// サブメッシュを読み込みます。
         /// </summary>
-        public void Read(BinaryReader reader)
+        public void Read(BinaryReader reader, Func<Vertex[], VertexBuffer> create_d3d_vertex_buffer)
         {
             this.spec = reader.ReadInt32();
             int num_bone_indices = reader.ReadInt32();
@@ -114,12 +114,12 @@ namespace TDCG
             }
 
             int num_vertices = reader.ReadInt32();
-            this.vertices = new Vertex[num_vertices];
+            Vertex[] vertices = new Vertex[num_vertices];
             for (int i = 0; i < num_vertices; i++)
             {
                 Vertex v = new Vertex();
                 v.Read(reader);
-                this.vertices[i] = v;
+                vertices[i] = v;
             }
 
             using (MemoryStream ms = new MemoryStream())
@@ -128,7 +128,7 @@ namespace TDCG
                 bw.Write(num_vertices);
                 for (int i = 0; i < num_vertices; i++)
                 {
-                    this.vertices[i].Write(bw);
+                    vertices[i].Write(bw);
                 }
                 bw.Flush();
                 ms.Seek(0, SeekOrigin.Begin);
@@ -146,6 +146,16 @@ namespace TDCG
                 }
             }
             this.num_vertices = num_vertices;
+
+            if (D3DVertexBufferManager.instance.ContainsKey(this.sha1))
+            {
+                D3DVertexBufferManager.instance.AddRef(this.sha1);
+            }
+            else
+            {
+                VertexBuffer d3d_vb = create_d3d_vertex_buffer(vertices);
+                D3DVertexBufferManager.instance.Add(this.sha1, d3d_vb);
+            }
         }
 
         /// <summary>
@@ -210,47 +220,6 @@ namespace TDCG
             foreach (int bone_index in bone_indices)
                 this.bones.Add(nodes[bone_index]);
         }
-
-        /// <summary>
-        /// Direct3Dバッファを作成します。
-        /// </summary>
-        /// <param name="device">device</param>
-        public VertexBuffer CreateD3DBuffers(Device device)
-        {
-            VertexBuffer vb = new VertexBuffer(typeof(VertexFormat), vertices.Length, device, Usage.Dynamic | Usage.WriteOnly, VertexFormats.None, Pool.Default);
-            vb.Created += new EventHandler(vb_Created);
-            vb_Created(vb, null);
-            vertices = null;
-            return vb;
-        }
-
-        void vb_Created(object sender, EventArgs e)
-        {
-            VertexBuffer vb = (VertexBuffer)sender;
-
-            //
-            // rewrite vertex buffer
-            //
-            {
-                GraphicsStream gs = vb.Lock(0, 0, LockFlags.None);
-                {
-                    for (int i = 0; i < vertices.Length; i++)
-                    {
-                        Vertex v = vertices[i];
-
-                        gs.Write(v.position);
-                        for (int j = 0; j < 4; j++)
-                            gs.Write(v.skin_weights[j].weight);
-                        gs.Write(v.bone_indices);
-                        gs.Write(v.normal);
-                        gs.Write(v.u);
-                        gs.Write(v.v);
-                    }
-                }
-                vb.Unlock();
-            }
-
-        }
     }
 
     /// <summary>
@@ -280,7 +249,7 @@ namespace TDCG
         /// <summary>
         /// メッシュを読み込みます。
         /// </summary>
-        public void Read(BinaryReader reader)
+        public void Read(BinaryReader reader, Func<Vertex[], VertexBuffer> create_d3d_vertex_buffer)
         {
             this.name = reader.ReadCString().Replace(":", "_colon_").Replace("#", "_sharp_"); //should be compatible with directx naming conventions 
             reader.ReadMatrix(ref this.transform_matrix);
@@ -290,7 +259,7 @@ namespace TDCG
             for (int i = 0; i < mesh_count; i++)
             {
                 TSOSubMesh sub_mesh = new TSOSubMesh();
-                sub_mesh.Read(reader);
+                sub_mesh.Read(reader, create_d3d_vertex_buffer);
                 this.sub_meshes[i] = sub_mesh;
             }
         }
@@ -318,29 +287,6 @@ namespace TDCG
             foreach (TSOSubMesh sub_mesh in sub_meshes)
                 sub_mesh.LinkBones(nodes);
         }
-    }
-
-    /// 頂点構造体
-    public struct VertexFormat
-    {
-        /// 位置
-        public Vector3 position;
-        /// スキンウェイト0
-        public float weight_0;
-        /// スキンウェイト1
-        public float weight_1;
-        /// スキンウェイト2
-        public float weight_2;
-        /// スキンウェイト3
-        public float weight_3;
-        /// ボーンインデックス
-        public uint bone_indices;
-        /// 法線
-        public Vector3 normal;
-        /// テクスチャU座標
-        public float u;
-        /// テクスチャV座標
-        public float v;
     }
 
     /// <summary>
@@ -1102,10 +1048,10 @@ namespace TDCG
         /// 指定パスから読み込みます。
         /// </summary>
         /// <param name="source_file">パス</param>
-        public void Load(string source_file, Func<int, int, int, byte[], Texture> create_d3d_texture = null)
+        public void Load(string source_file, Func<int, int, int, byte[], Texture> create_d3d_texture = null, Func<Vertex[], VertexBuffer> create_d3d_vertex_buffer = null)
         {
             using (Stream source_stream = File.OpenRead(source_file))
-                Load(source_stream, create_d3d_texture);
+                Load(source_stream, create_d3d_texture, create_d3d_vertex_buffer);
         }
 
         void ComputePosingMatrix(TSONode node, ref Matrix m)
@@ -1138,7 +1084,7 @@ namespace TDCG
         /// 指定ストリームから読み込みます。
         /// </summary>
         /// <param name="source_stream">ストリーム</param>
-        public void Load(Stream source_stream, Func<int, int, int, byte[], Texture> create_d3d_texture)
+        public void Load(Stream source_stream, Func<int, int, int, byte[], Texture> create_d3d_texture, Func<Vertex[], VertexBuffer> create_d3d_vertex_buffer)
         {
             BinaryReader reader = new BinaryReader(source_stream, System.Text.Encoding.Default);
 
@@ -1197,7 +1143,7 @@ namespace TDCG
             for (int i = 0; i < mesh_count; i++)
             {
                 meshes[i] = new TSOMesh();
-                meshes[i].Read(reader);
+                meshes[i].Read(reader, create_d3d_vertex_buffer);
                 meshes[i].LinkBones(nodes);
 
                 //Console.WriteLine("mesh name {0} len {1}", mesh.name, mesh.sub_meshes.Length);
@@ -1245,20 +1191,6 @@ namespace TDCG
         /// <param name="device">device</param>
         public void CreateD3DResources(Device device)
         {
-            foreach (TSOMesh mesh in meshes)
-            foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
-            {
-                if (D3DVertexBufferManager.instance.ContainsKey(sub_mesh.sha1))
-                {
-                    D3DVertexBufferManager.instance.AddRef(sub_mesh.sha1);
-                }
-                else
-                {
-                    VertexBuffer d3d_vb = sub_mesh.CreateD3DBuffers(device);
-                    D3DVertexBufferManager.instance.Add(sub_mesh.sha1, d3d_vb);
-                }
-            }
-
             d3d_texturemap = new Dictionary<string, string>();
 
             foreach (TSOTexture tex in textures)

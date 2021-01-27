@@ -34,6 +34,29 @@ namespace TDCG.Editor
 	    public BYTE		type;
     };
 
+    /// 頂点構造体
+    struct VertexFormat
+    {
+        /// 位置
+        public Vector3 position;
+        /// スキンウェイト0
+        public float weight_0;
+        /// スキンウェイト1
+        public float weight_1;
+        /// スキンウェイト2
+        public float weight_2;
+        /// スキンウェイト3
+        public float weight_3;
+        /// ボーンインデックス
+        public uint bone_indices;
+        /// 法線
+        public Vector3 normal;
+        /// テクスチャU座標
+        public float u;
+        /// テクスチャV座標
+        public float v;
+    }
+
     /// 射影 mode
     public enum ProjectionMode
     {
@@ -991,6 +1014,46 @@ namespace TDCG.Editor
         }
 
         /// <summary>
+        /// device上でDirect3D頂点バッファを作成します。
+        /// </summary>
+        /// <param name="device">device</param>
+        VertexBuffer CreateD3DVertexBuffer(Vertex[] vertices)
+        {
+            VertexBuffer vb = new VertexBuffer(typeof(VertexFormat), vertices.Length, device, Usage.Dynamic | Usage.WriteOnly, VertexFormats.None, Pool.Default);
+            //vb.Created += new EventHandler(vb_Created);
+            //vb_Created(vb, null);
+
+            //
+            // rewrite vertex buffer
+            //
+            GraphicsStream gs = vb.Lock(0, 0, LockFlags.None);
+            {
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    Vertex v = vertices[i];
+
+                    gs.Write(v.position);
+                    for (int j = 0; j < 4; j++)
+                        gs.Write(v.skin_weights[j].weight);
+                    gs.Write(v.bone_indices);
+                    gs.Write(v.normal);
+                    gs.Write(v.u);
+                    gs.Write(v.v);
+                }
+            }
+            vb.Unlock();
+            vertices = null;
+            return vb;
+        }
+
+        void vb_Created(object sender, EventArgs e)
+        {
+            VertexBuffer vb = (VertexBuffer)sender;
+
+            //todo: load vertices from file.
+        }
+
+        /// <summary>
         /// 指定ディレクトリからフィギュアを作成して追加します。
         /// </summary>
         /// <param name="source_file">TSOFileを含むディレクトリ</param>
@@ -1004,7 +1067,7 @@ namespace TDCG.Editor
                 {
                     TSOFile tso = new TSOFile();
                     Debug.WriteLine("loading " + file);
-                    tso.Load(file, CreateD3DTexture);
+                    tso.Load(file, CreateD3DTexture, CreateD3DVertexBuffer);
                     tso_list.Add(tso);
                 }
             }
@@ -1136,7 +1199,7 @@ namespace TDCG.Editor
             TSOFile tso = new TSOFile();
             try
             {
-                tso.Load(source_stream, CreateD3DTexture);
+                tso.Load(source_stream, CreateD3DTexture, CreateD3DVertexBuffer);
                 tso.Row = (byte)DetectRowFromFileName(file);
                 tso.FileName = file != null ? Path.GetFileNameWithoutExtension(file) : null;
             }
@@ -1280,7 +1343,7 @@ namespace TDCG.Editor
         /// <param name="append">FigureListを消去せずに追加するか</param>
         public void LoadPNGFile(string source_file, bool append)
         {
-            PNGSaveData savedata = PNGSaveLoader.FromFile(source_file, CreateD3DTexture);
+            PNGSaveData savedata = PNGSaveLoader.FromFile(source_file, CreateD3DTexture, CreateD3DVertexBuffer);
             if (savedata.type == null)
             {
                 //not save file
