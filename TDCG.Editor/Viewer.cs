@@ -20,18 +20,18 @@ namespace TDCG.Editor
     [StructLayout(LayoutKind.Sequential, Pack=1)]
     struct TARGA_HEADER
     {
-	    public BYTE     id;
-	    public BYTE		colormap;
-	    public BYTE		imagetype;
-	    public WORD		colormaporigin;
-	    public WORD		colormaplength;
-	    public BYTE		colormapdepth;
-	    public WORD		x;
-	    public WORD		y;
-	    public WORD		width;
-	    public WORD		height;
-	    public BYTE		depth;
-	    public BYTE		type;
+            public BYTE     id;
+            public BYTE         colormap;
+            public BYTE         imagetype;
+            public WORD         colormaporigin;
+            public WORD         colormaplength;
+            public BYTE         colormapdepth;
+            public WORD         x;
+            public WORD         y;
+            public WORD         width;
+            public WORD         height;
+            public BYTE         depth;
+            public BYTE         type;
     };
 
     /// 頂点構造体
@@ -1077,10 +1077,8 @@ namespace TDCG.Editor
             }
             Figure fig = new Figure();
             foreach (TSOFile tso in tso_list)
-            {
-                tso.CreateD3DResources(device);
                 fig.TsoList.Add(tso);
-            }
+
             int len = FigureList.Count;
             //todo: override List#Add
             FigureList.Add(fig);
@@ -1207,8 +1205,6 @@ namespace TDCG.Editor
             {
                 Console.WriteLine("Error: " + ex);
             }
-
-            tso.CreateD3DResources(device);
 
             Figure fig = GetSelectedFigure();
             int idx = sprite_renderer.scene_mode.SelectedIdx;
@@ -1382,8 +1378,6 @@ namespace TDCG.Editor
             if (savedata.type == "HSAV")
             {
                 Figure fig = savedata.figures[0];
-                foreach (TSOFile tso in fig.TsoList)
-                    tso.CreateD3DResources(device);
 
                 int len = FigureList.Count;
                 int idx = sprite_renderer.scene_mode.SelectedIdx;
@@ -1438,9 +1432,6 @@ namespace TDCG.Editor
                 int len = FigureList.Count;
                 foreach (Figure fig in savedata.figures)
                 {
-                    foreach (TSOFile tso in fig.TsoList)
-                        tso.CreateD3DResources(device);
-
                     //todo: override List#Add
                     FigureList.Add(fig);
                     fig.UpdateBoneMatricesEvent += delegate (object sender, EventArgs e)
@@ -1921,6 +1912,13 @@ namespace TDCG.Editor
                 dev_zbuf.Dispose();
             if (dev_surface != null)
                 dev_surface.Dispose();
+
+            foreach (Figure fig in FigureList)
+                foreach (TSOFile tso in fig.TsoList)
+                    tso.Dispose();
+
+            //D3DTextureManager.instance.Clear();
+            //D3DVertexBufferManager.instance.Clear();
         }
 
         Rectangle dev_rect;
@@ -2015,6 +2013,10 @@ namespace TDCG.Editor
             device.SetRenderState(RenderStates.AlphaFunction, (int)Compare.GreaterEqual);
 
             //device.RenderState.IndexedVertexBlendEnable = true;
+
+            foreach (Figure fig in FigureList)
+                foreach (TSOFile tso in fig.TsoList)
+                    tso.ReadOnDeviceReset(CreateD3DTexture, CreateD3DVertexBuffer);
         }
 
         private void OnDeviceResizing(object sender, CancelEventArgs e)

@@ -159,6 +159,36 @@ namespace TDCG
         }
 
         /// <summary>
+        /// サブメッシュを再度読み込みます。
+        /// </summary>
+        public void ReadOnDeviceReset(Func<Vertex[], VertexBuffer> create_d3d_vertex_buffer)
+        {
+            string object_path = GetObjectPath(this.sha1);
+            using (FileStream file = File.OpenRead(object_path))
+            using (BinaryReader reader = new BinaryReader(file))
+            {
+                int num_vertices = reader.ReadInt32();
+                Vertex[] vertices = new Vertex[num_vertices];
+                for (int i = 0; i < num_vertices; i++)
+                {
+                    Vertex v = new Vertex();
+                    v.Read(reader);
+                    vertices[i] = v;
+                }
+
+                if (D3DVertexBufferManager.instance.ContainsKey(this.sha1))
+                {
+                    D3DVertexBufferManager.instance.AddRef(this.sha1);
+                }
+                else
+                {
+                    VertexBuffer d3d_vb = create_d3d_vertex_buffer(vertices);
+                    D3DVertexBufferManager.instance.Add(this.sha1, d3d_vb);
+                }
+            }
+        }
+
+        /// <summary>
         /// サブメッシュを書き出します。
         /// </summary>
         public void Write(BinaryWriter bw)
@@ -261,6 +291,17 @@ namespace TDCG
                 TSOSubMesh sub_mesh = new TSOSubMesh();
                 sub_mesh.Read(reader, create_d3d_vertex_buffer);
                 this.sub_meshes[i] = sub_mesh;
+            }
+        }
+
+        /// <summary>
+        /// メッシュを再度読み込みます。
+        /// </summary>
+        public void ReadOnDeviceReset(Func<Vertex[], VertexBuffer> create_d3d_vertex_buffer)
+        {
+            foreach (TSOSubMesh sub_mesh in this.sub_meshes)
+            {
+                sub_mesh.ReadOnDeviceReset(create_d3d_vertex_buffer);
             }
         }
 
@@ -715,6 +756,32 @@ namespace TDCG
         }
 
         /// <summary>
+        /// テクスチャを再度読み込みます。
+        /// </summary>
+        public void ReadOnDeviceReset(Func<int, int, int, byte[], Texture> create_d3d_texture)
+        {
+            string object_path = GetObjectPath(this.sha1);
+            using (FileStream file = File.OpenRead(object_path))
+            using (BinaryReader reader = new BinaryReader(file))
+            {
+                this.width = reader.ReadInt32();
+                this.height = reader.ReadInt32();
+                this.depth = reader.ReadInt32();
+                byte[] data = reader.ReadBytes( this.width * this.height * this.depth );
+
+                if (D3DTextureManager.instance.ContainsKey(this.sha1))
+                {
+                    D3DTextureManager.instance.AddRef(this.sha1);
+                }
+                else
+                {
+                    Texture d3d_tex = create_d3d_texture(width, height, depth, data);
+                    D3DTextureManager.instance.Add(this.sha1, d3d_tex);
+                }
+            }
+        }
+
+        /// <summary>
         /// テクスチャを書き出します。
         /// </summary>
         public void Write(BinaryWriter bw)
@@ -1120,6 +1187,7 @@ namespace TDCG
                 textures[i] = new TSOTexture();
                 textures[i].Read(reader, create_d3d_texture);
             }
+            GenerateD3DTexturemap();
 
             UInt32 script_count = reader.ReadUInt32();
             scripts = new TSOScript[script_count];
@@ -1185,11 +1253,7 @@ namespace TDCG
                 return null;
         }
 
-        /// <summary>
-        /// 指定device上でDirect3D Resourcesを作成します。
-        /// </summary>
-        /// <param name="device">device</param>
-        public void CreateD3DResources(Device device)
+        void GenerateD3DTexturemap()
         {
             d3d_texturemap = new Dictionary<string, string>();
 
@@ -1200,17 +1264,35 @@ namespace TDCG
         }
 
         /// <summary>
+        /// 内部objectを再度読み込みます。
+        /// </summary>
+        public void ReadOnDeviceReset(Func<int, int, int, byte[], Texture> create_d3d_texture, Func<Vertex[], VertexBuffer> create_d3d_vertex_buffer)
+        {
+            Debug.WriteLine("TSOFile.ReadOnDeviceReset");
+
+            foreach (TSOTexture tex in textures)
+            {
+                tex.ReadOnDeviceReset(create_d3d_texture);
+            }
+
+            foreach (TSOMesh mesh in meshes)
+            foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
+            {
+                sub_mesh.ReadOnDeviceReset(create_d3d_vertex_buffer);
+            }
+        }
+
+        /// <summary>
         /// 内部objectを破棄します。
         /// </summary>
         public void Dispose()
         {
             Debug.WriteLine("TSOFile.Dispose");
 
-            foreach (string sha1 in d3d_texturemap.Values)
+            foreach (TSOTexture tex in textures)
             {
-                D3DTextureManager.instance.Release(sha1);
+                D3DTextureManager.instance.Release(tex.sha1);
             }
-            d3d_texturemap.Clear();
 
             foreach (TSOMesh mesh in meshes)
             foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
