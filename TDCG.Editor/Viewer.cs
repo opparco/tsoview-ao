@@ -952,8 +952,8 @@ namespace TDCG.Editor
         {
             if (idx < 0)
                 idx = 0;
-            if (FigureList.Count != 0 && idx > FigureList.Count - 1)
-                idx = FigureList.Count - 1;
+            if (FigureList.Count != 0 && idx >= Math.Min(FigureList.Count, 24))
+                idx = Math.Min(FigureList.Count, 24) - 1;
 
             sprite_renderer.scene_mode.SelectedIdx = idx;
 
@@ -1283,7 +1283,7 @@ namespace TDCG.Editor
         {
             int idx = sprite_renderer.scene_mode.SelectedIdx;
             idx++;
-            if (idx > FigureList.Count - 1)
+            if (idx >= Math.Min(FigureList.Count, 24))
                 idx = 0;
             SetFigureIdx(idx);
         }
@@ -2078,6 +2078,8 @@ namespace TDCG.Editor
             {
                 sprite_renderer.scene_mode.SetHidden(idx, fig.Hidden);
                 idx++;
+                if (idx == 24)
+                    break;
             }
         }
 
@@ -2638,6 +2640,8 @@ namespace TDCG.Editor
                 sprite_cell_renderer.SnapFigure(idx);
 
                 idx++;
+                if (idx == 24)
+                    break;
             }
         }
 

@@ -43,7 +43,7 @@ namespace TDCG.Editor
         {
             this.device_rect = device_rect;
 
-            snap_texture = new Texture(device, 1024, 1024, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
+            snap_texture = new Texture(device, 2048, 2048, 1, Usage.RenderTarget, Format.X8R8G8B8, Pool.Default);
             snap_surface = snap_texture.GetSurfaceLevel(0);
         }
 
@@ -74,7 +74,7 @@ namespace TDCG.Editor
 
             device.SetRenderState(RenderStates.AlphaBlendEnable, false);
 
-            sprite.Transform = Matrix.Scaling(device_rect.Width / 2048.0f, device_rect.Height / 1536.0f, 1.0f);
+            sprite.Transform = Matrix.Scaling(device_rect.Width / 1024.0f * 0.50f, device_rect.Height / 768.0f * 0.50f, 1.0f);
 
             sprite.Begin(0);
             int idx = 0;
@@ -86,6 +86,8 @@ namespace TDCG.Editor
                 sprite.Draw(snap_texture, new Rectangle((idx%4)*256, (idx/4)*192, 256, 192), new Vector3(0, 0, 0), new Vector3(x16 * 32, y16 * 32, 0), Color.White);
 
                 idx++;
+                if (idx == 24)
+                    break;
             }
             sprite.End();
         }
