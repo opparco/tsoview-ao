@@ -16,8 +16,6 @@ namespace TDCG
 {
     using BYTE = Byte;
     using WORD = UInt16;
-    using DWORD = UInt32;
-    using LONG = Int32;
 
     [StructLayout(LayoutKind.Sequential, Pack=1)]
     struct TARGA_HEADER
@@ -35,36 +33,6 @@ namespace TDCG
 	    public BYTE		depth;
 	    public BYTE		type;
     };
-
-    [StructLayout(LayoutKind.Sequential, Pack=1)]
-    struct BITMAPFILEHEADER
-    {
-        public WORD bfType;
-        public DWORD bfSize;
-        public WORD bfReserved1;
-        public WORD bfReserved2;
-        public DWORD bfOffBits;
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack=1)]
-    struct BITMAPINFOHEADER
-    {
-        //public DWORD      biSize;
-        public LONG biWidth;
-        public LONG biHeight;
-        public WORD biPlanes;
-        public WORD biBitCount;
-        public DWORD biCompression;
-        public DWORD biSizeImage;
-        public LONG biXPelsPerMeter;
-        public LONG biYPelsPerMeter;
-        public DWORD biClrUsed;
-        public DWORD biClrImportant;
-        public DWORD bV5RedMask;
-        public DWORD bV5GreenMask;
-        public DWORD bV5BlueMask;
-        public DWORD bV5AlphaMask;
-    }
 
     /// <summary>
     /// サブメッシュ
