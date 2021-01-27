@@ -74,10 +74,11 @@ namespace TDCG
             get { return bone_indices.Length; }
         }
 
+        int num_vertices;
         /// 頂点数
         public int NumberVertices
         {
-            get { return vertices.Length; }
+            get { return num_vertices; }
         }
 
         /// <summary>
@@ -89,6 +90,36 @@ namespace TDCG
         {
             return bones[i];
         }
+
+        static string GetSha1HexString(Stream stream)
+        {
+            byte[] data;
+            using (SHA1 sha1 = SHA1.Create())
+            {
+                data = sha1.ComputeHash(stream);
+            }
+
+            StringBuilder string_builder = new StringBuilder();
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                string_builder.Append(data[i].ToString("x2"));
+            }
+
+            return string_builder.ToString();
+        }
+
+        static string CombineStartupPath(string path)
+        {
+            return Path.Combine(Application.StartupPath, path);
+        }
+
+        static string GetObjectPath(string sha1)
+        {
+            return CombineStartupPath(string.Format(@"objects\{0}.bin", sha1));
+        }
+
+        public string sha1;
 
         /// <summary>
         /// サブメッシュを読み込みます。
@@ -115,6 +146,31 @@ namespace TDCG
                 v.Read(reader);
                 this.vertices[i] = v;
             }
+
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.Write(num_vertices);
+                for (int i = 0; i < num_vertices; i++)
+                {
+                    this.vertices[i].Write(bw);
+                }
+                bw.Flush();
+                ms.Seek(0, SeekOrigin.Begin);
+                this.sha1 = GetSha1HexString(ms);
+                string object_path = GetObjectPath(this.sha1);
+                if (! File.Exists(object_path))
+                {
+                    using (FileStream file = File.Create(object_path))
+                    {
+                        ms.Seek(0, SeekOrigin.Begin);
+
+                        byte[] buffer = new byte[4096];
+                        StreamUtils.Copy(ms, file, buffer);
+                    }
+                }
+            }
+            this.num_vertices = num_vertices;
         }
 
         /// <summary>
@@ -128,10 +184,11 @@ namespace TDCG
             foreach (int bone_index in this.bone_indices)
                 bw.Write(bone_index);
 
-            bw.Write(this.vertices.Length);
-            for (int i = 0; i < this.vertices.Length; i++)
+            string object_path = GetObjectPath(this.sha1);
+            using (FileStream file = File.OpenRead(object_path))
             {
-                this.vertices[i].Write(bw);
+                    byte[] buffer = new byte[4096];
+                    StreamUtils.Copy(file, bw.BaseStream, buffer);
             }
         }
 
@@ -190,6 +247,7 @@ namespace TDCG
             vb = new VertexBuffer(typeof(VertexFormat), vertices.Length, device, Usage.Dynamic | Usage.WriteOnly, VertexFormats.None, Pool.Default);
             vb.Created += new EventHandler(vb_Created);
             vb_Created(vb, null);
+            vertices = null;
         }
 
         void vb_Created(object sender, EventArgs e)
@@ -685,24 +743,6 @@ namespace TDCG
 
         static readonly int sizeof_tga_header = Marshal.SizeOf(typeof(TARGA_HEADER));
 
-        static string GetSha1HexString(byte[] buf)
-        {
-            byte[] data;
-            using (SHA1 sha1 = SHA1.Create())
-            {
-                data = sha1.ComputeHash(buf);
-            }
-
-            StringBuilder string_builder = new StringBuilder();
-
-            for (int i = 0; i < data.Length; i++)
-            {
-                string_builder.Append(data[i].ToString("x2"));
-            }
-
-            return string_builder.ToString();
-        }
-
         static string GetSha1HexString(Stream stream)
         {
             byte[] data;
@@ -725,6 +765,7 @@ namespace TDCG
         {
             return Path.Combine(Application.StartupPath, path);
         }
+
         static string GetObjectPath(string sha1)
         {
             return CombineStartupPath(string.Format(@"objects\{0}.bin", sha1));
