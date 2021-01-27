@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
@@ -13,6 +14,26 @@ using Direct3D = Microsoft.DirectX.Direct3D;
 
 namespace TDCG.Editor
 {
+    using BYTE = Byte;
+    using WORD = UInt16;
+
+    [StructLayout(LayoutKind.Sequential, Pack=1)]
+    struct TARGA_HEADER
+    {
+	    public BYTE     id;
+	    public BYTE		colormap;
+	    public BYTE		imagetype;
+	    public WORD		colormaporigin;
+	    public WORD		colormaplength;
+	    public BYTE		colormapdepth;
+	    public WORD		x;
+	    public WORD		y;
+	    public WORD		width;
+	    public WORD		height;
+	    public BYTE		depth;
+	    public BYTE		type;
+    };
+
     /// 射影 mode
     public enum ProjectionMode
     {
@@ -917,6 +938,58 @@ namespace TDCG.Editor
                 FigureSelectEvent(this, EventArgs.Empty);
         }
 
+        static readonly int sizeof_tga_header = Marshal.SizeOf(typeof(TARGA_HEADER));
+
+        /// <summary>
+        /// device上でDirect3Dテクスチャを作成します。
+        /// </summary>
+        Texture CreateD3DTexture(int width, int height, int depth, byte[] data)
+        {
+            if (data.Length == 0)
+                return null;
+
+            for(int j = 0; j < data.Length; j += 4)
+            {
+                byte tmp = data[j + 2];
+                data[j + 2] = data[j + 0];
+                data[j + 0] = tmp;
+            }
+
+            Texture d3d_tex;
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                TARGA_HEADER header;
+
+                header.id = 0;
+                header.colormap = 0;
+                header.imagetype = 2;
+                header.colormaporigin = 0;
+                header.colormaplength = 0;
+                header.colormapdepth = 0;
+                header.x = 0;
+                header.y = 0;
+                header.width = (ushort)width;
+                header.height = (ushort)height;
+                header.depth = (byte)(depth * 8);
+                header.type = 0x20;
+
+                IntPtr header_ptr = Marshal.AllocHGlobal(sizeof_tga_header);
+                Marshal.StructureToPtr(header, header_ptr, false);
+                byte[] header_buf = new byte[sizeof_tga_header];
+                Marshal.Copy(header_ptr, header_buf, 0, sizeof_tga_header);
+                Marshal.FreeHGlobal(header_ptr);
+                bw.Write(header_buf);
+
+                bw.Write(data);
+                bw.Flush();
+                ms.Seek(0, SeekOrigin.Begin);
+                d3d_tex = TextureLoader.FromStream(device, ms);
+            }
+            data = null;
+            return d3d_tex;
+        }
+
         /// <summary>
         /// 指定ディレクトリからフィギュアを作成して追加します。
         /// </summary>
@@ -931,7 +1004,7 @@ namespace TDCG.Editor
                 {
                     TSOFile tso = new TSOFile();
                     Debug.WriteLine("loading " + file);
-                    tso.Load(file);
+                    tso.Load(file, CreateD3DTexture);
                     tso_list.Add(tso);
                 }
             }
@@ -1063,7 +1136,7 @@ namespace TDCG.Editor
             TSOFile tso = new TSOFile();
             try
             {
-                tso.Load(source_stream);
+                tso.Load(source_stream, CreateD3DTexture);
                 tso.Row = (byte)DetectRowFromFileName(file);
                 tso.FileName = file != null ? Path.GetFileNameWithoutExtension(file) : null;
             }
@@ -1207,7 +1280,7 @@ namespace TDCG.Editor
         /// <param name="append">FigureListを消去せずに追加するか</param>
         public void LoadPNGFile(string source_file, bool append)
         {
-            PNGSaveData savedata = PNGSaveLoader.FromFile(source_file);
+            PNGSaveData savedata = PNGSaveLoader.FromFile(source_file, CreateD3DTexture);
             if (savedata.type == null)
             {
                 //not save file

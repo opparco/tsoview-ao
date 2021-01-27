@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using Microsoft.DirectX;
+using Microsoft.DirectX.Direct3D;
+using Direct3D = Microsoft.DirectX.Direct3D;
 
 using TDCG.Extensions;
 
@@ -80,7 +82,7 @@ namespace TDCG
         /// 指定パスからPNGFileを読み込みセーブファイルの内容を得ます。
         /// </summary>
         /// <param name="source_file">PNGFileのパス</param>
-        static public PNGSaveData FromFile(string source_file)
+        static public PNGSaveData FromFile(string source_file, Func<int, int, int, byte[], Texture> create_d3d_texture)
         {
             PNGSaveData savedata = new PNGSaveData();
             try
@@ -165,7 +167,7 @@ namespace TDCG
                 png.Ftso += delegate (Stream dest, int extract_length, byte[] opt1)
                 {
                     TSOFile tso = new TSOFile();
-                    tso.Load(dest);
+                    tso.Load(dest, create_d3d_texture);
                     tso.Row = opt1[0];
                     fig.TsoList.Add(tso);
                 };

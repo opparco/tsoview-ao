@@ -14,26 +14,6 @@ using TDCG.Extensions;
 
 namespace TDCG
 {
-    using BYTE = Byte;
-    using WORD = UInt16;
-
-    [StructLayout(LayoutKind.Sequential, Pack=1)]
-    struct TARGA_HEADER
-    {
-	    public BYTE     id;
-	    public BYTE		colormap;
-	    public BYTE		imagetype;
-	    public WORD		colormaporigin;
-	    public WORD		colormaplength;
-	    public BYTE		colormapdepth;
-	    public WORD		x;
-	    public WORD		y;
-	    public WORD		width;
-	    public WORD		height;
-	    public BYTE		depth;
-	    public BYTE		type;
-    };
-
     /// <summary>
     /// サブメッシュ
     /// </summary>
@@ -702,10 +682,6 @@ namespace TDCG
         /// 色深度
         /// </summary>
         int depth;
-        /// <summary>
-        /// ビットマップ配列
-        /// </summary>
-        byte[] data;
 
         /// <summary>
         /// 名称
@@ -715,8 +691,6 @@ namespace TDCG
         /// ファイル名
         /// </summary>
         public string FileName { get { return file; } set { file = value; } }
-
-        static readonly int sizeof_tga_header = Marshal.SizeOf(typeof(TARGA_HEADER));
 
         static string GetSha1HexString(Stream stream)
         {
@@ -751,7 +725,7 @@ namespace TDCG
         /// <summary>
         /// テクスチャを読み込みます。
         /// </summary>
-        public void Read(BinaryReader reader)
+        public void Read(BinaryReader reader, Func<int, int, int, byte[], Texture> create_d3d_texture)
         {
             this.name = reader.ReadCString();
             this.file = reader.ReadCString();
@@ -783,13 +757,15 @@ namespace TDCG
                 }
             }
 
-            for(int j = 0; j < data.Length; j += 4)
+            if (D3DTextureManager.instance.ContainsKey(this.sha1))
             {
-                byte tmp = data[j + 2];
-                data[j + 2] = data[j + 0];
-                data[j + 0] = tmp;
+                D3DTextureManager.instance.AddRef(this.sha1);
             }
-            this.data = data;
+            else
+            {
+                Texture d3d_tex = create_d3d_texture(width, height, depth, data);
+                D3DTextureManager.instance.Add(this.sha1, d3d_tex);
+            }
         }
 
         /// <summary>
@@ -806,55 +782,6 @@ namespace TDCG
                     byte[] buffer = new byte[4096];
                     StreamUtils.Copy(file, bw.BaseStream, buffer);
             }
-        }
-
-        /// <summary>
-        /// 指定device上でDirect3Dテクスチャを作成します。
-        /// </summary>
-        /// <param name="device">device</param>
-        public Texture CreateD3DTexture(Device device)
-        {
-            /*
-            string dest_file = file.Trim('"');
-            if (dest_file == "")
-                return;
-            string ext = Path.GetExtension(dest_file).ToLower();
-            */
-            if (data.Length == 0)
-                return null;
-            Texture d3d_tex;
-            using (MemoryStream ms = new MemoryStream())
-            using (BinaryWriter bw = new BinaryWriter(ms))
-            {
-                TARGA_HEADER header;
-
-                header.id = 0;
-                header.colormap = 0;
-                header.imagetype = 2;
-                header.colormaporigin = 0;
-                header.colormaplength = 0;
-                header.colormapdepth = 0;
-                header.x = 0;
-                header.y = 0;
-                header.width = (ushort)width;
-                header.height = (ushort)height;
-                header.depth = (byte)(depth * 8);
-                header.type = 0x20;
-
-                IntPtr header_ptr = Marshal.AllocHGlobal(sizeof_tga_header);
-                Marshal.StructureToPtr(header, header_ptr, false);
-                byte[] header_buf = new byte[sizeof_tga_header];
-                Marshal.Copy(header_ptr, header_buf, 0, sizeof_tga_header);
-                Marshal.FreeHGlobal(header_ptr);
-                bw.Write(header_buf);
-
-                bw.Write(data);
-                bw.Flush();
-                ms.Seek(0, SeekOrigin.Begin);
-                d3d_tex = TextureLoader.FromStream(device, ms);
-            }
-            data = null;
-            return d3d_tex;
         }
     }
 
@@ -1175,10 +1102,10 @@ namespace TDCG
         /// 指定パスから読み込みます。
         /// </summary>
         /// <param name="source_file">パス</param>
-        public void Load(string source_file)
+        public void Load(string source_file, Func<int, int, int, byte[], Texture> create_d3d_texture = null)
         {
             using (Stream source_stream = File.OpenRead(source_file))
-                Load(source_stream);
+                Load(source_stream, create_d3d_texture);
         }
 
         void ComputePosingMatrix(TSONode node, ref Matrix m)
@@ -1211,7 +1138,7 @@ namespace TDCG
         /// 指定ストリームから読み込みます。
         /// </summary>
         /// <param name="source_stream">ストリーム</param>
-        public void Load(Stream source_stream)
+        public void Load(Stream source_stream, Func<int, int, int, byte[], Texture> create_d3d_texture)
         {
             BinaryReader reader = new BinaryReader(source_stream, System.Text.Encoding.Default);
 
@@ -1245,7 +1172,7 @@ namespace TDCG
             for (int i = 0; i < texture_count; i++)
             {
                 textures[i] = new TSOTexture();
-                textures[i].Read(reader);
+                textures[i].Read(reader, create_d3d_texture);
             }
 
             UInt32 script_count = reader.ReadUInt32();
@@ -1336,15 +1263,6 @@ namespace TDCG
 
             foreach (TSOTexture tex in textures)
             {
-                if (D3DTextureManager.instance.ContainsKey(tex.sha1))
-                {
-                    D3DTextureManager.instance.AddRef(tex.sha1);
-                }
-                else
-                {
-                    Texture d3d_tex = tex.CreateD3DTexture(device);
-                    D3DTextureManager.instance.Add(tex.sha1, d3d_tex);
-                }
                 d3d_texturemap.Add(tex.name, tex.sha1);
             }
         }
