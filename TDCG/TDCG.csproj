@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="BMPSaveData.cs" />
     <Compile Include="D3DTextureManager.cs" />
+    <Compile Include="D3DVertexBufferManager.cs" />
     <Compile Include="DepthNormalMapShader.cs" />
     <Compile Include="EnvironmentMapContainer.cs" />
     <Compile Include="Figure.cs" />

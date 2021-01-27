@@ -37,7 +37,7 @@ namespace TDCG
     /// <summary>
     /// サブメッシュ
     /// </summary>
-    public class TSOSubMesh : IDisposable
+    public class TSOSubMesh
     {
         /// <summary>
         /// シェーダ設定番号
@@ -55,11 +55,6 @@ namespace TDCG
         /// 頂点配列
         /// </summary>
         public Vertex[] vertices;
-
-        /// <summary>
-        /// Direct3D頂点バッファ
-        /// </summary>
-        public VertexBuffer vb = null;
 
         /// <summary>
         /// パレット長さ
@@ -240,14 +235,13 @@ namespace TDCG
         /// Direct3Dバッファを作成します。
         /// </summary>
         /// <param name="device">device</param>
-        public void CreateD3DBuffers(Device device)
+        public VertexBuffer CreateD3DBuffers(Device device)
         {
-            if (vb != null)
-                vb.Dispose();
-            vb = new VertexBuffer(typeof(VertexFormat), vertices.Length, device, Usage.Dynamic | Usage.WriteOnly, VertexFormats.None, Pool.Default);
+            VertexBuffer vb = new VertexBuffer(typeof(VertexFormat), vertices.Length, device, Usage.Dynamic | Usage.WriteOnly, VertexFormats.None, Pool.Default);
             vb.Created += new EventHandler(vb_Created);
             vb_Created(vb, null);
             vertices = null;
+            return vb;
         }
 
         void vb_Created(object sender, EventArgs e)
@@ -277,21 +271,12 @@ namespace TDCG
             }
 
         }
-
-        /// <summary>
-        /// Direct3Dバッファを破棄します。
-        /// </summary>
-        public void Dispose()
-        {
-            if (vb != null)
-                vb.Dispose();
-        }
     }
 
     /// <summary>
     /// メッシュ
     /// </summary>
-    public class TSOMesh : IDisposable
+    public class TSOMesh
     {
         string name;
         /// <summary>
@@ -352,16 +337,6 @@ namespace TDCG
         {
             foreach (TSOSubMesh sub_mesh in sub_meshes)
                 sub_mesh.LinkBones(nodes);
-        }
-
-        /// <summary>
-        /// 内部objectを破棄します。
-        /// </summary>
-        public void Dispose()
-        {
-            if (sub_meshes != null)
-            foreach (TSOSubMesh sub_mesh in sub_meshes)
-                sub_mesh.Dispose();
         }
     }
 
@@ -1345,7 +1320,17 @@ namespace TDCG
         {
             foreach (TSOMesh mesh in meshes)
             foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
-                sub_mesh.CreateD3DBuffers(device);
+            {
+                if (D3DVertexBufferManager.instance.ContainsKey(sub_mesh.sha1))
+                {
+                    D3DVertexBufferManager.instance.AddRef(sub_mesh.sha1);
+                }
+                else
+                {
+                    VertexBuffer d3d_vb = sub_mesh.CreateD3DBuffers(device);
+                    D3DVertexBufferManager.instance.Add(sub_mesh.sha1, d3d_vb);
+                }
+            }
 
             d3d_texturemap = new Dictionary<string, string>();
 
@@ -1378,7 +1363,10 @@ namespace TDCG
             d3d_texturemap.Clear();
 
             foreach (TSOMesh mesh in meshes)
-                mesh.Dispose();
+            foreach (TSOSubMesh sub_mesh in mesh.sub_meshes)
+            {
+                D3DVertexBufferManager.instance.Release(sub_mesh.sha1);
+            }
         }
 
         /// ファイル名

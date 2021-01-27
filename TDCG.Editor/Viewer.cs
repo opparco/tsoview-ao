@@ -2767,7 +2767,8 @@ namespace TDCG.Editor
                     Shader shader = tso.sub_scripts[sub_mesh.spec].shader;
 
                     //device.RenderState.VertexBlend = (VertexBlend)(4 - 1);
-                    device.SetStreamSource(0, sub_mesh.vb, 0, 52);
+                    VertexBuffer vb = D3DVertexBufferManager.instance.GetDirect3dVertexBufferBySha1(sub_mesh.sha1);
+                    device.SetStreamSource(0, vb, 0, 52);
 
                     toon_shader.SwitchShader(shader, tso.GetDirect3dTextureByName);
                     effect.SetValue(handle_LocalBoneMats, fig.ClipBoneMatrices(sub_mesh));
@@ -3008,10 +3009,13 @@ namespace TDCG.Editor
         /// </summary>
         public void Dispose()
         {
-            OnDeviceLost(device, null);
+            Console.WriteLine("Viewer.Dispose");
 
             foreach (Figure fig in FigureList)
                 fig.Dispose();
+            FigureList.Clear();
+
+            OnDeviceLost(device, null);
 
             if (device != null)
                 device.Dispose();
