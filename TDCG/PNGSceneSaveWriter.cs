@@ -114,7 +114,11 @@ namespace TDCG
 
             png.Load(thumbnail_file);
             Debug.WriteLine("Save File: " + dest_file);
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             png.Save(dest_file);
+            sw.Stop();
+            Debug.WriteLine(dest_file + " write time: " + sw.Elapsed);
         }
     }
 }

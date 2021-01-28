@@ -172,7 +172,11 @@ namespace TDCG
                     fig.TsoList.Add(tso);
                 };
                 Debug.WriteLine("loading " + source_file);
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
                 png.Load(source_file);
+                sw.Stop();
+                Debug.WriteLine(source_file + " read time: " + sw.Elapsed);
 
                 if (savedata.type == "HSAV")
                 {
