@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Security.Cryptography;
-using System.Windows.Forms;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 using ICSharpCode.SharpZipLib.Core;
@@ -42,12 +41,15 @@ namespace TDCG
 
         /// sha1 と d3d vertex buffer を関連付ける辞書
         Dictionary<string, VertexBuffer> d3d_vbmap;
+        /// sha1 と vertices を関連付ける辞書
+        Dictionary<string, Vertex[]> cached_verticesmap;
         /// 参照カウンタ
         Dictionary<string, int> d3d_vbref;
 
         D3DVertexBufferManager()
         {
             d3d_vbmap = new Dictionary<string, VertexBuffer>();
+            cached_verticesmap = new Dictionary<string, Vertex[]>();
             d3d_vbref = new Dictionary<string, int>();
         }
 
@@ -102,6 +104,7 @@ namespace TDCG
             {
                 Debug.WriteLine("d3d_vbmap clear.");
                 d3d_vbmap.Clear();
+                cached_verticesmap.Clear();
                 d3d_vbref.Clear();
             }
         }
@@ -124,16 +127,6 @@ namespace TDCG
             return string_builder.ToString();
         }
 
-        static string CombineStartupPath(string path)
-        {
-            return Path.Combine(Application.StartupPath, path);
-        }
-
-        static string GetObjectPath(string sha1)
-        {
-            return CombineStartupPath(string.Format(@"objects\{0}.bin", sha1));
-        }
-
         public string Create(Vertex[] vertices)
         {
             string sha1 = null;
@@ -149,17 +142,6 @@ namespace TDCG
                 bw.Flush();
                 ms.Seek(0, SeekOrigin.Begin);
                 sha1 = GetSha1HexString(ms);
-                string object_path = GetObjectPath(sha1);
-                if (! File.Exists(object_path))
-                {
-                    using (FileStream file = File.Create(object_path))
-                    {
-                        ms.Seek(0, SeekOrigin.Begin);
-
-                        byte[] buffer = new byte[4096];
-                        StreamUtils.Copy(ms, file, buffer);
-                    }
-                }
             }
 
             if (ContainsKey(sha1))
@@ -168,6 +150,7 @@ namespace TDCG
             }
             else
             {
+                cached_verticesmap[sha1] = vertices;
                 VertexBuffer d3d_vb = CreateD3DVertexBuffer(vertices);
                 Add(sha1, d3d_vb);
             }
@@ -176,38 +159,26 @@ namespace TDCG
 
         public void ReadOnDeviceReset(string sha1)
         {
-            string object_path = GetObjectPath(sha1);
-            using (FileStream file = File.OpenRead(object_path))
-            using (BinaryReader reader = new BinaryReader(file))
+            if (ContainsKey(sha1))
             {
-                int num_vertices = reader.ReadInt32();
-                Vertex[] vertices = new Vertex[num_vertices];
-                for (int i = 0; i < num_vertices; i++)
-                {
-                    Vertex v = new Vertex();
-                    v.Read(reader);
-                    vertices[i] = v;
-                }
-
-                if (ContainsKey(sha1))
-                {
-                    AddRef(sha1);
-                }
-                else
-                {
-                    VertexBuffer d3d_vb = CreateD3DVertexBuffer(vertices);
-                    Add(sha1, d3d_vb);
-                }
+                AddRef(sha1);
+            }
+            else
+            {
+                Vertex[] vertices = cached_verticesmap[sha1];
+                VertexBuffer d3d_vb = CreateD3DVertexBuffer(vertices);
+                Add(sha1, d3d_vb);
             }
         }
 
-        public void Write(string sha1, Stream dest)
+        public void Write(string sha1, BinaryWriter bw)
         {
-            string object_path = GetObjectPath(sha1);
-            using (FileStream file = File.OpenRead(object_path))
+            Vertex[] vertices = cached_verticesmap[sha1];
+            int num_vertices = vertices.Length;
+            bw.Write(num_vertices);
+            for (int i = 0; i < num_vertices; i++)
             {
-                byte[] buffer = new byte[4096];
-                StreamUtils.Copy(file, dest, buffer);
+                vertices[i].Write(bw);
             }
         }
 
@@ -238,7 +209,7 @@ namespace TDCG
                 }
             }
             vb.Unlock();
-            vertices = null;
+
             return vb;
         }
     }

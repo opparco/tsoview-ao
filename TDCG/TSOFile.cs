@@ -114,7 +114,7 @@ namespace TDCG
             foreach (int bone_index in this.bone_indices)
                 bw.Write(bone_index);
 
-            D3DVertexBufferManager.instance.Write(this.sha1, bw.BaseStream);
+            D3DVertexBufferManager.instance.Write(this.sha1, bw);
         }
 
         /// <summary>
@@ -567,18 +567,6 @@ namespace TDCG
         /// ファイル名
         /// </summary>
         internal string file;
-        /// <summary>
-        /// 幅
-        /// </summary>
-        int width;
-        /// <summary>
-        /// 高さ
-        /// </summary>
-        int height;
-        /// <summary>
-        /// 色深度
-        /// </summary>
-        int depth;
 
         /// <summary>
         /// 名称
@@ -598,10 +586,10 @@ namespace TDCG
         {
             this.name = reader.ReadCString();
             this.file = reader.ReadCString();
-            this.width = reader.ReadInt32();
-            this.height = reader.ReadInt32();
-            this.depth = reader.ReadInt32();
-            byte[] data = reader.ReadBytes( this.width * this.height * this.depth );
+            int width = reader.ReadInt32();
+            int height = reader.ReadInt32();
+            int depth = reader.ReadInt32();
+            byte[] data = reader.ReadBytes( width * height * depth );
 
             this.sha1 = D3DTextureManager.instance.Create(width, height, depth, data);
         }
@@ -622,7 +610,7 @@ namespace TDCG
             bw.WriteCString(this.name);
             bw.WriteCString(this.file);
 
-            D3DTextureManager.instance.Write(this.sha1, bw.BaseStream);
+            D3DTextureManager.instance.Write(this.sha1, bw);
         }
     }
 

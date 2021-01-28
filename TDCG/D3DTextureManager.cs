@@ -5,7 +5,6 @@ using System.IO;
 using System.Text;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 using ICSharpCode.SharpZipLib.Core;
@@ -32,6 +31,18 @@ namespace TDCG
             public BYTE         type;
     };
 
+    public class CachedTexture
+    {
+        /// 幅
+        public int width;
+        /// 高さ
+        public int height;
+        /// 色深度
+        public int depth;
+        /// ビットマップ
+        public byte[] data;
+    }
+
     public sealed class D3DTextureManager
     {
         public static D3DTextureManager instance = new D3DTextureManager();
@@ -40,12 +51,15 @@ namespace TDCG
 
         /// sha1 と d3d texture を関連付ける辞書
         Dictionary<string, Texture> d3d_texturemap;
+        /// sha1 と cached texture を関連付ける辞書
+        Dictionary<string, CachedTexture> cached_texturemap;
         /// 参照カウンタ
         Dictionary<string, int> d3d_textureref;
 
         D3DTextureManager()
         {
             d3d_texturemap = new Dictionary<string, Texture>();
+            cached_texturemap = new Dictionary<string, CachedTexture>();
             d3d_textureref = new Dictionary<string, int>();
         }
 
@@ -100,6 +114,7 @@ namespace TDCG
             {
                 Debug.WriteLine("d3d_texturemap clear.");
                 d3d_texturemap.Clear();
+                cached_texturemap.Clear();
                 d3d_textureref.Clear();
             }
         }
@@ -122,16 +137,6 @@ namespace TDCG
             return string_builder.ToString();
         }
 
-        static string CombineStartupPath(string path)
-        {
-            return Path.Combine(Application.StartupPath, path);
-        }
-
-        static string GetObjectPath(string sha1)
-        {
-            return CombineStartupPath(string.Format(@"objects\{0}.bin", sha1));
-        }
-
         public string Create(int width, int height, int depth, byte[] data)
         {
             string sha1 = null;
@@ -145,17 +150,6 @@ namespace TDCG
                 bw.Flush();
                 ms.Seek(0, SeekOrigin.Begin);
                 sha1 = GetSha1HexString(ms);
-                string object_path = GetObjectPath(sha1);
-                if (! File.Exists(object_path))
-                {
-                    using (FileStream file = File.Create(object_path))
-                    {
-                        ms.Seek(0, SeekOrigin.Begin);
-
-                        byte[] buffer = new byte[4096];
-                        StreamUtils.Copy(ms, file, buffer);
-                    }
-                }
             }
 
             if (ContainsKey(sha1))
@@ -164,6 +158,7 @@ namespace TDCG
             }
             else
             {
+                cached_texturemap[sha1] = new CachedTexture { width = width, height = height, depth = depth, data = data };
                 Texture d3d_tex = CreateD3DTexture(width, height, depth, data);
                 Add(sha1, d3d_tex);
             }
@@ -172,35 +167,25 @@ namespace TDCG
 
         public void ReadOnDeviceReset(string sha1)
         {
-            string object_path = GetObjectPath(sha1);
-            using (FileStream file = File.OpenRead(object_path))
-            using (BinaryReader reader = new BinaryReader(file))
+            if (ContainsKey(sha1))
             {
-                int width = reader.ReadInt32();
-                int height = reader.ReadInt32();
-                int depth = reader.ReadInt32();
-                byte[] data = reader.ReadBytes( width * height * depth );
-
-                if (ContainsKey(sha1))
-                {
-                    AddRef(sha1);
-                }
-                else
-                {
-                    Texture d3d_tex = CreateD3DTexture(width, height, depth, data);
-                    Add(sha1, d3d_tex);
-                }
+                AddRef(sha1);
+            }
+            else
+            {
+                CachedTexture tex = cached_texturemap[sha1];
+                Texture d3d_tex = CreateD3DTexture(tex.width, tex.height, tex.depth, tex.data);
+                Add(sha1, d3d_tex);
             }
         }
 
-        public void Write(string sha1, Stream dest)
+        public void Write(string sha1, BinaryWriter bw)
         {
-            string object_path = GetObjectPath(sha1);
-            using (FileStream file = File.OpenRead(object_path))
-            {
-                byte[] buffer = new byte[4096];
-                StreamUtils.Copy(file, dest, buffer);
-            }
+            CachedTexture tex = cached_texturemap[sha1];
+            bw.Write(tex.width);
+            bw.Write(tex.height);
+            bw.Write(tex.depth);
+            bw.Write(tex.data);
         }
 
         static readonly int sizeof_tga_header = Marshal.SizeOf(typeof(TARGA_HEADER));
@@ -213,11 +198,13 @@ namespace TDCG
             if (data.Length == 0)
                 return null;
 
-            for(int j = 0; j < data.Length; j += 4)
+            byte[] tada = new byte[data.Length];
+            for(int i = 0; i < data.Length; i += 4)
             {
-                byte tmp = data[j + 2];
-                data[j + 2] = data[j + 0];
-                data[j + 0] = tmp;
+                tada[i + 0] = data[i + 2];
+                tada[i + 1] = data[i + 1];
+                tada[i + 2] = data[i + 0];
+                tada[i + 3] = data[i + 3];
             }
 
             Texture d3d_tex;
@@ -246,12 +233,11 @@ namespace TDCG
                 Marshal.FreeHGlobal(header_ptr);
                 bw.Write(header_buf);
 
-                bw.Write(data);
+                bw.Write(tada);
                 bw.Flush();
                 ms.Seek(0, SeekOrigin.Begin);
                 d3d_tex = TextureLoader.FromStream(device, ms);
             }
-            data = null;
             return d3d_tex;
         }
     }
